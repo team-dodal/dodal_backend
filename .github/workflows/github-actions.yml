@@ -13,7 +13,6 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK 11
@@ -26,7 +25,7 @@ jobs:
         run: |
           cd ./src/main/resources
           touch ./application-dev.yml
-          echo "${{ secrets.APPLICATION_DEV" }}" > ./application-dev.yml
+          echo "${{ secrets.APPLICATION_DEV }}" > ./application-dev.yml
 
       - name: Build with Gradle
         run: ./gradlew bootJar
