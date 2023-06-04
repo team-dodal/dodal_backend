@@ -597,3 +597,11 @@ FodyWeavers.xsd
 # Additional files built by Visual Studio
 
 # End of https://www.toptal.com/developers/gitignore/api/macos,windows,java,gradle,intellij+all,visualstudio
+
+# Add env
+.env
+
+# ignore dev & prod
+**/application-dev.yml
+**/application-prod.yml
+**/docker-compose-local.yml
