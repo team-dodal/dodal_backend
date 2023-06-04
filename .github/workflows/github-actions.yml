@@ -26,7 +26,7 @@ jobs:
         run: |
           cd ./src/main/resources
           touch ./application-dev.yml
-          echo "${{ secrets.APPLICATION_DEV" }}" > ./application-dev.yml
+          echo "${{ secrets.APPLICATION_DEV }}" > ./application-dev.yml
 
       - name: Build with Gradle
         run: ./gradlew bootJar
