@@ -3,7 +3,6 @@ package com.dodal.meet.model.entity;
 
 import com.dodal.meet.model.SocialType;
 import com.dodal.meet.model.UserRole;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.Getter;
