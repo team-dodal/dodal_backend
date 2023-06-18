@@ -34,9 +34,13 @@ public class UserService {
         log.info("UserLoginRequest : " + request);
         if (provider.equals(SocialType.KAKAO.name())) {
             return socialService.kakaoLogin(request);
+        } else if (provider.equals(SocialType.GOOGLE.name())) {
+            return socialService.googleLogin(request);
+        } else if (provider.equals(SocialType.APPLE.name())) {
+            // TODO : 애플 로그인 구현
+            return null;
         }
-        // TODO : 구글, 애플 로그인 구현
-        throw new DodalApplicationException(ErrorCode.INTERNAL_SERVER_ERROR);
+        throw new DodalApplicationException(ErrorCode.INVALID_PROVIDER);
     }
 
     @Transactional

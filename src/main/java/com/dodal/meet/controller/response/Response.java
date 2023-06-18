@@ -2,6 +2,7 @@ package com.dodal.meet.controller.response;
 
 
 import com.dodal.meet.exception.ErrorCode;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -9,10 +10,13 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 @Builder
+@Schema(description = "공통 응답 처리")
 public class Response<T> {
 
+    @Schema(description = "응답 코드", example = "공통 응답 코드")
     private String resultCode;
 
+    @Schema(description = "응답 메시지", example = "공통 응답 메시지")
     private T result;
 
     public static Response<Void> success() {

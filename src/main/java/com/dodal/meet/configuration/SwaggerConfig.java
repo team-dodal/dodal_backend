@@ -1,5 +1,8 @@
 package com.dodal.meet.configuration;
 
+import com.dodal.meet.controller.response.Response;
+import com.dodal.meet.exception.ErrorCode;
+import com.fasterxml.classmate.TypeResolver;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import springfox.documentation.builders.ApiInfoBuilder;
@@ -23,8 +26,11 @@ public class SwaggerConfig {
     private static final String BEARER = "Bearer ";
 
     @Bean
-    public Docket api() {
+    public Docket api(TypeResolver typeResolver) {
         return new Docket(DocumentationType.OAS_30)
+                .additionalModels(
+                        typeResolver.resolve(Response.class)
+                )
                 .useDefaultResponseMessages(true)
                 .apiInfo(apiInfo())
                 .select()
