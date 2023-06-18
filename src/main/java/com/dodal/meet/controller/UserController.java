@@ -5,6 +5,7 @@ import com.dodal.meet.controller.response.Response;
 import com.dodal.meet.controller.response.user.UserLoginResponse;
 import com.dodal.meet.exception.DodalApplicationException;
 import com.dodal.meet.exception.ErrorCode;
+import com.dodal.meet.model.User;
 import com.dodal.meet.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -14,9 +15,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
-
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Tag(name = "User", description = "유저 API")
 @RestController
@@ -36,13 +39,15 @@ public class UserController {
             @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = Response.class)))
     })
     @PostMapping("/login/{provider}")
-    public Response<UserLoginResponse> login(@RequestBody UserLoginRequest request, @Parameter(name = "provider", description = "KAKAO, GOOGLE, APPLE") @PathVariable String provider) {
+    public EntityModel<Response<UserLoginResponse>> login(@RequestBody UserLoginRequest request, @Parameter(name = "provider", description = "KAKAO, GOOGLE, APPLE") @PathVariable String provider) {
         boolean validAccessToken = StringUtils.hasLength(request.getAccessToken());
         boolean validRefreshToken = StringUtils.hasLength(request.getRefreshToken());
         if (validAccessToken) {
-            return Response.success(userService.login(request, provider));
+            return EntityModel.of(Response.success(userService.login(request, provider)),
+                    linkTo(methodOn(UserController.class).login(request, provider)).withSelfRel());
         } else if (validRefreshToken) {
-            return Response.success(userService.refresh(request));
+            return EntityModel.of(Response.success(userService.refresh(request)),
+                    linkTo(methodOn(UserController.class).login(request, provider)).withSelfRel());
         }
         throw new DodalApplicationException(ErrorCode.INVALID_LOGIN_REQUEST, ErrorCode.INVALID_LOGIN_REQUEST.getMessage());
     }

@@ -3,6 +3,9 @@ package com.dodal.meet.model.entity;
 
 import com.dodal.meet.model.SocialType;
 import com.dodal.meet.model.UserRole;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.SQLDelete;
@@ -18,6 +21,7 @@ import java.time.Instant;
 @Setter
 @SQLDelete(sql = "UPDATE user SET deleted_at = NOW() where id = ?")
 @Where(clause = "deleted_at is NULL")
+@JsonNaming(value = PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class UserEntity {
 
     @Id

@@ -7,6 +7,7 @@ import com.dodal.meet.controller.response.auth.KaKaoLoginResponse;
 import com.dodal.meet.controller.response.user.UserLoginResponse;
 import com.dodal.meet.exception.DodalApplicationException;
 import com.dodal.meet.exception.ErrorCode;
+import com.dodal.meet.model.SocialType;
 import com.dodal.meet.model.entity.UserEntity;
 import com.dodal.meet.repository.UserEntityRepository;
 import com.dodal.meet.utils.JwtTokenUtils;
@@ -20,6 +21,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -48,7 +50,13 @@ public class SocialService {
             final String kakaoEmail = result.getBody().getKaKaoAccount().getEmail();
             final String accessToken = JwtTokenUtils.generateAccessToken(kakaoEmail, jwtKey);
             final String refreshToken = JwtTokenUtils.generateRefreshToken(kakaoEmail, jwtKey);
-            UserEntity user = UserEntity.of(kakaoEmail, request.getSocialType(), refreshToken);
+
+            UserEntity user = userEntityRepository.findByEmailAndSocialType(kakaoEmail, SocialType.KAKAO).orElse(null);
+            if (user == null) {
+                user = UserEntity.of(kakaoEmail, request.getSocialType(), refreshToken);
+            } else {
+                user.setRefreshToken(refreshToken);
+            }
             userEntityRepository.save(user);
 
             return UserLoginResponse.builder()
@@ -81,7 +89,13 @@ public class SocialService {
             final String googleEmail = userInfo.getBody().getEmail();
             final String accessToken = JwtTokenUtils.generateAccessToken(googleEmail, jwtKey);
             final String refreshToken = JwtTokenUtils.generateRefreshToken(googleEmail, jwtKey);
-            UserEntity user = UserEntity.of(googleEmail, request.getSocialType(), refreshToken);
+
+            UserEntity user = userEntityRepository.findByEmailAndSocialType(googleEmail, SocialType.GOOGLE).orElse(null);
+            if (user == null) {
+                user = UserEntity.of(googleEmail, request.getSocialType(), refreshToken);
+            } else {
+                user.setRefreshToken(refreshToken);
+            }
             userEntityRepository.save(user);
 
             return UserLoginResponse.builder()
