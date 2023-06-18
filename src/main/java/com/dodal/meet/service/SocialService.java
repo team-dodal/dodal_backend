@@ -2,21 +2,21 @@ package com.dodal.meet.service;
 
 
 import com.dodal.meet.controller.request.user.UserLoginRequest;
+import com.dodal.meet.controller.response.auth.GoogleLoginResponse;
+import com.dodal.meet.controller.response.auth.KaKaoLoginResponse;
 import com.dodal.meet.controller.response.user.UserLoginResponse;
 import com.dodal.meet.exception.DodalApplicationException;
 import com.dodal.meet.exception.ErrorCode;
 import com.dodal.meet.model.entity.UserEntity;
 import com.dodal.meet.repository.UserEntityRepository;
 import com.dodal.meet.utils.JwtTokenUtils;
-import com.dodal.meet.utils.RestTemplateUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.minidev.json.JSONObject;
-import net.minidev.json.parser.JSONParser;
-import net.minidev.json.parser.ParseException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import java.nio.charset.StandardCharsets;
@@ -25,37 +25,35 @@ import java.nio.charset.StandardCharsets;
 @RequiredArgsConstructor
 @Slf4j
 public class SocialService {
-    private final String kakaoUrl = "https://kapi.kakao.com/v2/user/me";
+    private final String KAKAO_USERINFO_REQUEST_URL = "https://kapi.kakao.com/v2/user/me";
+    private final String GOOGLE_USERINFO_REQUEST_URL = "https://www.googleapis.com/oauth2/v1/userinfo";
+
     private final UserEntityRepository userEntityRepository;
 
-    @Value("${jwt.secret-key}")
-    private String key;
+    private final RestTemplate restTemplate;
 
+    @Value("${jwt.secret-key}")
+    private String jwtKey;
+
+    @Transactional
     public UserLoginResponse kakaoLogin(UserLoginRequest request) {
-        RestTemplate restTemplate = RestTemplateUtils.getRestTemplate();
         HttpHeaders header = new HttpHeaders();
         header.setContentType(new MediaType("application", "json", StandardCharsets.UTF_8));
         header.setBearerAuth(request.getAccessToken());
         HttpEntity<String> entity = new HttpEntity<>(header);
 
-//        UriComponents uriBuilder = UriComponentsBuilder.fromHttpUrl(kakaoUrl)
-//                .queryParam("id_token", request.getAccessToken())
-//                .build();
         try {
-            ResponseEntity<String> result = restTemplate.exchange(
-                kakaoUrl, HttpMethod.GET, entity, String.class);
-            JSONParser jsonParser = new JSONParser();
-            JSONObject data = (JSONObject) jsonParser.parse(result.getBody());
+            ResponseEntity<KaKaoLoginResponse> result = restTemplate.exchange(KAKAO_USERINFO_REQUEST_URL, HttpMethod.GET, entity, KaKaoLoginResponse.class);
 
-            String email = (String) ((JSONObject) data.get("kakao_account")).get("email");
-            String accessToken = JwtTokenUtils.generateAccessToken(email, key);
-            String refreshToken = JwtTokenUtils.generateRefreshToken(email, key);
-            UserEntity user = UserEntity.of(email, request.getSocialType(), refreshToken);
+            final String kakaoEmail = result.getBody().getKaKaoAccount().getEmail();
+            final String accessToken = JwtTokenUtils.generateAccessToken(kakaoEmail, jwtKey);
+            final String refreshToken = JwtTokenUtils.generateRefreshToken(kakaoEmail, jwtKey);
+            UserEntity user = UserEntity.of(kakaoEmail, request.getSocialType(), refreshToken);
             userEntityRepository.save(user);
 
             return UserLoginResponse.builder()
                     .socialType(request.getSocialType())
-                    .email(email)
+                    .email(kakaoEmail)
                     .accessToken(accessToken)
                     .refreshToken(refreshToken)
                     .build();
@@ -63,10 +61,41 @@ public class SocialService {
             if (e.getStatusCode().is4xxClientError()) {
                 throw new DodalApplicationException(ErrorCode.INVALID_TOKEN);
             }
-        } catch (ParseException e) {
-            throw new RuntimeException(e);
         }
-        return null;
+        throw new DodalApplicationException(ErrorCode.INTERNAL_SERVER_ERROR);
+    }
+
+    @Transactional
+    public UserLoginResponse googleLogin(UserLoginRequest request) {
+        HttpHeaders header = new HttpHeaders();
+        header.set("Authorization", "Bearer " + request.getAccessToken());
+        header.setBearerAuth(request.getAccessToken());
+        HttpEntity<MultiValueMap<String,String>> entity = new HttpEntity<>(header);
+        try {
+            ResponseEntity<GoogleLoginResponse> userInfo = restTemplate.exchange(
+                    GOOGLE_USERINFO_REQUEST_URL + "?access_token=" + request.getAccessToken(),
+                    HttpMethod.GET, entity, GoogleLoginResponse.class);
+
+            log.info("GOOGLE USERINFO : "  + userInfo);
+
+            final String googleEmail = userInfo.getBody().getEmail();
+            final String accessToken = JwtTokenUtils.generateAccessToken(googleEmail, jwtKey);
+            final String refreshToken = JwtTokenUtils.generateRefreshToken(googleEmail, jwtKey);
+            UserEntity user = UserEntity.of(googleEmail, request.getSocialType(), refreshToken);
+            userEntityRepository.save(user);
+
+            return UserLoginResponse.builder()
+                    .socialType(request.getSocialType())
+                    .email(googleEmail)
+                    .accessToken(accessToken)
+                    .refreshToken(refreshToken)
+                    .build();
+        } catch (HttpClientErrorException e) {
+            if (e.getStatusCode().is4xxClientError()) {
+                throw new DodalApplicationException(ErrorCode.INVALID_TOKEN);
+            }
+        }
+        throw new DodalApplicationException(ErrorCode.INTERNAL_SERVER_ERROR);
     }
 
 }
