@@ -3,10 +3,7 @@ package com.dodal.meet.model;
 
 import com.dodal.meet.model.entity.UserEntity;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
@@ -19,45 +16,31 @@ import java.util.Map;
 @Data
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class User implements OAuth2User {
+@Builder
+public class User {
 
-    private Integer id;
+    private Long id;
     private String email;
     private String nickname;
+    private String socialId;
     private String profileUrl;
     private UserRole role;
     private SocialType socialType;
     private Timestamp registerAt;
     private Timestamp updatedAt;
-    private Timestamp deletedAt;
 
     public static User fromEntity(UserEntity entity) {
         return new User(
                 entity.getId(),
                 entity.getEmail(),
                 entity.getNickname(),
+                entity.getSocialId(),
                 entity.getProfileUrl(),
                 entity.getRole(),
                 entity.getSocialType(),
                 entity.getRegisterAt(),
-                entity.getUpdatedAt(),
-                entity.getDeletedAt()
+                entity.getUpdatedAt()
         );
 
-    }
-
-    @Override
-    public Map<String, Object> getAttributes() {
-        return null;
-    }
-
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return null;
-    }
-
-    @Override
-    public String getName() {
-        return this.nickname;
     }
 }

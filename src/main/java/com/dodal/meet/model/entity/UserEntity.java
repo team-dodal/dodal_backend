@@ -5,10 +5,10 @@ import com.dodal.meet.model.SocialType;
 import com.dodal.meet.model.UserRole;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
+import org.springframework.util.Assert;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
@@ -17,42 +17,39 @@ import java.time.Instant;
 @Entity
 @Table(name = "user")
 @Getter
-@Setter
-@SQLDelete(sql = "UPDATE user SET deleted_at = NOW() where id = ?")
-@Where(clause = "deleted_at is NULL")
+//@SQLDelete(sql = "UPDATE user SET deleted_at = NOW() where user_id = ?")
+//@Where(clause = "deleted_at is NULL")
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @JsonNaming(value = PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class UserEntity {
 
     @Id
+    @Column(name = "user_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     private String email;
 
     private String nickname;
 
-    @Column(name = "profile_url")
+    private String socialId;
+
     private String profileUrl;
 
-    @Column(name = "refresh_token")
-    private String refreshToken;
 
-    @Column(name = "role")
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name = "token_id")
+    private TokenEntity tokenEntity;
+
     @Enumerated(EnumType.STRING)
     private UserRole role = UserRole.USER;
 
-    @Column(name = "social_type")
     @Enumerated(EnumType.STRING)
     private SocialType socialType;
 
-    @Column(name = "registered_at")
     private Timestamp registerAt;
 
-    @Column(name = "updated_at")
     private Timestamp updatedAt;
-
-    @Column(name = "deleted_at")
-    private Timestamp deletedAt;
 
     @PrePersist
     void registedAt() {
@@ -64,11 +61,21 @@ public class UserEntity {
         this.updatedAt = Timestamp.from(Instant.now());
     }
 
-    public static UserEntity of(String email, SocialType socialType, String refreshToken) {
-        UserEntity userEntity = new UserEntity();
-        userEntity.setEmail(email);
-        userEntity.setSocialType(socialType);
-        userEntity.setRefreshToken(refreshToken);
-        return userEntity;
+
+    @Builder(builderClassName = "SignUpDtoToEntity", builderMethodName = "SignUpDtoToEntity")
+    public UserEntity (String socialId, SocialType socialType, String nickname, TokenEntity tokenEntity) {
+
+        Assert.notNull(socialId, "socialId must not be null");
+        Assert.notNull(socialType, "socialType must not be null");
+        Assert.notNull(tokenEntity, "token must not be null");
+
+        this.socialId = socialId;
+        this.socialType = socialType;
+        this.nickname = nickname;
+        this.tokenEntity = tokenEntity;
+    }
+
+    public void updateProfileUrl(String profileUrl) {
+        this.profileUrl = profileUrl;
     }
 }
