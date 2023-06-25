@@ -1,6 +1,8 @@
 package com.dodal.meet.controller.response;
 
 
+import com.dodal.meet.controller.response.user.UserSignInResponse;
+import com.dodal.meet.controller.response.user.UserSignUpResponse;
 import com.dodal.meet.exception.ErrorCode;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -16,7 +18,7 @@ public class Response<T> {
     @Schema(description = "응답 코드", example = "공통 응답 코드")
     private String resultCode;
 
-    @Schema(description = "응답 메시지", example = "공통 응답 메시지")
+    @Schema(description = "응답 메시지", example = "공통 응답 메시지", anyOf = {UserSignUpResponse.class, UserSignInResponse.class})
     private T result;
 
     public static Response<Void> success() {

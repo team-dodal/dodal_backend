@@ -28,8 +28,10 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
     // swagger dependency
-    implementation "io.springfox:springfox-boot-starter:3.0.0"
-    implementation "io.springfox:springfox-swagger-ui:3.0.0"
+//    implementation "io.springfox:springfox-boot-starter:3.0.0"
+//    implementation "io.springfox:springfox-swagger-ui:3.0.0"
+    implementation 'org.springdoc:springdoc-openapi-ui:1.7.0'
+    implementation 'org.springdoc:springdoc-openapi-webmvc-core:1.7.0'
 
     // spring security
     implementation 'org.springframework.boot:spring-boot-starter-security'
@@ -45,6 +47,8 @@ dependencies {
 
     // hateoas
     implementation 'org.springframework.boot:spring-boot-starter-hateoas'
+
+    compileOnly 'org.springframework.cloud:spring-cloud-starter-aws:2.0.1.RELEASE'
 }
 
 tasks.named('test') {
