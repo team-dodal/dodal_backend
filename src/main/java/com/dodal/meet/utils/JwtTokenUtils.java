@@ -1,5 +1,6 @@
 package com.dodal.meet.utils;
 
+import com.dodal.meet.model.SocialType;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -13,9 +14,14 @@ public class JwtTokenUtils {
     private static final long EXPIRED_ACCESS_TIME = 5 * 60 * 60 * 1000L;
     private static final long EXPIRED_REFRESH_TIME = 30 * 24 * 60 * 60 * 1000L;
 
-    public static String getUserEmail(String token, String key) {
-        return extractClaims(token, key).get("email", String.class);
+    public static String getUserSocialId(String token, String key) {
+        return extractClaims(token, key).get("socialId", String.class);
     }
+
+    public static String getUserSocialType(String token, String key) {
+        return extractClaims(token, key).get("socialType", String.class);
+    }
+
     private static Claims extractClaims(String token, String key) {
         return Jwts.parserBuilder().setSigningKey(getKey(key))
                 .build().parseClaimsJws(token).getBody();
@@ -26,10 +32,10 @@ public class JwtTokenUtils {
         return expiredDate.before(new Date());
     }
 
-    public static String generateAccessToken(String email, String key) {
+    public static String generateAccessToken(String socialId, SocialType socialType, String key) {
         Claims claims = Jwts.claims();
-        claims.put("email", email);
-
+        claims.put("socialId", socialId);
+        claims.put("socialType", socialType.name());
         return Jwts.builder()
                 .setClaims(claims)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
@@ -38,10 +44,10 @@ public class JwtTokenUtils {
                 .compact();
     }
 
-    public static String generateRefreshToken(String email, String key) {
+    public static String generateRefreshToken(String socialId, SocialType socialType, String key) {
         Claims claims = Jwts.claims();
-        claims.put("email", email);
-
+        claims.put("socialId", socialId);
+        claims.put("socialType", socialType.name());
         return Jwts.builder()
                 .setClaims(claims)
                 .setIssuedAt(new Date(System.currentTimeMillis()))

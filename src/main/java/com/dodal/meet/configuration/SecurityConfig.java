@@ -35,8 +35,7 @@ public class SecurityConfig {
     @Order(0)
     public SecurityFilterChain resources(HttpSecurity http) throws Exception {
         return http.csrf().disable().
-                requestMatchers(matchers-> matchers.antMatchers("/v3/api-docs", "/configuration/**",
-                        "/swagger*/**", "/webjars/**", "/api/**/users/login/*", "/sample/**"))
+                requestMatchers(matchers-> matchers.antMatchers("/v3/api-docs/**", "/v3/api-docs.yaml", "/swagger*/**", "/api/**/users/sign-in", "/api/**/users/sign-up"))
                 .authorizeHttpRequests(authorize -> authorize.anyRequest().permitAll())
                 .requestCache(RequestCacheConfigurer::disable)
                 .securityContext(AbstractHttpConfigurer::disable)

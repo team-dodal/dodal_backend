@@ -1,5 +1,6 @@
 package com.dodal.meet.filter;
 
+import com.dodal.meet.model.SocialType;
 import com.dodal.meet.model.User;
 import com.dodal.meet.service.UserService;
 import com.dodal.meet.utils.JwtTokenUtils;
@@ -15,7 +16,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -45,13 +45,15 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                 return;
             }
 
-            // get email from token
-            String email = JwtTokenUtils.getUserEmail(token, key);
-            // check the userName is valid
-            User user = userService.loadUserByEmail(email);
+            // get socialId, socialType from token
+            final String socialId = JwtTokenUtils.getUserSocialId(token, key);
+            final SocialType socialType = getSocialType(JwtTokenUtils.getUserSocialType(token, key));
+
+            // check the user is valid
+            User user = userService.findBySocialIdAndSocialTypeToUser(socialId, socialType);
 
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                    user, null, user.getAuthorities()
+                    user, null, null
             );
             authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -61,8 +63,16 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             return;
         }
 
-
         filterChain.doFilter(request, response);
+    }
+
+    private SocialType getSocialType(String type) {
+        for (SocialType st : SocialType.values()) {
+            if(st.name().equals(type)) {
+                return st;
+            }
+        }
+        return null;
     }
 
 }
