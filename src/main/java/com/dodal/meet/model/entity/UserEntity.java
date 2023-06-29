@@ -1,11 +1,13 @@
 package com.dodal.meet.model.entity;
 
 
+import com.dodal.meet.controller.request.user.UserSignUpRequest;
 import com.dodal.meet.model.SocialType;
 import com.dodal.meet.model.UserRole;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.*;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 import org.springframework.util.Assert;
@@ -34,18 +36,23 @@ public class UserEntity {
 
     private String socialId;
 
-    private String profileUrl;
-
-
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JoinColumn(name = "token_id")
-    private TokenEntity tokenEntity;
-
     @Enumerated(EnumType.STRING)
-    private UserRole role = UserRole.USER;
+    private UserRole role;
 
     @Enumerated(EnumType.STRING)
     private SocialType socialType;
+
+    private String profileUrl;
+
+    private String content;
+
+    private char alarmYn;
+
+    private int accuseCnt;
+
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @JoinColumn(name = "token_id")
+    private TokenEntity tokenEntity;
 
     private Timestamp registerAt;
 
@@ -54,6 +61,9 @@ public class UserEntity {
     @PrePersist
     void registedAt() {
         this.registerAt = Timestamp.from(Instant.now());
+        this.role = UserRole.USER;
+        this.alarmYn = 'Y';
+        this.accuseCnt = 0;
     }
 
     @PreUpdate
@@ -63,15 +73,18 @@ public class UserEntity {
 
 
     @Builder(builderClassName = "SignUpDtoToEntity", builderMethodName = "SignUpDtoToEntity")
-    public UserEntity (String socialId, SocialType socialType, String nickname, TokenEntity tokenEntity) {
+    public UserEntity (UserSignUpRequest request, TokenEntity tokenEntity) {
 
-        Assert.notNull(socialId, "socialId must not be null");
-        Assert.notNull(socialType, "socialType must not be null");
+        Assert.notNull(request.getSocialId(), "socialId must not be null");
+        Assert.notNull(request.getSocialType(), "socialType must not be null");
         Assert.notNull(tokenEntity, "token must not be null");
 
-        this.socialId = socialId;
-        this.socialType = socialType;
-        this.nickname = nickname;
+        this.socialId = request.getSocialId();
+        this.socialType = request.getSocialType();
+        this.email = request.getEmail();
+        this.nickname = request.getNickname();
+        this.profileUrl = request.getProfileUrl();
+        this.content = request.getContent();
         this.tokenEntity = tokenEntity;
     }
 
