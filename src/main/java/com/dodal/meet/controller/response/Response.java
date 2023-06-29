@@ -17,7 +17,7 @@ import lombok.Getter;
 @JsonNaming(value = PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class Response<T> {
 
-    @Schema(description = "응답 코드", example =q "공통 응답 코드")
+    @Schema(description = "응답 코드", example = "공통 응답 코드")
     private String resultCode;
 
     @Schema(description = "응답 메시지", example = "공통 응답 메시지", anyOf = {UserSignUpResponse.class, UserSignInResponse.class})
