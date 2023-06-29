@@ -3,7 +3,6 @@ package com.dodal.meet.controller.response;
 
 import com.dodal.meet.controller.response.user.UserSignInResponse;
 import com.dodal.meet.controller.response.user.UserSignUpResponse;
-import com.dodal.meet.exception.ErrorCode;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -18,7 +17,7 @@ import lombok.Getter;
 @JsonNaming(value = PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class Response<T> {
 
-    @Schema(description = "응답 코드", example = "공통 응답 코드")
+    @Schema(description = "응답 코드", example =q "공통 응답 코드")
     private String resultCode;
 
     @Schema(description = "응답 메시지", example = "공통 응답 메시지", anyOf = {UserSignUpResponse.class, UserSignInResponse.class})
@@ -27,6 +26,8 @@ public class Response<T> {
     public static Response<Void> success() {
         return new Response<>("SUCCESS", null);
     }
+
+    public static Response<Void> fail() {return new Response<>("FAIL", null);}
 
     public static <T> Response<T> success(T result) {
         return new Response<>("SUCCESS", result);
