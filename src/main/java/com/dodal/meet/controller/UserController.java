@@ -6,6 +6,7 @@ import com.dodal.meet.controller.response.user.*;
 import com.dodal.meet.service.ImageService;
 import com.dodal.meet.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -18,6 +19,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
@@ -66,10 +69,12 @@ public class UserController {
                     @ApiResponse(responseCode = "401", description = "실패 - INVALID_TOKEN", content = @Content(schema = @Schema(implementation = Response.class))),
                     @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = Response.class)))
             })
-    @PostMapping("/profile")
-    public ResponseEntity<EntityModel<Response<UserProfileResponse>>> profile(UserProfileRequest request, Authentication authentication) {
-        return new ResponseEntity<>(EntityModel.of(Response.success(imageService.uploadImage(request, authentication))), HttpStatus.CREATED);
+    @PostMapping(value = "/profile", produces = "application/json", consumes = "multipart/form-data")
+    public ResponseEntity<EntityModel<Response<UserProfileResponse>>> profile(
+            @Parameter(name = "profile") UserProfileRequest profile) {
+        return new ResponseEntity<>(EntityModel.of(Response.success(imageService.uploadImage(profile))), HttpStatus.CREATED);
     }
+
 
     @Operation(summary = "닉네임 중복 확인 API"
             , description = "닉네임이 사용 가능한 경우 200 OK, 불가능한 경우 400 오류를 반환한다.",
