@@ -4,6 +4,7 @@ package com.dodal.meet.configuration;
 import com.dodal.meet.filter.JwtTokenFilter;
 import com.dodal.meet.exception.CustomAuthenticationEntryPoint;
 import com.dodal.meet.service.UserService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -35,7 +36,8 @@ public class SecurityConfig {
     @Order(0)
     public SecurityFilterChain resources(HttpSecurity http) throws Exception {
         return http.csrf().disable().
-                requestMatchers(matchers-> matchers.antMatchers("/v3/api-docs/**", "/v3/api-docs.yaml", "/swagger*/**", "/api/**/users/sign-in", "/api/**/users/sign-up"))
+                requestMatchers(matchers-> matchers.antMatchers("/v3/api-docs/**", "/v3/api-docs.yaml", "/swagger*/**",
+                        "/api/**/users/sign-in", "/api/**/users/sign-up", "/api/**/users/nickname", "/api/**/users/profile"))
                 .authorizeHttpRequests(authorize -> authorize.anyRequest().permitAll())
                 .requestCache(RequestCacheConfigurer::disable)
                 .securityContext(AbstractHttpConfigurer::disable)
@@ -60,7 +62,7 @@ public class SecurityConfig {
                 .and()
                 .addFilterBefore(new JwtTokenFilter(key, userService), UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling()
-                .authenticationEntryPoint(new CustomAuthenticationEntryPoint())
+                .authenticationEntryPoint(new CustomAuthenticationEntryPoint(new ObjectMapper()))
                 .and()
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)

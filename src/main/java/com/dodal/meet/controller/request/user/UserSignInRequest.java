@@ -18,4 +18,5 @@ public class UserSignInRequest {
 
     @Schema(description = "소셜 아이디", example = "2843361325")
     private String socialId;
+
 }

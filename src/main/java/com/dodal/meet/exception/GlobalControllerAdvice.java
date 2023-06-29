@@ -3,10 +3,12 @@ package com.dodal.meet.exception;
 
 import com.dodal.meet.DodalApplication;
 import com.dodal.meet.controller.response.Response;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @Slf4j
@@ -16,8 +18,11 @@ public class GlobalControllerAdvice {
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<?> applicationHandler(RuntimeException e) {
         log.error("ExceptionHandler - RuntimeException {}", e.toString());
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).
-                body(ErrorCode.INTERNAL_SERVER_ERROR.getMessage());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Response.builder()
+                        .resultCode(ErrorCode.INTERNAL_SERVER_ERROR.name())
+                        .result(ErrorCode.INTERNAL_SERVER_ERROR.getMessage())
+                        .build());
     }
 
     @ExceptionHandler(DodalApplicationException.class)
