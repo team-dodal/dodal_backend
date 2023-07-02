@@ -52,16 +52,6 @@ public class ImageService {
             amazonS3Client.putObject(bucket, uniqueFileName, multipartFile.getInputStream(), objectMetadata);
 
             final String s3ImageUrl = amazonS3Client.getUrl(bucket, uniqueFileName).toString();
-            /*
-            User user = UserUtils.getUserInfo(authentication);
-            if (user != null) {
-                UserEntity entity = userEntityRepository.findBySocialIdAndSocialType(user.getSocialId(), user.getSocialType())
-                        .orElseThrow(() -> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
-                entity.updateProfileUrl(s3ImageUrl);
-
-                userEntityRepository.save(entity);
-            }
-             */
             response.setProfileUrl(s3ImageUrl);
         } catch (IOException e) {
             log.error(e.getMessage());
