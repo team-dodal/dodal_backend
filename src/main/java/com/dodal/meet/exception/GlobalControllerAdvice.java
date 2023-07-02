@@ -7,9 +7,15 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestControllerAdvice
@@ -34,4 +40,17 @@ public class GlobalControllerAdvice {
                         .result(e.getMessage())
                         .build());
     }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<?> handleValidationException(MethodArgumentNotValidException e) {
+        BindingResult bindingResult = e.getBindingResult();
+
+        log.error("ExceptionHandler - MethodArgumentNotValidException {} ", e.toString());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Response.builder()
+                        .resultCode(ErrorCode.INVALID_REQUEST_FILED.name())
+                        .result(bindingResult.getFieldError().getDefaultMessage())
+                        .build());
+    }
+
 }

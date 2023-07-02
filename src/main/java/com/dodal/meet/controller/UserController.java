@@ -18,8 +18,15 @@ import org.springframework.hateoas.Link;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.Errors;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
@@ -42,7 +49,7 @@ public class UserController {
             @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = Response.class)))
     })
     @PostMapping("/sign-in")
-    public ResponseEntity<EntityModel<Response<UserSignInResponse>>> signIn(@RequestBody UserSignInRequest request) {
+    public ResponseEntity<EntityModel<Response<UserSignInResponse>>> signIn(@Valid @RequestBody UserSignInRequest request) {
         Link selfRel = linkTo(methodOn(UserController.class).signIn(request)).withSelfRel();
         return new ResponseEntity<>(EntityModel.of(Response.success(userService.signIn(request)), selfRel), HttpStatus.OK) ;
     }
@@ -56,7 +63,7 @@ public class UserController {
                     @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = Response.class)))
             })
     @PostMapping("/sign-up")
-    public ResponseEntity<EntityModel<Response<UserSignUpResponse>>> signUp(@RequestBody UserSignUpRequest request) {
+    public ResponseEntity<EntityModel<Response<UserSignUpResponse>>> signUp(@Valid @RequestBody UserSignUpRequest request) {
         Link selfRel = linkTo(methodOn(UserController.class).signUp(request)).withSelfRel();
         return new ResponseEntity<>(EntityModel.of(Response.success(userService.signUp(request)), selfRel, getSignInLink()), HttpStatus.CREATED) ;
     }
@@ -83,10 +90,10 @@ public class UserController {
                     @ApiResponse(responseCode = "400", description = "FAIL 닉네임 사용 불가", useReturnTypeSchema = true),
                     @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = Response.class)))
             })
-    @GetMapping("/nickname")
-    public ResponseEntity<EntityModel<Response<Void>>> checkNickname(@RequestParam(name = "nickname") String request) {
-        boolean isExistNickname = userService.findByNickname(request);
-        Link selfRel = linkTo(methodOn(UserController.class).checkNickname(request)).withSelfRel();
+    @GetMapping("/nickname/{nickname}")
+    public ResponseEntity<EntityModel<Response<Void>>> checkNickname(@PathVariable String nickname) {
+        boolean isExistNickname = userService.findByNickname(nickname);
+        Link selfRel = linkTo(methodOn(UserController.class).checkNickname(nickname)).withSelfRel();
 
         return isExistNickname ?
                 new ResponseEntity<>(EntityModel.of(Response.fail(), selfRel), HttpStatus.BAD_REQUEST) :
@@ -114,7 +121,7 @@ public class UserController {
                     @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = Response.class)))
             })
     @PostMapping("/fcm-token")
-    public ResponseEntity<EntityModel<Response<Void>>> postFcmToken(@RequestBody UserFcmTokenRequest request, Authentication authentication) {
+    public ResponseEntity<EntityModel<Response<Void>>> postFcmToken(@Valid @RequestBody UserFcmTokenRequest request, Authentication authentication) {
         userService.postFcmToken(request.getFcmToken(), authentication);
         Link selfRel = linkTo(methodOn(UserController.class).postFcmToken(request, authentication)).withSelfRel();
         return new ResponseEntity<>(EntityModel.of(Response.success(), selfRel), HttpStatus.CREATED) ;
