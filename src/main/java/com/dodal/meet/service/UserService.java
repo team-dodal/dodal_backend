@@ -1,8 +1,9 @@
 package com.dodal.meet.service;
 
 
-import com.dodal.meet.controller.request.user.UserSignInRequest;
 import com.dodal.meet.controller.request.user.UserSignUpRequest;
+import com.dodal.meet.controller.request.user.UserSignInRequest;
+import com.dodal.meet.controller.response.category.TagResponse;
 import com.dodal.meet.controller.response.user.UserAccessTokenResponse;
 import com.dodal.meet.controller.response.user.UserInfoResponse;
 import com.dodal.meet.controller.response.user.UserSignInResponse;
@@ -11,10 +12,14 @@ import com.dodal.meet.exception.DodalApplicationException;
 import com.dodal.meet.exception.ErrorCode;
 import com.dodal.meet.model.SocialType;
 import com.dodal.meet.model.User;
+import com.dodal.meet.model.entity.TagEntity;
 import com.dodal.meet.model.entity.TokenEntity;
 import com.dodal.meet.model.entity.UserEntity;
+import com.dodal.meet.model.entity.UserTagEntity;
+import com.dodal.meet.repository.TagEntityRepository;
 import com.dodal.meet.repository.TokenEntityRepository;
 import com.dodal.meet.repository.UserEntityRepository;
+import com.dodal.meet.repository.UserTagEntityRepository;
 import com.dodal.meet.utils.JwtTokenUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,19 +28,20 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class UserService {
+    private final TagEntityRepository tagEntityRepository;
+    private final UserTagEntityRepository userTagEntityRepository;
     private final UserEntityRepository userEntityRepository;
     private final TokenEntityRepository tokenEntityRepository;
 
     @Value("${jwt.secret-key}")
     private String jwtKey;
-
-
-
 
     @Transactional
     public UserSignInResponse signIn(UserSignInRequest request) {
@@ -80,18 +86,30 @@ public class UserService {
         TokenEntity tokenEntity = TokenEntity.builder().refreshToken(refreshToken).build();
         tokenEntityRepository.save(tokenEntity);
 
-        entity = UserEntity.SignUpDtoToEntity()
+        UserEntity newUserEntity = UserEntity.SignUpDtoToEntity()
                 .request(request)
                 .tokenEntity(tokenEntity)
                 .build();
 
-        userEntityRepository.save(entity);
+        userEntityRepository.save(newUserEntity);
+
+        List<UserTagEntity> userTagEntities = new ArrayList<>();
+        request.getTagList().forEach(tagValue -> {
+            TagEntity tagEntity = tagEntityRepository.findByValue(tagValue).orElseThrow(
+                    () -> new DodalApplicationException(ErrorCode.INTERNAL_SERVER_ERROR));
+            userTagEntities.add(UserTagEntity.tagEntityToUserTagEntity(newUserEntity, tagEntity));
+            }
+        );
+
+        userTagEntityRepository.saveAll(userTagEntities);
 
         return UserSignUpResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .build();
     }
+
+
 
     @Transactional(readOnly = true)
     public boolean findByNickname(String nickname) {
@@ -108,6 +126,7 @@ public class UserService {
                 .orElseThrow(() -> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
         TokenEntity tokenEntity = tokenEntityRepository.findById(userEntity.getId())
                 .orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_TOKEN));
+        List<UserTagEntity> userTagList = userTagEntityRepository.findAllByUserEntity(userEntity);
 
         return UserInfoResponse.builder()
                 .userId(userEntity.getId())
@@ -120,6 +139,7 @@ public class UserService {
                 .content(userEntity.getContent())
                 .alarmYn(userEntity.getAlarmYn())
                 .accuseCnt(userEntity.getAccuseCnt())
+                .tagList(TagResponse.userEntitesToList(userTagList))
                 .fcmToken(tokenEntity.getFcmToken())
                 .refreshToken(tokenEntity.getRefreshToken())
                 .registerAt(userEntity.getRegisterAt())
@@ -151,7 +171,7 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    protected UserEntity userToUserEntity(Authentication authentication) {
+    public UserEntity userToUserEntity(Authentication authentication) {
         User user = (User) authentication.getPrincipal();
         final String socialId = user.getSocialId();
         final SocialType socialType = user.getSocialType();

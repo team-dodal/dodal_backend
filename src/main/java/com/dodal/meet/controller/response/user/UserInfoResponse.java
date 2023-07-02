@@ -1,5 +1,6 @@
 package com.dodal.meet.controller.response.user;
 
+import com.dodal.meet.controller.response.category.TagResponse;
 import com.dodal.meet.model.SocialType;
 import com.dodal.meet.model.UserRole;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
@@ -9,6 +10,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.sql.Timestamp;
+import java.util.List;
 
 @Builder
 @Getter
@@ -38,6 +40,9 @@ public class UserInfoResponse {
 
     @Schema(description = "유저 한 줄 소개", example = "안녕하세요")
     private String content;
+
+    @Schema(description = "관심 있는 태그 정보")
+    private List<TagResponse> tagList;
 
     @Schema(description = "알람 허용 여부", example = "Y", allowableValues = {"Y", "N"})
     private char alarmYn;

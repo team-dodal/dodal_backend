@@ -4,13 +4,15 @@ import com.dodal.meet.model.SocialType;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Builder;
-import lombok.Getter;
+import lombok.*;
+
 import java.util.List;
 @Getter
 @Schema(description = "유저 소셜 회원가입 요청")
 @JsonNaming(value = PropertyNamingStrategy.SnakeCaseStrategy.class)
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UserSignUpRequest {
 
     @Schema(description = "소셜 타입", allowableValues = {"KAKAO", "GOOGLE", "APPLE"}, example = "KAKAO")
@@ -32,5 +34,5 @@ public class UserSignUpRequest {
     private String content;
 
     @Schema(description = "관심 카테고리", example = "[\"001001\", \"002003\", \"004001\" ]")
-    private List<Integer> favoriteCategory;
+    private List<String> tagList;
 }
