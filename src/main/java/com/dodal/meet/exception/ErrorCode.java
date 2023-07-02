@@ -21,7 +21,9 @@ public enum ErrorCode {
 
     // 500 - INTERNAL SERVER ERROR
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 오류가 발생했습니다."),
-    NOT_FOUND_TOKEN(HttpStatus.INTERNAL_SERVER_ERROR, "사용자 정보는 있으나, 토큰 정보가 없습니다.")
+    NOT_FOUND_TOKEN(HttpStatus.INTERNAL_SERVER_ERROR, "사용자 정보는 있으나, 토큰 정보가 없습니다."),
+
+    NOT_FOUND_TAG(HttpStatus.INTERNAL_SERVER_ERROR, "태그 정보가 서버에 존재하지 않습니다.")
     ;
 
 

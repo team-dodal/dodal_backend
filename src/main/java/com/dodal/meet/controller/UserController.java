@@ -148,7 +148,8 @@ public class UserController {
         return new ResponseEntity<>(EntityModel.of(Response.success(), selfRel), HttpStatus.NO_CONTENT) ;
     }
 
-    private Link getSignInLink() {
+    public Link getSignInLink() {
         return linkTo(methodOn(UserController.class).signIn(null)).withRel("sign-in");
     }
+
 }

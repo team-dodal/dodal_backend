@@ -7,11 +7,7 @@ import com.dodal.meet.model.UserRole;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.*;
-import org.hibernate.annotations.ColumnDefault;
-import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.Where;
 import org.springframework.util.Assert;
-
 import javax.persistence.*;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -19,8 +15,6 @@ import java.time.Instant;
 @Entity
 @Table(name = "user")
 @Getter
-//@SQLDelete(sql = "UPDATE user SET deleted_at = NOW() where user_id = ?")
-//@Where(clause = "deleted_at is NULL")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @JsonNaming(value = PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class UserEntity {
