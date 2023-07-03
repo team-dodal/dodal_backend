@@ -26,8 +26,14 @@ jobs:
           echo "${{ secrets.APPLICATION_DEV }}" > ./application-dev.yml
           touch ./application.yml
           echo "${{ secrets.APPLICATION_YML }}" > ./application.yml
-          touch ./dodal-fcm.json
-          echo "${{ secrets.FCM_JSON }}" > ./dodal-fcm.json
+
+      - name: create-json
+        id: create-json
+        uses: jsdaniell/create-json@1.1.2
+        with:
+          name: "dodal-fcm.json"
+          json: ${{ secrets.FCM_JSON }}
+
       - name: Build with Gradle
         run: ./gradlew bootJar
 
