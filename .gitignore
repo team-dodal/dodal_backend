@@ -608,4 +608,4 @@ FodyWeavers.xsd
 **/application.yml
 
 ## igrnoe fcm json
-**/firebase/**
+**/dodal-fcm.json
