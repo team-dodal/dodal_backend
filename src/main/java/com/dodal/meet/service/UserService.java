@@ -125,7 +125,7 @@ public class UserService {
         UserEntity userEntity = userEntityRepository.findBySocialIdAndSocialType(socialId, socialType)
                 .orElseThrow(() -> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
         TokenEntity tokenEntity = tokenEntityRepository.findById(userEntity.getId())
-                .orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_TOKEN));
+                .orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_JWT_TOKEN));
         List<UserTagEntity> userTagList = userTagEntityRepository.findAllByUserEntity(userEntity);
 
         return UserInfoResponse.builder()
