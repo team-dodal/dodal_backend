@@ -606,3 +606,6 @@ FodyWeavers.xsd
 **/application-prod.yml
 **/docker-compose-local.yml
 **/application.yml
+
+## igrnoe fcm json
+**/firebase/**
