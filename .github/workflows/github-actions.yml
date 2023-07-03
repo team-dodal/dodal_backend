@@ -29,10 +29,11 @@ jobs:
 
       - name: create-json
         id: create-json
-        uses: jsdaniell/create-json@1.1.2
+        uses: jsdaniell/create-json@v1.2.2
         with:
           name: "dodal-fcm.json"
           json: ${{ secrets.FCM_JSON }}
+          dir: src/main/resources
 
       - name: Build with Gradle
         run: ./gradlew bootJar
