@@ -15,9 +15,10 @@ import java.util.List;
 
 @Configuration
 public class FcmConfig {
+
     @Bean
     public FirebaseMessaging firebaseMessaging() throws IOException {
-        ClassPathResource resource = new ClassPathResource("firebase/dodal-fcm.json");
+        ClassPathResource resource = new ClassPathResource("dodal-fcm.json");
         InputStream inputStream = resource.getInputStream();
 
         FirebaseApp firebaseApp = null;
