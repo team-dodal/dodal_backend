@@ -26,7 +26,9 @@ jobs:
           echo "${{ secrets.APPLICATION_DEV }}" > ./application-dev.yml
           touch ./application.yml
           echo "${{ secrets.APPLICATION_YML }}" > ./application.yml
-
+          mkdir firebase
+          touch ./firebase/dodal-fcm.json
+          echo "${{ secrets.FCM_JSON }}" > ./firebase/dodal-fcm.json
       - name: Build with Gradle
         run: ./gradlew bootJar
 
