@@ -55,5 +55,3 @@ jobs:
             sudo docker stop $(sudo docker ps -qa)
             sudo docker run -d --log-driver=syslog -p 8080:8080 ${{ secrets.DOCKER_REPO }}/dodal
             sudo docker image prune -a -f
-
-
