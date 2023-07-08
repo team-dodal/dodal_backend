@@ -11,13 +11,13 @@ spring:
     username: ${LOCAL_MYSQL_USERNAME}
     password: ${LOCAL_MYSQL_PASSWORD}
   jpa:
-    show-sql: true
+#    show-sql: true
     hibernate:
       ddl-auto: update
     defer-datasource-initialization: true
     properties:
       hibernate:
-        format_sql: true
+#        format_sql: true
         dialect: org.hibernate.dialect.MySQL8Dialect
     open-in-view: false
   sql:

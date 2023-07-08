@@ -3,6 +3,8 @@ package com.dodal.meet.controller;
 import com.dodal.meet.controller.request.user.*;
 import com.dodal.meet.controller.response.Response;
 import com.dodal.meet.controller.response.user.*;
+import com.dodal.meet.model.SocialType;
+import com.dodal.meet.model.entity.UserEntity;
 import com.dodal.meet.service.ImageService;
 import com.dodal.meet.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -13,20 +15,25 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.BeanWrapper;
+import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.validation.BindingResult;
-import org.springframework.validation.Errors;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
 import javax.validation.Valid;
+import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Size;
+import javax.validation.constraints.Pattern;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
@@ -36,6 +43,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/users")
 @Slf4j
+@Validated
 public class UserController {
     private final UserService userService;
     private final ImageService imageService;
@@ -62,10 +70,81 @@ public class UserController {
                     @ApiResponse(responseCode = "401", description = "실패 - INVALID_TOKEN", content = @Content(schema = @Schema(implementation = Response.class))),
                     @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = Response.class)))
             })
-    @PostMapping("/sign-up")
-    public ResponseEntity<EntityModel<Response<UserSignUpResponse>>> signUp(@Valid @RequestBody UserSignUpRequest request) {
-        Link selfRel = linkTo(methodOn(UserController.class).signUp(request)).withSelfRel();
-        return new ResponseEntity<>(EntityModel.of(Response.success(userService.signUp(request)), selfRel, getSignInLink()), HttpStatus.CREATED) ;
+    @PostMapping(value = "/sign-up", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<EntityModel<Response<UserSignUpResponse>>> signUp(
+                                                                            @Schema(name =  "social_type", example = "KAKAO")
+                                                                            @RequestParam(name = "social_type") SocialType socialType,
+
+                                                                            @NotBlank(message = "social_id는 필수값입니다.")
+                                                                            @Schema(name =  "social_id", example = "2843361325")
+                                                                            @RequestParam(name = "social_id") String socialId,
+
+                                                                            @Email(message = "이메일 형식에 맞지 않습니다.") @Schema(name =  "email", example = "sasca37@naver.com")
+                                                                            @RequestParam(name = "email", required = false) String email,
+
+                                                                            @Pattern(regexp = "^[가-힣a-zA-Z0-9\\s]{1,16}$", message = "nickname은 한글, 영어, 숫자로만 이루어진 1자리 이상 16자리 이하의 값이어야 합니다.")
+                                                                            @Schema(name =  "nickname", example = "노래하는 어피치")
+                                                                            @RequestParam(name = "nickname") String nickname,
+
+                                                                            @Pattern(regexp = "^(.{0}|.{1,40})$", message = "값은 40자리 이하이어야 합니다.")
+                                                                            @Schema(name =  "content", example = "안녕하세요")
+                                                                            @RequestParam(name = "content", required = false) String content,
+
+                                                                            @Schema(name =  "tag_list", example = "001002")
+                                                                            @RequestParam(name = "tag_list") List<String> tagList,
+
+                                                                            @Schema(name = "profile")
+                                                                            @Parameter(name = "profile", content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE))
+                                                                            @RequestPart(name = "profile", required = false) MultipartFile profile
+                                                                            ) {
+        final String trimNickname = nickname.trim();
+        Link selfRel = linkTo(methodOn(UserController.class).signUp(socialType, socialId, email, trimNickname, content, tagList, profile)).withSelfRel();
+        UserSignUpRequest userSignUpRequest = UserSignUpRequest.builder()
+                .socialType(socialType)
+                .socialId(socialId)
+                .email(email)
+                .nickname(trimNickname)
+                .content(content)
+                .tagList(tagList)
+                .build();
+        return new ResponseEntity<>(EntityModel.of(Response.success(userService.signUp(userSignUpRequest, profile)), selfRel, getSignInLink()), HttpStatus.CREATED) ;
+    }
+
+    @Operation(summary = "유저 정보 수정 API"
+            , description = "사용자 정보를 수정한다.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "성공", useReturnTypeSchema = true),
+                    @ApiResponse(responseCode = "400", description = "실패 - INVALID_REQUEST_FIELD", content = @Content(schema = @Schema(implementation = Response.class))),
+                    @ApiResponse(responseCode = "401", description = "실패 - INVALID_TOKEN", content = @Content(schema = @Schema(implementation = Response.class))),
+                    @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = Response.class)))
+            })
+    @PutMapping(value = "/me", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<EntityModel<Response<?>>> updateUser(
+                                                                @Pattern(regexp = "^[가-힣a-zA-Z0-9\\s]{1,16}$", message = "nickname은 한글, 영어, 숫자로만 이루어진 1자리 이상 16자리 이하의 값이어야 합니다.")
+                                                                @Schema(name =  "nickname", example = "노래하는 어피치")
+                                                                @RequestParam(name = "nickname", required = false) String nickname,
+
+                                                                @Pattern(regexp = "^(.{0}|.{1,40})$", message = "값은 40자리 이하이어야 합니다.")
+                                                                @Schema(name =  "content", example = "안녕하세요")
+                                                                @RequestParam(name = "content", required = false) String content,
+
+                                                                @Schema(name =  "tag_list", type = "array", example = "[\"001001\", \"002001\", \"003001\"]")
+                                                                @Parameter(name = "tag_list")
+                                                                @RequestParam(name = "tag_list", required = false) List<String> tagList,
+
+                                                                @Schema(name = "profile") @Parameter(name = "profile", content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE))
+                                                                @RequestPart(name = "profile", required = false) MultipartFile profile,
+
+                                                                Authentication authentication
+                                                                ) {
+        final String trimNickname = nickname.trim();
+        Link selfRel = linkTo(methodOn(UserController.class).updateUser(trimNickname, content, tagList, profile, authentication)).withSelfRel();
+        UserUpdateRequest userUpdateRequest = UserUpdateRequest.builder()
+                .nickname(trimNickname)
+                .content(content)
+                .tagList(tagList)
+                .build();
+        return new ResponseEntity<>(EntityModel.of(Response.success(userService.updateUser(userUpdateRequest, profile, authentication)), selfRel, getSignInLink()), HttpStatus.CREATED) ;
     }
 
     @Operation(summary = "프로필 이미지 등록 API"
@@ -91,9 +170,10 @@ public class UserController {
                     @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = Response.class)))
             })
     @GetMapping("/nickname/{nickname}")
-    public ResponseEntity<EntityModel<Response<Void>>> checkNickname(@PathVariable String nickname) {
-        boolean isExistNickname = userService.findByNickname(nickname);
-        Link selfRel = linkTo(methodOn(UserController.class).checkNickname(nickname)).withSelfRel();
+    public ResponseEntity<EntityModel<Response<Void>>> checkNickname(@Pattern(regexp = "^[가-힣a-zA-Z0-9\\s]{1,16}$", message = "nickname은 한글, 영어, 숫자로만 이루어진 1자리 이상 16자리 이하의 값이어야 합니다.") @PathVariable String nickname) {
+        final String trimNickname = nickname.trim();
+        final boolean isExistNickname = userService.findByNickname(trimNickname);
+        final Link selfRel = linkTo(methodOn(UserController.class).checkNickname(trimNickname)).withSelfRel();
 
         return isExistNickname ?
                 new ResponseEntity<>(EntityModel.of(Response.fail(), selfRel), HttpStatus.BAD_REQUEST) :
@@ -155,7 +235,7 @@ public class UserController {
         return new ResponseEntity<>(EntityModel.of(Response.success(), selfRel), HttpStatus.NO_CONTENT) ;
     }
 
-    public Link getSignInLink() {
+    private Link getSignInLink() {
         return linkTo(methodOn(UserController.class).signIn(null)).withRel("sign-in");
     }
 

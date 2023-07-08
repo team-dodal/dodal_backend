@@ -11,6 +11,7 @@ import org.hibernate.validator.constraints.Length;
 import javax.validation.constraints.*;
 import java.util.List;
 @Getter
+@Setter
 @Schema(description = "유저 소셜 회원가입 요청")
 @JsonNaming(value = PropertyNamingStrategy.SnakeCaseStrategy.class)
 @Builder
@@ -34,7 +35,7 @@ public class UserSignUpRequest {
     @Schema(description = "닉네임", example = "노래하는 어피치")
     private String nickname;
 
-    @Schema(description = "프로필 이미지 URL", example = "S3 이미지 URL")
+    @Schema(description = "Multipart/form-data 형식 이미지 업로드", example = "profile")
     private String profileUrl;
 
     @Length(max = 50, message = "content는 50자 이하여야합니다.")

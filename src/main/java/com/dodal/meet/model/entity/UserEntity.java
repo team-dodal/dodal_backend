@@ -17,6 +17,8 @@ import java.time.Instant;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @JsonNaming(value = PropertyNamingStrategy.SnakeCaseStrategy.class)
+@Builder
+@AllArgsConstructor
 public class UserEntity {
 
     @Id
@@ -85,4 +87,7 @@ public class UserEntity {
     public void updateProfileUrl(String profileUrl) {
         this.profileUrl = profileUrl;
     }
+    public void updateNickname(String nickname) {this.nickname = nickname;}
+
+    public void updateContent(String content) {this.content = content;}
 }

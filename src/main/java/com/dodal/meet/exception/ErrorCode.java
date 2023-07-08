@@ -11,7 +11,10 @@ public enum ErrorCode {
     // 400 - BAD REQUEST
     INVALID_PROVIDER(HttpStatus.BAD_REQUEST, "유효하지 않은 소셜 타입입니다."),
     INVALID_SIGNUP_REQUEST(HttpStatus.BAD_REQUEST, "이미 가입된 회원입니다."),
-    INVALID_REQUEST_FILED(HttpStatus.BAD_REQUEST, "잘못된 요청 입니다."),
+    INVALID_REQUEST_FIELD(HttpStatus.BAD_REQUEST, "잘못된 요청 입니다."),
+    INVALID_TAG_LIST_FIELD(HttpStatus.BAD_REQUEST, "태그 정보가 올바르지 않습니다."),
+    INVALID_SOCIAL_TYPE_FIELD(HttpStatus.BAD_REQUEST, "소셜 타입 정보가 올바르지 않습니다"),
+    INVALID_NICKNAME_FIELD(HttpStatus.BAD_REQUEST, "닉네임은 공백으로 이루어질 수 없습니다"),
 
     INVALID_USER_REQUEST(HttpStatus.BAD_REQUEST, "잘못된 유저 정보입니다."),
 
@@ -19,6 +22,7 @@ public enum ErrorCode {
 
     // 401 - UNAUTHORIZED
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다."),
+    EXPIRED_TOKEN(HttpStatus.UNAUTHORIZED, "기간이 만료된 토큰 입니다."),
 
     // 500 - INTERNAL SERVER ERROR
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 오류가 발생했습니다."),

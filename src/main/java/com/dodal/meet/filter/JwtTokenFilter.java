@@ -1,9 +1,14 @@
 package com.dodal.meet.filter;
 
+import com.dodal.meet.controller.response.Response;
+import com.dodal.meet.exception.DodalApplicationException;
+import com.dodal.meet.exception.ErrorCode;
 import com.dodal.meet.model.SocialType;
 import com.dodal.meet.model.User;
 import com.dodal.meet.service.UserService;
 import com.dodal.meet.utils.JwtTokenUtils;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.jsonwebtoken.ExpiredJwtException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -57,6 +62,8 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             );
             authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authentication);
+        } catch (ExpiredJwtException e) {
+            request.setAttribute("exception", ErrorCode.EXPIRED_TOKEN.name());
         } catch (RuntimeException e) {
             log.error("Error occurs while validating. {}", e.toString());
             filterChain.doFilter(request, response);
