@@ -82,7 +82,7 @@ public class UserController {
                                                                             @Email(message = "이메일 형식에 맞지 않습니다.") @Schema(name =  "email", example = "sasca37@naver.com")
                                                                             @RequestParam(name = "email", required = false) String email,
 
-                                                                            @Pattern(regexp = "^[가-힣a-zA-Z0-9]{1,16}$", message = "nickname은 한글, 영어, 숫자로만 이루어진 1자리 이상 16자리 이하의 값이어야 합니다.")
+                                                                            @Pattern(regexp = "^[가-힣a-zA-Z0-9\\s]{1,16}$", message = "nickname은 한글, 영어, 숫자로만 이루어진 1자리 이상 16자리 이하의 값이어야 합니다.")
                                                                             @Schema(name =  "nickname", example = "노래하는 어피치")
                                                                             @RequestParam(name = "nickname") String nickname,
 
@@ -97,12 +97,13 @@ public class UserController {
                                                                             @Parameter(name = "profile", content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE))
                                                                             @RequestPart(name = "profile", required = false) MultipartFile profile
                                                                             ) {
-        Link selfRel = linkTo(methodOn(UserController.class).signUp(socialType, socialId, email, nickname, content, tagList, profile)).withSelfRel();
+        final String trimNickname = nickname.trim();
+        Link selfRel = linkTo(methodOn(UserController.class).signUp(socialType, socialId, email, trimNickname, content, tagList, profile)).withSelfRel();
         UserSignUpRequest userSignUpRequest = UserSignUpRequest.builder()
                 .socialType(socialType)
                 .socialId(socialId)
                 .email(email)
-                .nickname(nickname)
+                .nickname(trimNickname)
                 .content(content)
                 .tagList(tagList)
                 .build();
@@ -136,8 +137,8 @@ public class UserController {
 
                                                                 Authentication authentication
                                                                 ) {
-        Link selfRel = linkTo(methodOn(UserController.class).updateUser(nickname, content, tagList, profile, authentication)).withSelfRel();
         final String trimNickname = nickname.trim();
+        Link selfRel = linkTo(methodOn(UserController.class).updateUser(trimNickname, content, tagList, profile, authentication)).withSelfRel();
         UserUpdateRequest userUpdateRequest = UserUpdateRequest.builder()
                 .nickname(trimNickname)
                 .content(content)
