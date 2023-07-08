@@ -1,21 +1,16 @@
 package com.dodal.meet.exception;
 
 
-import com.dodal.meet.DodalApplication;
 import com.dodal.meet.controller.response.Response;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import javax.validation.ConstraintViolationException;
 
 @Slf4j
 @RestControllerAdvice
@@ -48,9 +43,23 @@ public class GlobalControllerAdvice {
         log.error("ExceptionHandler - MethodArgumentNotValidException {} ", e.toString());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(Response.builder()
-                        .resultCode(ErrorCode.INVALID_REQUEST_FILED.name())
+                        .resultCode(ErrorCode.INVALID_REQUEST_FIELD.name())
                         .result(bindingResult.getFieldError().getDefaultMessage())
                         .build());
     }
 
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<?> handleValidationException(ConstraintViolationException e) {
+        log.error("ExceptionHandler - ConstraintViolationException {} ", e.toString());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Response.builder()
+                        .resultCode(ErrorCode.INVALID_REQUEST_FIELD.name())
+                        .result(parsingConstraintViolationMessage(e.getMessage()))
+                        .build());
+    }
+
+    private String parsingConstraintViolationMessage(String message) {
+        int idx = message.indexOf(":");
+        return (idx < 0) ? message : message.substring(idx + 1).trim();
+    }
 }
