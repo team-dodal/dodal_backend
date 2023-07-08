@@ -22,6 +22,7 @@ public enum ErrorCode {
 
     // 401 - UNAUTHORIZED
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다."),
+    EXPIRED_TOKEN(HttpStatus.UNAUTHORIZED, "기간이 만료된 토큰 입니다."),
 
     // 500 - INTERNAL SERVER ERROR
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 오류가 발생했습니다."),

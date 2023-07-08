@@ -11,8 +11,10 @@ import java.util.Date;
 
 public class JwtTokenUtils {
 
-    private static final long EXPIRED_ACCESS_TIME = 5 * 60 * 60 * 1000L;
-    private static final long EXPIRED_REFRESH_TIME = 30 * 24 * 60 * 60 * 1000L;
+//    private static final long EXPIRED_ACCESS_TIME = 5 * 60 * 1000L;
+    private static final long EXPIRED_ACCESS_TIME = 60 * 1000L;
+//    private static final long EXPIRED_REFRESH_TIME = 30 * 24 * 60 * 60 * 1000L;
+    private static final long EXPIRED_REFRESH_TIME = 2 * 60 * 1000L;
 
     public static String getUserSocialId(String token, String key) {
         return extractClaims(token, key).get("socialId", String.class);
