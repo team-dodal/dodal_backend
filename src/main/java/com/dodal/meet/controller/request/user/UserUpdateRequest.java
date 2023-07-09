@@ -22,6 +22,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@ToString
 public class UserUpdateRequest {
 
     private String nickname;

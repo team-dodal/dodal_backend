@@ -9,6 +9,7 @@ import javax.validation.constraints.NotBlank;
 @Schema(description = "FCM 푸쉬 요청")
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@ToString
 public class FcmPushRequest {
 
     @NotBlank(message = "title 값은 필수 값입니다.")

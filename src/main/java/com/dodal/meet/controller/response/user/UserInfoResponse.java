@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.ToString;
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -16,6 +17,7 @@ import java.util.List;
 @Getter
 @Schema(description = "유저 정보 응답")
 @JsonNaming(value = PropertyNamingStrategy.SnakeCaseStrategy.class)
+@ToString
 public class UserInfoResponse {
 
 

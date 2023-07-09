@@ -9,12 +9,14 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.ToString;
 
 @Getter
 @AllArgsConstructor
 @Builder
 @Schema(description = "공통 응답 처리")
 @JsonNaming(value = PropertyNamingStrategy.SnakeCaseStrategy.class)
+@ToString
 public class Response<T> {
 
     @Schema(description = "응답 코드", example = "공통 응답 코드")

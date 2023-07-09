@@ -17,6 +17,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@ToString
 public class UserSignUpRequest {
 
     @EnumValid(enumClass = SocialType.class, message = "social_type은 KAKAO, GOOGLE, APPLE 형태로 요청해야 합니다.")

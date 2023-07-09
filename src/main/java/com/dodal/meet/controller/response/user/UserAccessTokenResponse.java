@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.ToString;
 
 import java.sql.Timestamp;
 
@@ -15,6 +16,7 @@ import java.sql.Timestamp;
 @Getter
 @Schema(description = "유저 AccessToken 재발급 응답")
 @JsonNaming(value = PropertyNamingStrategy.SnakeCaseStrategy.class)
+@ToString
 public class UserAccessTokenResponse {
 
     @Schema(description = "액세스 토큰 재발급", example = "액세스 토큰")
