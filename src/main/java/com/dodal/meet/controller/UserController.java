@@ -90,7 +90,7 @@ public class UserController {
                                                                             @Schema(name =  "content", example = "안녕하세요")
                                                                             @RequestParam(name = "content", required = false) String content,
 
-                                                                            @Schema(name =  "tag_list", example = "001002")
+                                                                            @Schema(name =  "tag_list", type = "array", example = "[\"001001\", \"002001\", \"003001\"]")
                                                                             @RequestParam(name = "tag_list") List<String> tagList,
 
                                                                             @Schema(name = "profile")
@@ -118,7 +118,7 @@ public class UserController {
                     @ApiResponse(responseCode = "401", description = "실패 - INVALID_TOKEN", content = @Content(schema = @Schema(implementation = Response.class))),
                     @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = Response.class)))
             })
-    @PutMapping(value = "/me", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PatchMapping(value = "/me", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<EntityModel<Response<?>>> updateUser(
                                                                 @Pattern(regexp = "^[가-힣a-zA-Z0-9\\s]{1,16}$", message = "nickname은 한글, 영어, 숫자로만 이루어진 1자리 이상 16자리 이하의 값이어야 합니다.")
                                                                 @Schema(name =  "nickname", example = "노래하는 어피치")
@@ -129,7 +129,6 @@ public class UserController {
                                                                 @RequestParam(name = "content", required = false) String content,
 
                                                                 @Schema(name =  "tag_list", type = "array", example = "[\"001001\", \"002001\", \"003001\"]")
-                                                                @Parameter(name = "tag_list")
                                                                 @RequestParam(name = "tag_list", required = false) List<String> tagList,
 
                                                                 @Schema(name = "profile") @Parameter(name = "profile", content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE))
