@@ -29,7 +29,7 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
         String ex = (String) request.getAttribute("exception");
         response.setContentType("application/json;charset=utf8");
-        if (!StringUtils.hasLength(ex)) {
+        if (!StringUtils.hasLength(ex) || ex.equals(ErrorCode.INVALID_TOKEN.name())) {
             response.setStatus(ErrorCode.INVALID_TOKEN.getStatus().value());
             response.getWriter().write(objectMapper.writeValueAsString(Response.builder().resultCode(ErrorCode.INVALID_TOKEN.name())
                     .result(ErrorCode.INVALID_TOKEN.getMessage()).build()));
@@ -41,6 +41,5 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
             response.getWriter().write(objectMapper.writeValueAsString(Response.builder().resultCode(ErrorCode.EXPIRED_TOKEN.name())
                     .result(ErrorCode.EXPIRED_TOKEN.getMessage()).build()));
         }
-
     }
 }
