@@ -19,7 +19,6 @@ import com.dodal.meet.repository.TagEntityRepository;
 import com.dodal.meet.repository.TokenEntityRepository;
 import com.dodal.meet.repository.UserEntityRepository;
 import com.dodal.meet.repository.UserTagEntityRepository;
-import com.dodal.meet.utils.DtoUtils;
 import com.dodal.meet.utils.JwtTokenUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -54,8 +53,22 @@ public class UserService {
         final UserEntity user = userEntityRepository.findBySocialIdAndSocialType(socialId, socialType).orElse(null);
         if (user != null) {
             final String accessToken = JwtTokenUtils.generateAccessToken(socialId, socialType, jwtKey);
+            List<UserTagEntity> userTagEntity = userTagEntityRepository.findAllByUserEntity(user);
             return UserSignInResponse.builder()
                     .isSigned("true")
+                    .userId(user.getId())
+                    .socialId(user.getSocialId())
+                    .socialType(user.getSocialType())
+                    .role(user.getRole())
+                    .email(user.getEmail())
+                    .nickname(user.getNickname())
+                    .profileUrl(user.getProfileUrl())
+                    .content(user.getContent())
+                    .tagList(TagResponse.userEntitesToList(userTagEntity))
+                    .alarmYn(user.getAlarmYn())
+                    .accuseCnt(user.getAccuseCnt())
+                    .fcmToken(user.getTokenEntity().getFcmToken())
+                    .registerAt(user.getRegisterAt())
                     .accessToken(accessToken)
                     .refreshToken(user.getTokenEntity().getRefreshToken())
                     .build();
@@ -95,7 +108,7 @@ public class UserService {
 
         // 이미지 정보가 있는 경우 S3 버킷 저장 및 URL 반환
         if (profile != null) {
-            String profileUrl = imageService.uploadImage(new UserProfileRequest(profile)).getProfileUrl();
+            String profileUrl = imageService.uploadProfileImg(new UserProfileRequest(profile)).getProfileUrl();
             request.setProfileUrl(profileUrl);
         }
 
@@ -179,7 +192,7 @@ public class UserService {
         }
 
         if (profile != null) {
-            String profileUrl = imageService.uploadImage(new UserProfileRequest(profile)).getProfileUrl();
+            String profileUrl = imageService.uploadProfileImg(new UserProfileRequest(profile)).getProfileUrl();
             userEntity.updateProfileUrl(profileUrl);
         }
 
