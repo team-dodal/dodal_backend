@@ -7,14 +7,10 @@ import com.dodal.meet.controller.request.user.UserProfileRequest;
 import com.dodal.meet.controller.response.user.UserProfileResponse;
 import com.dodal.meet.exception.DodalApplicationException;
 import com.dodal.meet.exception.ErrorCode;
-import com.dodal.meet.model.User;
-import com.dodal.meet.model.entity.UserEntity;
 import com.dodal.meet.repository.UserEntityRepository;
-import com.dodal.meet.utils.UserUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -34,30 +30,44 @@ public class ImageService {
     public String bucket;
 
     @Transactional
-    public UserProfileResponse uploadImage(UserProfileRequest userProfileRequest) {
+    public UserProfileResponse uploadProfileImg(UserProfileRequest userProfileRequest) {
         if (userProfileRequest == null) {
             throw new DodalApplicationException(ErrorCode.INVALID_IMAGE_REQUEST);
         }
 
         final MultipartFile multipartFile = userProfileRequest.getProfile();
+        UserProfileResponse response = new UserProfileResponse();
+
+        final String s3ImageUrl = getS3ImgUrl(multipartFile);
+        response.setProfileUrl(s3ImageUrl);
+
+        return response;
+    }
+
+    @Transactional
+    public String uploadMultipartFile(MultipartFile multipartFile) {
+        if (multipartFile == null) {
+            throw new DodalApplicationException(ErrorCode.INVALID_IMAGE_REQUEST);
+        }
+        return getS3ImgUrl(multipartFile);
+    }
+
+    private String getS3ImgUrl(MultipartFile multipartFile) {
+
         final String originalFileName = multipartFile.getOriginalFilename();
         final String uniqueFileName = getUniqueFileName(originalFileName);
-
-        UserProfileResponse response = new UserProfileResponse();
         try {
             ObjectMetadata objectMetadata = new ObjectMetadata();
             objectMetadata.setContentType(multipartFile.getContentType());
             objectMetadata.setContentLength(multipartFile.getInputStream().available());
-
             amazonS3Client.putObject(bucket, uniqueFileName, multipartFile.getInputStream(), objectMetadata);
-
             final String s3ImageUrl = amazonS3Client.getUrl(bucket, uniqueFileName).toString();
-            response.setProfileUrl(s3ImageUrl);
+
+            return s3ImageUrl;
         } catch (IOException e) {
             log.error(e.getMessage());
             throw new DodalApplicationException(ErrorCode.INVALID_IMAGE_REQUEST);
         }
-        return response;
     }
 
     private String getUniqueFileName(String originalFileName) {

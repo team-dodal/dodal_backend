@@ -4,7 +4,6 @@ import com.dodal.meet.controller.request.user.*;
 import com.dodal.meet.controller.response.Response;
 import com.dodal.meet.controller.response.user.*;
 import com.dodal.meet.model.SocialType;
-import com.dodal.meet.model.entity.UserEntity;
 import com.dodal.meet.service.ImageService;
 import com.dodal.meet.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -15,9 +14,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
 import org.springframework.http.HttpStatus;
@@ -31,9 +27,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
@@ -157,7 +151,7 @@ public class UserController {
     @PostMapping(value = "/profile", produces = "application/json", consumes = "multipart/form-data")
     public ResponseEntity<EntityModel<Response<UserProfileResponse>>> profile(
             @Parameter(name = "profile") UserProfileRequest profile) {
-        return new ResponseEntity<>(EntityModel.of(Response.success(imageService.uploadImage(profile))), HttpStatus.CREATED);
+        return new ResponseEntity<>(EntityModel.of(Response.success(imageService.uploadProfileImg(profile))), HttpStatus.CREATED);
     }
 
 
