@@ -121,7 +121,7 @@ public class UserService {
 
         List<UserTagEntity> userTagEntities = new ArrayList<>();
         request.getTagList().forEach(tagValue -> {
-            TagEntity tagEntity = tagEntityRepository.findByValue(tagValue).orElseThrow(
+            TagEntity tagEntity = tagEntityRepository.findByTagValue(tagValue).orElseThrow(
                     () -> new DodalApplicationException(ErrorCode.INVALID_TAG_LIST_FIELD));
             userTagEntities.add(UserTagEntity.tagEntityToUserTagEntity(newUserEntity, tagEntity));
             }
@@ -202,7 +202,7 @@ public class UserService {
 
             List<UserTagEntity> userTagEntities = new ArrayList<>();
             requestTagList.forEach(tagValue -> {
-                        TagEntity tagEntity = tagEntityRepository.findByValue(tagValue).orElseThrow(
+                        TagEntity tagEntity = tagEntityRepository.findByTagValue(tagValue).orElseThrow(
                                 () -> new DodalApplicationException(ErrorCode.INVALID_TAG_LIST_FIELD));
                         userTagEntities.add(UserTagEntity.tagEntityToUserTagEntity(userEntity, tagEntity));
                     }

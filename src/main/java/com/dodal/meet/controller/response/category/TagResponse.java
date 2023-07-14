@@ -35,7 +35,7 @@ public class TagResponse {
     private static TagResponse fromTagEntity(TagEntity entity) {
         return TagResponse.builder()
                 .name(entity.getName())
-                .value(entity.getValue())
+                .value(entity.getTagValue())
                 .build();
     }
 

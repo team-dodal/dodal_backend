@@ -36,7 +36,7 @@ public class UserTagEntity {
         return UserTagEntity.builder()
                 .userEntity(userEntity)
                 .tagName(tagEntity.getName())
-                .tagValue(tagEntity.getValue())
+                .tagValue(tagEntity.getTagValue())
                 .build();
     }
 

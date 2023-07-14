@@ -7,5 +7,5 @@ import java.util.Optional;
 
 @Repository
 public interface TagEntityRepository extends JpaRepository<TagEntity, Integer> {
-    Optional<TagEntity> findByValue(String value);
+    Optional<TagEntity> findByTagValue(String value);
 }

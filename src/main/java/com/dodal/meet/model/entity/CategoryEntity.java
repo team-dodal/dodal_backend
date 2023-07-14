@@ -28,6 +28,15 @@ public class CategoryEntity {
     private List<TagEntity> tagEntities = new ArrayList<>();
     private String name;
 
-    private String value;
+    @Column(name = "category_value")
+    private String categoryValue;
 
+    private String emoji;
+
+    @Column(name = "sub_name")
+    private String subName;
+
+    @Builder.Default
+    @OneToMany(mappedBy = "categoryEntity", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<HashTagEntity> hashTagEntities = new ArrayList<>();
 }

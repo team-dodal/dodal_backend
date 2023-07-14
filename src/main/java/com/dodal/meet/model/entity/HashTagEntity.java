@@ -8,25 +8,21 @@ import lombok.*;
 import javax.persistence.*;
 
 @Entity
-@Table(name = "tag")
+@Table(name = "hash_tag")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @JsonNaming(value = PropertyNamingStrategy.SnakeCaseStrategy.class)
 @AllArgsConstructor
 @Builder
-public class TagEntity {
+public class HashTagEntity {
 
     @Id
-    @Column(name = "tag_id")
+    @Column(name = "hash_tag_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
     private CategoryEntity categoryEntity;
-
     private String name;
-
-    @Column(name = "tag_value")
-    private String tagValue;
 }
