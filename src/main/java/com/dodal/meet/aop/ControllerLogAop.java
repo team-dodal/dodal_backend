@@ -43,8 +43,9 @@ public class ControllerLogAop {
     public void afterReturnLog(JoinPoint joinPoint, Object returnObj) {
         Method method = getMethod(joinPoint);
         log.info("##################### method name : {} #####################", method.getName());
-
-        log.info("return : {}, value : {}", returnObj.getClass().getSimpleName(), returnObj);
+        if (!ObjectUtils.isEmpty(returnObj)) {
+            log.info("return : {}, value : {}", returnObj.getClass().getSimpleName(), returnObj);
+        }
     }
 
     // @AfterThrowing 메서드 실행 중 예외가 발생했을 때
