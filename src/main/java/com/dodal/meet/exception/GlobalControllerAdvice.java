@@ -9,6 +9,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 
 import javax.validation.ConstraintViolationException;
 
@@ -51,6 +52,16 @@ public class GlobalControllerAdvice {
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<?> handleValidationException(ConstraintViolationException e) {
         log.error("ExceptionHandler - ConstraintViolationException {} ", e.toString());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Response.builder()
+                        .resultCode(ErrorCode.INVALID_REQUEST_FIELD.name())
+                        .result(parsingConstraintViolationMessage(e.getMessage()))
+                        .build());
+    }
+
+    @ExceptionHandler(MissingServletRequestPartException.class)
+    public ResponseEntity<?> handleValidationException(MissingServletRequestPartException e) {
+        log.error("ExceptionHandler - MissingServletRequestPartException {} ", e.toString());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(Response.builder()
                         .resultCode(ErrorCode.INVALID_REQUEST_FIELD.name())
