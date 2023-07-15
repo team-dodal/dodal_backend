@@ -76,7 +76,7 @@ public class ChallengeRoomService {
                 .categoryName(challengeTagEntity.getCategoryName())
                 .categoryValue(challengeTagEntity.getCategoryValue())
                 .tagName(challengeTagEntity.getTagName())
-                .tagValue(challengeTagEntity.getTagName())
+                .tagValue(challengeTagEntity.getTagValue())
                 .build();
     }
 

@@ -59,6 +59,7 @@ public class ChallengeRoomEntity {
     @JoinColumn(name = "challenge_tag_id")
     private ChallengeTagEntity challengeTagEntity;
 
+    @Builder.Default
     @OneToMany(mappedBy = "challengeRoomEntity", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ChallengeUserEntity> challengeUserEntities = new ArrayList<>();
 
