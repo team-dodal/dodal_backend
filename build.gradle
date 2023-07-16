@@ -1,7 +1,15 @@
+// Querydsl 버전 plugins 위에 추가 - 2.6 이상부터 5.0 버전 사용
+buildscript {
+    ext {
+        queryDslVersion = "5.0.0"
+    }
+}
+
 plugins {
     id 'java'
     id 'org.springframework.boot' version '2.7.12'
     id 'io.spring.dependency-management' version '1.0.15.RELEASE'
+    id 'com.ewerk.gradle.plugins.querydsl' version '1.0.10' // querydsl 플러그인 추가
 }
 
 group = 'com.dodal'
@@ -64,6 +72,12 @@ dependencies {
 
     // aop
     implementation 'org.springframework.boot:spring-boot-starter-aop'
+
+    // querydsl
+    implementation "com.querydsl:querydsl-jpa:${queryDslVersion}"
+    implementation "com.querydsl:querydsl-apt:${queryDslVersion}"
+
+    implementation 'com.h2database:h2'
 }
 
 tasks.named('test') {
@@ -74,3 +88,29 @@ jar {
     enabled = false
 }
 
+// querydsl에서 사용할 경로 설정(현재 지정한 부분은 .gitignore에 포함됨)
+def querydslDir = "$buildDir/generated/querydsl"
+
+// JPA 사용 여부 및 사용할 경로 설정
+querydsl {
+    jpa = true
+    querydslSourcesDir = querydslDir
+}
+
+// Querydsl build path
+sourceSets {
+    main.java.srcDir querydslDir
+}
+
+// querydsl 컴파일 시 사용할 옵션 설정
+compileQuerydsl{
+    options.annotationProcessorPath = configurations.querydsl
+}
+
+// querydsl이 compileClassPath를 상속하도록 설정
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+    querydsl.extendsFrom compileClasspath
+}

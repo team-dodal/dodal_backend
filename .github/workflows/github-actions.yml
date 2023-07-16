@@ -26,6 +26,9 @@ jobs:
           echo "${{ secrets.APPLICATION_DEV }}" > ./application-dev.yml
           touch ./application.yml
           echo "${{ secrets.APPLICATION_YML }}" > ./application.yml
+          cd ./src/test/resources
+          touch ./application.yml
+          echo "${{ secrets.APPLICATION_YML }}" > ./application.yml
 
       - name: create-json
         id: create-json
@@ -36,7 +39,9 @@ jobs:
           dir: src/main/resources
 
       - name: Build with Gradle
-        run: ./gradlew bootJar
+        run: |
+          ./gradlew cleanQuerydslSourceDir
+          ./gradlew build
 
       - name: docker build and push
         run: |

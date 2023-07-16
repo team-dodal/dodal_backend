@@ -1,0 +1,25 @@
+
+spring:
+  config:
+    activate:
+      on-profile: test
+  datasource:
+    driverClassName: org.h2.Driver
+    url: jdbc:h2:mem:dodaldb;MODE=MYSQL;DATABASE_TO_UPPER=false;
+    username: sa
+    password:
+  jpa:
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    hibernate:
+      ddl-auto: update
+    defer-datasource-initialization: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+    open-in-view: false
+    generate-ddl: true
+  sql:
+    init:
+      mode: always
+      encoding: utf-8
+      platform: mysql
