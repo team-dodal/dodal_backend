@@ -151,7 +151,7 @@ public class UserService {
         final SocialType socialType = user.getSocialType();
         UserEntity userEntity = userEntityRepository.findBySocialIdAndSocialType(socialId, socialType)
                 .orElseThrow(() -> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
-        TokenEntity tokenEntity = tokenEntityRepository.findById(userEntity.getId())
+        TokenEntity tokenEntity = tokenEntityRepository.findByUserEntity(userEntity)
                 .orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_JWT_TOKEN));
         List<UserTagEntity> userTagList = userTagEntityRepository.findAllByUserEntity(userEntity);
 

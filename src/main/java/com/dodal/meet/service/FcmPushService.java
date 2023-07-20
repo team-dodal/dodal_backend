@@ -32,7 +32,7 @@ public class FcmPushService {
         final String body = request.getBody();
 
         List<UserEntity> entities = userEntityRepository.findAll();
-        entities.stream().map(entity -> tokenEntityRepository.findById(entity.getId())
+        entities.stream().map(entity -> tokenEntityRepository.findByUserEntity(entity)
                 .orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_TOKEN_INFO))
                         .getFcmToken()).filter(Objects::nonNull).forEach(fcmToken -> sendFcmPush(title, body, fcmToken));
     }
