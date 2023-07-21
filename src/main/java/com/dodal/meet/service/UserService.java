@@ -1,6 +1,7 @@
 package com.dodal.meet.service;
 
 
+import antlr.Token;
 import com.dodal.meet.controller.request.user.UserProfileRequest;
 import com.dodal.meet.controller.request.user.UserSignUpRequest;
 import com.dodal.meet.controller.request.user.UserSignInRequest;
@@ -53,7 +54,11 @@ public class UserService {
         final UserEntity user = userEntityRepository.findBySocialIdAndSocialType(socialId, socialType).orElse(null);
         if (user != null) {
             final String accessToken = JwtTokenUtils.generateAccessToken(socialId, socialType, jwtKey);
+            final String refreshToken = JwtTokenUtils.generateRefreshToken(socialId, socialType, jwtKey);
             List<UserTagEntity> userTagEntity = userTagEntityRepository.findAllByUserEntity(user);
+            TokenEntity tokenEntity = tokenEntityRepository.findByUserEntity(user).orElseThrow(()-> new DodalApplicationException(ErrorCode.INVALID_TOKEN));
+            tokenEntity.updateRefreshToken(refreshToken);
+            tokenEntityRepository.save(tokenEntity);
             return UserSignInResponse.builder()
                     .isSigned("true")
                     .userId(user.getId())
@@ -70,7 +75,7 @@ public class UserService {
                     .fcmToken(user.getTokenEntity().getFcmToken())
                     .registerAt(user.getRegisterAt())
                     .accessToken(accessToken)
-                    .refreshToken(user.getTokenEntity().getRefreshToken())
+                    .refreshToken(refreshToken)
                     .build();
         } else {
             return UserSignInResponse.builder()
