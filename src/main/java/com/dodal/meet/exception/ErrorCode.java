@@ -18,6 +18,7 @@ public enum ErrorCode {
 
     INVALID_USER_REQUEST(HttpStatus.BAD_REQUEST, "잘못된 유저 정보입니다."),
 
+    ILLEGAL_IMAGE_REQUEST(HttpStatus.BAD_REQUEST, "이미지 URL과 이미지 파일을 동시에 요청할 수 없습니다"),
     INVALID_IMAGE_REQUEST(HttpStatus.BAD_REQUEST, "이미지 형식이 잘못되었습니다."),
 
     INVALID_IMAGE_URL(HttpStatus.BAD_REQUEST, "등록된 이미지와 요청한 이미지 URL이 다릅니다."),

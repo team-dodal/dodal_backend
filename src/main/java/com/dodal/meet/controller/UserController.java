@@ -108,7 +108,7 @@ public class UserController {
             , description = "사용자 정보를 수정한다.",
             responses = {
                     @ApiResponse(responseCode = "200", description = "성공", useReturnTypeSchema = true),
-                    @ApiResponse(responseCode = "400", description = "실패 - INVALID_REQUEST_FIELD", content = @Content(schema = @Schema(implementation = Response.class))),
+                    @ApiResponse(responseCode = "400", description = "실패 - INVALID_REQUEST_FIELD, ILLEGAL_IMAGE_REQUEST, INVALID_IMAGE_REQUEST, INVALID_TAG_LIST_FIELD", content = @Content(schema = @Schema(implementation = Response.class))),
                     @ApiResponse(responseCode = "401", description = "실패 - INVALID_TOKEN", content = @Content(schema = @Schema(implementation = Response.class))),
                     @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = Response.class)))
             })

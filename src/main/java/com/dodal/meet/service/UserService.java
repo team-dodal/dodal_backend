@@ -200,7 +200,7 @@ public class UserService {
 
         if (profile != null && profileUrl != null) {
             // 기존 이미지 요청과 새로운 이미지 요청이 동시에 오는 경우 throw
-            throw new DodalApplicationException(ErrorCode.INVALID_IMAGE_URL);
+            throw new DodalApplicationException(ErrorCode.ILLEGAL_IMAGE_REQUEST);
         } else if (profile == null && profileUrl == null) {
             // 기존 이미지(null)로 변경
             if (beforeProfileUrl != null) {
