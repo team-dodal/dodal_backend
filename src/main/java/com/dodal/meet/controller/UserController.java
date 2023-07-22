@@ -128,30 +128,19 @@ public class UserController {
                                                                 @Schema(name = "profile") @Parameter(name = "profile", content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE))
                                                                 @RequestPart(name = "profile", required = false) MultipartFile profile,
 
+                                                                @Schema(name = "profile_url", example = "https://s3.console.aws.amazon.com/s3/object/dodal-bucket?region=ap-northeast-2&prefix=15e4f096-2a33-4634-8ba1-88b351ee0a95..ico")
+                                                                @RequestParam(name = "profile_url", required = false) String profileUrl,
+
                                                                 Authentication authentication
                                                                 ) {
         final String trimNickname = nickname.trim();
-        Link selfRel = linkTo(methodOn(UserController.class).updateUser(trimNickname, content, tagList, profile, authentication)).withSelfRel();
+        Link selfRel = linkTo(methodOn(UserController.class).updateUser(trimNickname, content, tagList, profile, profileUrl, authentication)).withSelfRel();
         UserUpdateRequest userUpdateRequest = UserUpdateRequest.builder()
                 .nickname(trimNickname)
                 .content(content)
                 .tagList(tagList)
                 .build();
-        return new ResponseEntity<>(EntityModel.of(Response.success(userService.updateUser(userUpdateRequest, profile, authentication)), selfRel, getSignInLink()), HttpStatus.CREATED) ;
-    }
-
-    @Operation(summary = "프로필 이미지 등록 API"
-            , description = "Multipart/form-data 형식 이미지 업로드(키 값 : profile)로 요청하며 성공 시 S3 이미지 URL를 반환한다.",
-            responses = {
-                    @ApiResponse(responseCode = "201", description = "성공", useReturnTypeSchema = true),
-                    @ApiResponse(responseCode = "400", description = "실패 - INVALID_IMAGE_REQUEST", content = @Content(schema = @Schema(implementation = Response.class))),
-                    @ApiResponse(responseCode = "401", description = "실패 - INVALID_TOKEN", content = @Content(schema = @Schema(implementation = Response.class))),
-                    @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = Response.class)))
-            })
-    @PostMapping(value = "/profile", produces = "application/json", consumes = "multipart/form-data")
-    public ResponseEntity<EntityModel<Response<UserProfileResponse>>> profile(
-            @Parameter(name = "profile") UserProfileRequest profile) {
-        return new ResponseEntity<>(EntityModel.of(Response.success(imageService.uploadProfileImg(profile))), HttpStatus.CREATED);
+        return new ResponseEntity<>(EntityModel.of(Response.success(userService.updateUser(userUpdateRequest, profile, profileUrl, authentication)), selfRel, getSignInLink()), HttpStatus.CREATED) ;
     }
 
 

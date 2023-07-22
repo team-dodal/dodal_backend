@@ -20,6 +20,8 @@ public enum ErrorCode {
 
     INVALID_IMAGE_REQUEST(HttpStatus.BAD_REQUEST, "이미지 형식이 잘못되었습니다."),
 
+    INVALID_IMAGE_URL(HttpStatus.BAD_REQUEST, "등록된 이미지와 요청한 이미지 URL이 다릅니다."),
+
     // 401 - UNAUTHORIZED
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다."),
     EXPIRED_TOKEN(HttpStatus.UNAUTHORIZED, "기간이 만료된 토큰 입니다."),
