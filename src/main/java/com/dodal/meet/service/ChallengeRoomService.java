@@ -2,10 +2,11 @@ package com.dodal.meet.service;
 
 import com.dodal.meet.controller.request.challengeRoom.ChallengeRoomCreateRequest;
 import com.dodal.meet.controller.response.challenge.ChallengeCreateResponse;
-import com.dodal.meet.controller.response.challenge.ChallengeRoomCondition;
+import com.dodal.meet.controller.request.challengeRoom.ChallengeRoomCondition;
 import com.dodal.meet.controller.response.challenge.ChallengeRoomSearchResponse;
 import com.dodal.meet.exception.DodalApplicationException;
 import com.dodal.meet.exception.ErrorCode;
+import com.dodal.meet.model.RoomSearchType;
 import com.dodal.meet.model.User;
 import com.dodal.meet.model.entity.*;
 import com.dodal.meet.repository.*;
@@ -17,13 +18,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import static org.springframework.util.ObjectUtils.*;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class ChallengeRoomService {
+    private final UserTagEntityRepository userTagEntityRepository;
     private final ChallengeBookmarkEntityRepository challengeBookmarkEntityRepository;
     private final UserEntityRepository userEntityRepository;
 
@@ -65,9 +66,20 @@ public class ChallengeRoomService {
         return getChallengeCreateRequestFromEntities(challengeRoomEntity, challengeTagEntity, challengeUserEntity);
     }
 
-    public Page<ChallengeRoomSearchResponse> getChallengeRooms(ChallengeRoomCondition condition, Pageable pageable, Authentication authentication) {
+    @Transactional
+    public Page<ChallengeRoomSearchResponse> getChallengeRooms(String condition, String tagValue, Pageable pageable, Authentication authentication) {
+        User user = UserUtils.getUserInfo(authentication);
+        UserEntity userEntity = userEntityRepository.findBySocialIdAndSocialType(user.getSocialId(), user.getSocialType()).orElseThrow(()-> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
+        if (!isEmpty(tagValue)) {
+            tagEntityRepository.findByTagValue(tagValue).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_TAG));
+        }
+        ChallengeRoomCondition challengeRoomCondition = ChallengeRoomCondition
+                .builder()
+                .roomSearchType(RoomSearchType.of(condition.toUpperCase()))
+                .tagValue(tagValue)
+                .build();
 
-        return challengeRoomEntityRepository.getChallengeRooms(condition, pageable);
+        return challengeRoomEntityRepository.getChallengeRooms(challengeRoomCondition, pageable, userEntity);
     }
 
     @Transactional

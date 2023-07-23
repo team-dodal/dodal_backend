@@ -3,7 +3,7 @@ package com.dodal.meet.controller;
 import com.dodal.meet.controller.request.challengeRoom.ChallengeRoomCreateRequest;
 import com.dodal.meet.controller.response.Response;
 import com.dodal.meet.controller.response.challenge.ChallengeCreateResponse;
-import com.dodal.meet.controller.response.challenge.ChallengeRoomCondition;
+import com.dodal.meet.controller.request.challengeRoom.ChallengeRoomCondition;
 import com.dodal.meet.controller.response.challenge.ChallengeRoomSearchResponse;
 import com.dodal.meet.service.ChallengeRoomService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -16,7 +16,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.validator.constraints.Range;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
 import org.springframework.http.HttpStatus;
@@ -44,15 +46,21 @@ public class ChallengeRoomController {
 
 
     @Operation(summary = "도전방 조회 API"
-            , description = "홈 화면 - 요청에 따라 관심있는 / 인기있는 / 최신 도전 정보를 반환한다.",
+            , description = "홈 화면 - 요청에 따라 최근 도전: recency, 인기있는 도전 : popularity, 관심있는 도전 : interest 정보를 반환한다. (관심있는 도전의 경우 조회 할 태그 값을 파라미터에 전달 필수) pageable의 경우 page : 0부터 시작, 조회할 개수 size를 입력한다.",
             responses = {
                     @ApiResponse(responseCode = "200", description = "성공", useReturnTypeSchema = true),
+                    @ApiResponse(responseCode = "401", description = "NOT_FOUND_TAG", content = @Content(schema = @Schema(implementation = Response.class))),
                     @ApiResponse(responseCode = "401", description = "INVALID_TOKEN", content = @Content(schema = @Schema(implementation = Response.class))),
                     @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = Response.class)))
             })
-    @GetMapping("/challenge/rooms")
-    public Page<ChallengeRoomSearchResponse> getChallengeRoom(ChallengeRoomCondition condition, Pageable pageable, Authentication authentication) {
-        return challengeRoomService.getChallengeRooms(condition, pageable, authentication);
+    @GetMapping("/challenge/rooms/{condition}")
+    public ResponseEntity<EntityModel<Response<Page<ChallengeRoomSearchResponse>>>> getChallengeRoom(@Schema(name = "condition", example = "recency") @PathVariable String condition,
+                                                                                                     @RequestParam(name = "tag_value", required = false) String tagValue,
+                                                                                                     @RequestParam(name = "page", defaultValue= "0", required = false) Integer page ,
+                                                                                                     @RequestParam(name = "page_size", defaultValue= "3", required = false) Integer pageSize,
+                                                                                                     Authentication authentication) {
+        Pageable pageable = PageRequest.of(page, pageSize);
+        return new ResponseEntity<>(EntityModel.of(Response.success(challengeRoomService.getChallengeRooms(condition, tagValue, pageable, authentication))), HttpStatus.OK);
     }
 
     @Operation(summary = "도전방 생성 API"
