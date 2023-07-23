@@ -9,9 +9,7 @@ import javax.persistence.*;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @Entity
 @Table(name = "challenge_room")
@@ -43,7 +41,7 @@ public class ChallengeRoomEntity {
 
     private String certWrongImgUrl;
 
-    private int likeCnt;
+    private int bookmarkCnt;
 
     private String warnContent;
 
@@ -65,7 +63,7 @@ public class ChallengeRoomEntity {
 
     @PrePersist
     void prePersist() {
-        this.likeCnt = 0;
+        this.bookmarkCnt = 0;
         this.accuseCnt = 0;
         this.userCnt = 1;
         this.registeredAt = Timestamp.from(Instant.now());
