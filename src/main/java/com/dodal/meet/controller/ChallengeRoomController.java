@@ -3,6 +3,8 @@ package com.dodal.meet.controller;
 import com.dodal.meet.controller.request.challengeRoom.ChallengeRoomCreateRequest;
 import com.dodal.meet.controller.response.Response;
 import com.dodal.meet.controller.response.challenge.ChallengeCreateResponse;
+import com.dodal.meet.controller.response.challenge.ChallengeRoomCondition;
+import com.dodal.meet.controller.response.challenge.ChallengeRoomSearchResponse;
 import com.dodal.meet.service.ChallengeRoomService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -13,9 +15,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.validator.constraints.Range;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
-import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +29,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
-import java.util.List;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
@@ -39,6 +41,19 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 public class ChallengeRoomController {
 
     private final ChallengeRoomService challengeRoomService;
+
+
+    @Operation(summary = "도전방 조회 API"
+            , description = "홈 화면 - 요청에 따라 관심있는 / 인기있는 / 최신 도전 정보를 반환한다.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "성공", useReturnTypeSchema = true),
+                    @ApiResponse(responseCode = "401", description = "INVALID_TOKEN", content = @Content(schema = @Schema(implementation = Response.class))),
+                    @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = Response.class)))
+            })
+    @GetMapping("/challenge/rooms")
+    public Page<ChallengeRoomSearchResponse> getChallengeRoom(ChallengeRoomCondition condition, Pageable pageable, Authentication authentication) {
+        return challengeRoomService.getChallengeRooms(condition, pageable, authentication);
+    }
 
     @Operation(summary = "도전방 생성 API"
             , description = "도전방을 생성한다.",
@@ -61,7 +76,7 @@ public class ChallengeRoomController {
 
             @Schema(name = "thumbnail_img")
             @Parameter(name = "thumbnail_img", content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE))
-            @RequestPart(name = "thumbnail_img") MultipartFile thumbnailImg,
+            @RequestPart(name = "thumbnail_img", required = false) MultipartFile thumbnailImg,
 
             @Size(min = 1, max = 500, message = "content는 1자 ~ 500자 사이여야 합니다.")
             @Schema(name =  "content", example = "이런 분들에게 추천해요! \n - 자격증 시험이 얼마 남지 않은 분 \n - 꾸준하게 공부하고 싶은 분 ")
@@ -108,5 +123,35 @@ public class ChallengeRoomController {
         Link selfRel = linkTo(methodOn(ChallengeRoomController.class).createChallengeRoom(tagValue, title, thumbnailImg, content,
                 recruitCnt, certCnt, certContent, certCorrectImg, certWrongImg, warnContent, authentication)).withSelfRel();
         return new ResponseEntity<>(EntityModel.of(Response.success(challengeRoomService.createChallengeRoom(challengeRoomCreateRequest, authentication)), selfRel), HttpStatus.CREATED);
+    }
+
+    @Operation(summary = "북마크 등록 API"
+            , description = "도전방에 북마크를 등록한다.",
+            responses = {
+                    @ApiResponse(responseCode = "201", description = "성공", useReturnTypeSchema = true),
+                    @ApiResponse(responseCode = "400", description = "BOOKMARK_ALREADY_EXIST", content = @Content(schema = @Schema(implementation = Response.class))),
+                    @ApiResponse(responseCode = "401", description = "INVALID_TOKEN", content = @Content(schema = @Schema(implementation = Response.class))),
+                    @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = Response.class)))
+            })
+    @PostMapping("/challenge/room/{roomId}/bookmark")
+    public ResponseEntity<EntityModel<Response<Void>>> createBookmark(@PathVariable Integer roomId, Authentication authentication) {
+        Link selfRel = linkTo(methodOn(ChallengeRoomController.class).createBookmark(roomId, authentication)).withSelfRel();
+        challengeRoomService.createBookmark(roomId, authentication);
+        return new ResponseEntity<>(EntityModel.of(Response.success(), selfRel), HttpStatus.CREATED);
+    }
+
+    @Operation(summary = "북마크 삭제 API"
+            , description = "도전방에 북마크를 삭제한다.",
+            responses = {
+                    @ApiResponse(responseCode = "204", description = "성공", useReturnTypeSchema = true),
+                    @ApiResponse(responseCode = "400", description = "NOT_FOUND_BOOKMARK", content = @Content(schema = @Schema(implementation = Response.class))),
+                    @ApiResponse(responseCode = "401", description = "INVALID_TOKEN", content = @Content(schema = @Schema(implementation = Response.class))),
+                    @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = Response.class)))
+            })
+    @DeleteMapping("/challenge/room/{roomId}/bookmark")
+    public ResponseEntity<EntityModel<Response<Void>>> deleteBookmark(@PathVariable Integer roomId, Authentication authentication) {
+        Link selfRel = linkTo(methodOn(ChallengeRoomController.class).deleteBookmark(roomId, authentication)).withSelfRel();
+        challengeRoomService.deleteBookmark(roomId, authentication);
+        return new ResponseEntity<>(EntityModel.of(Response.success(), selfRel), HttpStatus.NO_CONTENT);
     }
 }
