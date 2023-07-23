@@ -9,6 +9,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
 
 import javax.validation.ConstraintViolationException;
@@ -66,6 +67,16 @@ public class GlobalControllerAdvice {
                 .body(Response.builder()
                         .resultCode(ErrorCode.INVALID_REQUEST_FIELD.name())
                         .result(parsingConstraintViolationMessage(e.getMessage()))
+                        .build());
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<?> handleValidationException(MaxUploadSizeExceededException e) {
+        log.error("ExceptionHandler - MaxUploadSizeExceededException {} ", e.toString());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Response.builder()
+                        .resultCode(ErrorCode.IMAGE_SIZE_EXCEEDED.name())
+                        .result(ErrorCode.IMAGE_SIZE_EXCEEDED.getMessage())
                         .build());
     }
 

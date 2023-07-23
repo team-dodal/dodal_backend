@@ -15,13 +15,14 @@ public enum ErrorCode {
     INVALID_TAG_LIST_FIELD(HttpStatus.BAD_REQUEST, "태그 정보가 올바르지 않습니다."),
     INVALID_SOCIAL_TYPE_FIELD(HttpStatus.BAD_REQUEST, "소셜 타입 정보가 올바르지 않습니다"),
     INVALID_NICKNAME_FIELD(HttpStatus.BAD_REQUEST, "닉네임은 공백으로 이루어질 수 없습니다"),
-
     INVALID_USER_REQUEST(HttpStatus.BAD_REQUEST, "잘못된 유저 정보입니다."),
-
     ILLEGAL_IMAGE_REQUEST(HttpStatus.BAD_REQUEST, "이미지 URL과 이미지 파일을 동시에 요청할 수 없습니다"),
     INVALID_IMAGE_REQUEST(HttpStatus.BAD_REQUEST, "이미지 형식이 잘못되었습니다."),
-
     INVALID_IMAGE_URL(HttpStatus.BAD_REQUEST, "등록된 이미지와 요청한 이미지 URL이 다릅니다."),
+    INVALID_ROOM_SEARCH_TYPE(HttpStatus.BAD_REQUEST, "도전방 조회 요청 타입이 올바르지 않습니다."),
+    BOOKMARK_ALREADY_EXIST(HttpStatus.BAD_REQUEST, "북마크가 이미 등록되어 있습니다."),
+    IMAGE_SIZE_EXCEEDED(HttpStatus.BAD_REQUEST, "이미지 요청 용량은 1MB 이하여야 합니다."),
+    NOT_FOUND_ROOM(HttpStatus.BAD_REQUEST, "요청한 도전방이 존재하지 않습니다."),
 
     // 401 - UNAUTHORIZED
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다."),
