@@ -89,7 +89,7 @@ public class UserController {
 
                                                                             @Schema(name = "profile")
                                                                             @Parameter(name = "profile", content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE))
-                                                                            @RequestPart(name = "profile", required = false) MultipartFile profile
+                                                                            @RequestParam(name = "profile", required = false) MultipartFile profile
                                                                             ) {
         final String trimNickname = nickname.trim();
         Link selfRel = linkTo(methodOn(UserController.class).signUp(socialType, socialId, email, trimNickname, content, tagList, profile)).withSelfRel();
@@ -126,7 +126,7 @@ public class UserController {
                                                                 @RequestParam(name = "tag_list", required = false) List<String> tagList,
 
                                                                 @Schema(name = "profile") @Parameter(name = "profile", content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE))
-                                                                @RequestPart(name = "profile", required = false) MultipartFile profile,
+                                                                @RequestParam(name = "profile", required = false) MultipartFile profile,
 
                                                                 @Schema(name = "profile_url", example = "https://s3.console.aws.amazon.com/s3/object/dodal-bucket?region=ap-northeast-2&prefix=15e4f096-2a33-4634-8ba1-88b351ee0a95..ico")
                                                                 @RequestParam(name = "profile_url", required = false) String profileUrl,
