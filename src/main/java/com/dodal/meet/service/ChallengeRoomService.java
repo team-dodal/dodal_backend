@@ -84,15 +84,15 @@ public class ChallengeRoomService {
 
     @Transactional
     public void createBookmark(Integer roomId, Authentication authentication) {
-        validBookmark(roomId, authentication, "CREATE");
+        updateBookmark(roomId, authentication, "CREATE");
     }
 
     @Transactional
     public void deleteBookmark(Integer roomId, Authentication authentication) {
-        validBookmark(roomId, authentication, "DELETE");
+        updateBookmark(roomId, authentication, "DELETE");
     }
 
-    private void validBookmark(Integer roomId, Authentication authentication, String type) {
+    private void updateBookmark(Integer roomId, Authentication authentication, String type) {
 
         User user = UserUtils.getUserInfo(authentication);
         UserEntity userEntity = userEntityRepository.findBySocialIdAndSocialType(user.getSocialId(), user.getSocialType()).orElseThrow(()-> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
@@ -108,12 +108,15 @@ public class ChallengeRoomService {
                     .challengeRoomEntity(challengeRoomEntity)
                     .build();
             challengeBookmarkEntityRepository.save(saveBookmarkEntity);
+            challengeRoomEntity.updateBookmark(1);
         } else {
             if (isEmpty(challengeBookmarkEntity)) {
                 throw new DodalApplicationException(ErrorCode.NOT_FOUND_BOOKMARK);
             }
             challengeBookmarkEntityRepository.delete(challengeBookmarkEntity);
+            challengeRoomEntity.updateBookmark(-1);
         }
+        challengeRoomEntityRepository.save(challengeRoomEntity);
     }
 
     private ChallengeCreateResponse getChallengeCreateRequestFromEntities(ChallengeRoomEntity challengeRoomEntity, ChallengeTagEntity challengeTagEntity, ChallengeUserEntity challengeUserEntity) {

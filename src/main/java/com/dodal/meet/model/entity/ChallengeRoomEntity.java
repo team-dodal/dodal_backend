@@ -73,6 +73,10 @@ public class ChallengeRoomEntity {
         this.challengeTagEntity = challengeTagEntity;
         challengeTagEntity.addChallengeRoomEntity(this);
     }
+
+    public void updateBookmark(int num) {
+        this.bookmarkCnt += num;
+    }
     public static ChallengeRoomEntity dtoToEntity(ChallengeRoomCreateRequest request) {
         return ChallengeRoomEntity.builder()
                 .title(request.getTitle())
