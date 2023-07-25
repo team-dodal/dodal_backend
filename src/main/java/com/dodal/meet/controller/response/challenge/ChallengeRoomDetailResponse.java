@@ -83,7 +83,7 @@ public class ChallengeRoomDetailResponse {
     private Timestamp registeredAt;
 
     @QueryProjection
-    public ChallengeRoomDetailResponse(Integer roomId, String thumbnailImgUrl, String tagValue, String tagName, int certCnt, String title, Long hostId, String hostNickname, int recruitCnt, String content, String certContent, String certCorrectImgUrl, String certWrongImgUrl, String warnContent, int bookmarkCnt, String bookmarkYN, int accuseCnt, String noticeContent, Timestamp registeredAt) {
+    public ChallengeRoomDetailResponse(Integer roomId, String thumbnailImgUrl, String tagValue, String tagName, int certCnt, String title, Long hostId, String hostNickname, int userCnt, int recruitCnt, String content, String certContent, String certCorrectImgUrl, String certWrongImgUrl, String warnContent, int bookmarkCnt, String bookmarkYN, int accuseCnt, String noticeContent, Timestamp registeredAt) {
         this.roomId = roomId;
         this.thumbnailImgUrl = thumbnailImgUrl;
         this.tagValue = tagValue;
@@ -92,6 +92,7 @@ public class ChallengeRoomDetailResponse {
         this.title = title;
         this.hostId = hostId;
         this.hostNickname = hostNickname;
+        this.userCnt = userCnt;
         this.recruitCnt = recruitCnt;
         this.content = content;
         this.certContent = certContent;

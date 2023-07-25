@@ -51,7 +51,7 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
         ChallengeRoomDetailResponse response = queryFactory
                 .select(new QChallengeRoomDetailResponse(
                         room.id, room.thumbnailImgUrl, roomTag.tagValue, roomTag.tagName, room.certCnt, room.title,
-                        challengeUser.userId, challengeUser.nickname, room.recruitCnt, room.content,
+                        challengeUser.userId, challengeUser.nickname, room.userCnt, room.recruitCnt, room.content,
                         room.certContent, room.certCorrectImgUrl, room.certWrongImgUrl, room.warnContent, room.bookmarkCnt, new CaseBuilder().when(bookmark.userEntity.isNotNull()).then("Y").otherwise("N").as("bookmarkYN"),
                         room.accuseCnt, room.noticeContent, room.registeredAt
                 )).from(room)
@@ -65,11 +65,8 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
                 .on(bookmark.userEntity.eq(userEntity).and(bookmark.challengeRoomEntity.eq(room)))
                 .where(challengeUser.roomRole.eq(RoomRole.HOST).and(room.id.eq(roomId)))
                 .fetchOne();
-        int userCnt = Math.toIntExact(queryFactory.select(challengeUser.count()).from(challengeUser).where(challengeUser.challengeRoomEntity.id.eq(roomId)).fetchOne());
-        response.setUserCnt(userCnt);
 
         // TODO : 피드 리스트 추가
-
         return response;
     }
 

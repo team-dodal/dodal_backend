@@ -77,6 +77,11 @@ public class ChallengeRoomEntity {
     public void updateBookmark(int num) {
         this.bookmarkCnt += num;
     }
+
+    public void updateUserCnt(int num) {
+        this.userCnt += num;
+    }
+
     public static ChallengeRoomEntity dtoToEntity(ChallengeRoomCreateRequest request) {
         return ChallengeRoomEntity.builder()
                 .title(request.getTitle())

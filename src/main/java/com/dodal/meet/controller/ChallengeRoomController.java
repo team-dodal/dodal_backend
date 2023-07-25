@@ -68,7 +68,7 @@ public class ChallengeRoomController {
             , description = "도전방 상세 정보를 반환한다.",
             responses = {
                     @ApiResponse(responseCode = "200", description = "성공", useReturnTypeSchema = true),
-                    @ApiResponse(responseCode = "401", description = "NOT_FOUND_ROOM", content = @Content(schema = @Schema(implementation = Response.class))),
+                    @ApiResponse(responseCode = "400", description = "NOT_FOUND_ROOM", content = @Content(schema = @Schema(implementation = Response.class))),
                     @ApiResponse(responseCode = "401", description = "INVALID_TOKEN", content = @Content(schema = @Schema(implementation = Response.class))),
                     @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = Response.class)))
             })
@@ -77,6 +77,33 @@ public class ChallengeRoomController {
         return new ResponseEntity<>(EntityModel.of(Response.success(challengeRoomService.getChallengeRoomDetail(roomId, authentication))), HttpStatus.OK);
     }
 
+    @Operation(summary = "도전방 가입 API"
+            , description = "도전방에 가입한다.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "성공", useReturnTypeSchema = true),
+                    @ApiResponse(responseCode = "400", description = "NOT_FOUND_ROOM", content = @Content(schema = @Schema(implementation = Response.class))),
+                    @ApiResponse(responseCode = "401", description = "INVALID_TOKEN", content = @Content(schema = @Schema(implementation = Response.class))),
+                    @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = Response.class)))
+            })
+    @PostMapping("/challenge/rooms/{room_id}/join")
+    public ResponseEntity<EntityModel<Response<Void>>> joinChallengeRoom(@PathVariable(name = "room_id") Integer roomId, Authentication authentication) {
+        challengeRoomService.joinChallengeRoom(roomId, authentication);
+        return new ResponseEntity<>(EntityModel.of(Response.success()), HttpStatus.OK);
+    }
+
+    @Operation(summary = "도전방 탈퇴 API"
+            , description = "도전방에 탈퇴한다.",
+            responses = {
+                    @ApiResponse(responseCode = "204", description = "성공", useReturnTypeSchema = true),
+                    @ApiResponse(responseCode = "400", description = "NOT_FOUND_ROOM", content = @Content(schema = @Schema(implementation = Response.class))),
+                    @ApiResponse(responseCode = "401", description = "INVALID_TOKEN", content = @Content(schema = @Schema(implementation = Response.class))),
+                    @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = Response.class)))
+            })
+    @DeleteMapping("/challenge/rooms/{room_id}/join")
+    public ResponseEntity<EntityModel<Response<Void>>> leaveChallengeRoom(@PathVariable(name = "room_id") Integer roomId, Authentication authentication) {
+        challengeRoomService.leaveChallengeRoom(roomId, authentication);
+        return new ResponseEntity<>(EntityModel.of(Response.success()), HttpStatus.NO_CONTENT);
+    }
 
 
     @Operation(summary = "도전방 생성 API"
