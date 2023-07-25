@@ -3,6 +3,7 @@ package com.dodal.meet.service;
 import com.dodal.meet.controller.request.challengeRoom.ChallengeRoomCreateRequest;
 import com.dodal.meet.controller.response.challenge.ChallengeCreateResponse;
 import com.dodal.meet.controller.request.challengeRoom.ChallengeRoomCondition;
+import com.dodal.meet.controller.response.challenge.ChallengeRoomDetailResponse;
 import com.dodal.meet.controller.response.challenge.ChallengeRoomSearchResponse;
 import com.dodal.meet.exception.DodalApplicationException;
 import com.dodal.meet.exception.ErrorCode;
@@ -24,7 +25,6 @@ import static org.springframework.util.ObjectUtils.*;
 @RequiredArgsConstructor
 @Slf4j
 public class ChallengeRoomService {
-    private final UserTagEntityRepository userTagEntityRepository;
     private final ChallengeBookmarkEntityRepository challengeBookmarkEntityRepository;
     private final UserEntityRepository userEntityRepository;
 
@@ -90,6 +90,14 @@ public class ChallengeRoomService {
     @Transactional
     public void deleteBookmark(Integer roomId, Authentication authentication) {
         updateBookmark(roomId, authentication, "DELETE");
+    }
+
+    @Transactional(readOnly = true)
+    public ChallengeRoomDetailResponse getChallengeRoomDetail(Integer roomId, Authentication authentication) {
+        User userInfo = UserUtils.getUserInfo(authentication);
+        UserEntity userEntity = userEntityRepository.findBySocialIdAndSocialType(userInfo.getSocialId(), userInfo.getSocialType()).orElseThrow(() -> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
+        challengeRoomEntityRepository.findById(roomId).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM));
+        return challengeRoomEntityRepository.getChallengeRoomDetail(roomId,userEntity);
     }
 
     private void updateBookmark(Integer roomId, Authentication authentication, String type) {

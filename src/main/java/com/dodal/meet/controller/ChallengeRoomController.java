@@ -4,6 +4,7 @@ import com.dodal.meet.controller.request.challengeRoom.ChallengeRoomCreateReques
 import com.dodal.meet.controller.response.Response;
 import com.dodal.meet.controller.response.challenge.ChallengeCreateResponse;
 import com.dodal.meet.controller.request.challengeRoom.ChallengeRoomCondition;
+import com.dodal.meet.controller.response.challenge.ChallengeRoomDetailResponse;
 import com.dodal.meet.controller.response.challenge.ChallengeRoomSearchResponse;
 import com.dodal.meet.service.ChallengeRoomService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -53,8 +54,8 @@ public class ChallengeRoomController {
                     @ApiResponse(responseCode = "401", description = "INVALID_TOKEN", content = @Content(schema = @Schema(implementation = Response.class))),
                     @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = Response.class)))
             })
-    @GetMapping("/challenge/rooms/{condition}")
-    public ResponseEntity<EntityModel<Response<Page<ChallengeRoomSearchResponse>>>> getChallengeRoom(@Schema(name = "condition", example = "recency") @PathVariable String condition,
+    @GetMapping("/challenge/rooms")
+    public ResponseEntity<EntityModel<Response<Page<ChallengeRoomSearchResponse>>>> getChallengeRoom(@Schema(name = "condition", example = "recency") @RequestParam(name = "condition") String condition,
                                                                                                      @RequestParam(name = "tag_value", required = false) String tagValue,
                                                                                                      @RequestParam(name = "page", defaultValue= "0", required = false) Integer page ,
                                                                                                      @RequestParam(name = "page_size", defaultValue= "3", required = false) Integer pageSize,
@@ -62,6 +63,21 @@ public class ChallengeRoomController {
         Pageable pageable = PageRequest.of(page, pageSize);
         return new ResponseEntity<>(EntityModel.of(Response.success(challengeRoomService.getChallengeRooms(condition, tagValue, pageable, authentication))), HttpStatus.OK);
     }
+
+    @Operation(summary = "도전방 상세 조회 API"
+            , description = "도전방 상세 정보를 반환한다.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "성공", useReturnTypeSchema = true),
+                    @ApiResponse(responseCode = "401", description = "NOT_FOUND_ROOM", content = @Content(schema = @Schema(implementation = Response.class))),
+                    @ApiResponse(responseCode = "401", description = "INVALID_TOKEN", content = @Content(schema = @Schema(implementation = Response.class))),
+                    @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = Response.class)))
+            })
+    @GetMapping("/challenge/rooms/{room_id}")
+    public ResponseEntity<EntityModel<Response<ChallengeRoomDetailResponse>>> getChallengeRoomDetail(@PathVariable(name = "room_id") Integer roomId, Authentication authentication) {
+        return new ResponseEntity<>(EntityModel.of(Response.success(challengeRoomService.getChallengeRoomDetail(roomId, authentication))), HttpStatus.OK);
+    }
+
+
 
     @Operation(summary = "도전방 생성 API"
             , description = "도전방을 생성한다.",

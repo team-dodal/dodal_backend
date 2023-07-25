@@ -7,8 +7,11 @@ import com.dodal.meet.model.RoomRole;
 import com.dodal.meet.model.RoomSearchType;
 import com.dodal.meet.model.entity.*;
 import com.querydsl.core.QueryResults;
+import com.querydsl.core.types.Expression;
+import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.CaseBuilder;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +22,7 @@ import org.springframework.util.StringUtils;
 
 import java.util.List;
 
+import static com.querydsl.core.types.ExpressionUtils.count;
 import static org.springframework.util.ObjectUtils.*;
 
 @RequiredArgsConstructor
@@ -40,6 +44,33 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
             return getInterestRooms(pageable, userEntity, tagValue);
         }
         return getChallengeRooms(searchType, pageable, userEntity);
+    }
+
+    @Override
+    public ChallengeRoomDetailResponse getChallengeRoomDetail(final Integer roomId, final UserEntity userEntity) {
+        ChallengeRoomDetailResponse response = queryFactory
+                .select(new QChallengeRoomDetailResponse(
+                        room.id, room.thumbnailImgUrl, roomTag.tagValue, roomTag.tagName, room.certCnt, room.title,
+                        challengeUser.userId, challengeUser.nickname, room.recruitCnt, room.content,
+                        room.certContent, room.certCorrectImgUrl, room.certWrongImgUrl, room.warnContent, room.bookmarkCnt, new CaseBuilder().when(bookmark.userEntity.isNotNull()).then("Y").otherwise("N").as("bookmarkYN"),
+                        room.accuseCnt, room.noticeContent, room.registeredAt
+                )).from(room)
+                .innerJoin(challengeUser)
+                .on(challengeUser.challengeRoomEntity.eq(room))
+                .innerJoin(roomTag)
+                .on(roomTag.challengeRoomEntity.eq(room))
+                .innerJoin(user)
+                .on(challengeUser.userId.eq(user.id))
+                .leftJoin(bookmark)
+                .on(bookmark.userEntity.eq(userEntity).and(bookmark.challengeRoomEntity.eq(room)))
+                .where(challengeUser.roomRole.eq(RoomRole.HOST).and(room.id.eq(roomId)))
+                .fetchOne();
+        int userCnt = Math.toIntExact(queryFactory.select(challengeUser.count()).from(challengeUser).where(challengeUser.challengeRoomEntity.id.eq(roomId)).fetchOne());
+        response.setUserCnt(userCnt);
+
+        // TODO : 피드 리스트 추가
+
+        return response;
     }
 
     private Page<ChallengeRoomSearchResponse> getInterestRooms(Pageable pageable, UserEntity userEntity, String tagValue) {

@@ -7,4 +7,6 @@ import org.springframework.data.domain.Pageable;
 
 public interface ChallengeRoomCustom {
     Page<ChallengeRoomSearchResponse> getChallengeRooms(ChallengeRoomCondition challengeRoomCondition, Pageable pageable, UserEntity userEntity);
+
+    ChallengeRoomDetailResponse getChallengeRoomDetail(Integer roomId, UserEntity userEntity);
 }
