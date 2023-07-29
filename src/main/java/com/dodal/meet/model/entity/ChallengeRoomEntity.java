@@ -43,8 +43,6 @@ public class ChallengeRoomEntity {
 
     private int bookmarkCnt;
 
-    private String warnContent;
-
     private int accuseCnt;
 
     private int userCnt;
@@ -89,7 +87,6 @@ public class ChallengeRoomEntity {
                 .recruitCnt(request.getRecruitCnt())
                 .certCnt(request.getCertCnt())
                 .certContent(request.getCertContent())
-                .warnContent(request.getWarnContent())
                 .challengeUserEntities(new ArrayList<>())
                 .build();
     }

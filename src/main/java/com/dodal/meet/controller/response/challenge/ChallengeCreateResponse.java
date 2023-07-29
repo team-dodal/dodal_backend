@@ -51,9 +51,6 @@ public class ChallengeCreateResponse {
     @Schema(description = "북마크 수", example = "0")
     private int bookmarkCnt;
 
-    @Schema(description = "주의사항", example = "주 5회 인증 미달 시 바로 강퇴합니다.")
-    private String warnContent;
-
     @Schema(description = "신고 횟수", example = "0")
     private int accuseCnt;
 

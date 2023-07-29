@@ -34,5 +34,4 @@ public class ChallengeRoomCreateRequest {
 
     private MultipartFile certWrongImg;
 
-    private String warnContent;
 }
