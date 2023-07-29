@@ -1,6 +1,7 @@
 package com.dodal.meet.service;
 
 import com.dodal.meet.controller.request.challengeRoom.ChallengeRoomCreateRequest;
+import com.dodal.meet.controller.request.challengeRoom.ChallengeRoomSearchCategoryRequest;
 import com.dodal.meet.controller.response.challenge.ChallengeCreateResponse;
 import com.dodal.meet.controller.request.challengeRoom.ChallengeRoomCondition;
 import com.dodal.meet.controller.response.challenge.ChallengeRoomDetailResponse;
@@ -13,6 +14,7 @@ import com.dodal.meet.model.User;
 import com.dodal.meet.model.entity.*;
 import com.dodal.meet.repository.*;
 import com.dodal.meet.utils.UserUtils;
+import com.dodal.meet.utils.ValueType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -21,14 +23,13 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
-
 import static org.springframework.util.ObjectUtils.*;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class ChallengeRoomService {
+    private final CategoryEntityRepository categoryEntityRepository;
     private final ChallengeBookmarkEntityRepository challengeBookmarkEntityRepository;
     private final UserEntityRepository userEntityRepository;
 
@@ -75,7 +76,7 @@ public class ChallengeRoomService {
         User user = UserUtils.getUserInfo(authentication);
         UserEntity userEntity = userEntityRepository.findBySocialIdAndSocialType(user.getSocialId(), user.getSocialType()).orElseThrow(()-> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
         if (!isEmpty(tagValue)) {
-            tagEntityRepository.findByTagValue(tagValue).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_TAG));
+            validValue(ValueType.TAG, tagValue);
         }
         ChallengeRoomCondition challengeRoomCondition = ChallengeRoomCondition
                 .builder()
@@ -84,6 +85,21 @@ public class ChallengeRoomService {
                 .build();
 
         return challengeRoomEntityRepository.getChallengeRooms(challengeRoomCondition, pageable, userEntity);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ChallengeRoomSearchResponse> getChallengeRoomsByCategory(ChallengeRoomSearchCategoryRequest request, Pageable pageable, Authentication authentication) {
+        User user = UserUtils.getUserInfo(authentication);
+        UserEntity userEntity = userEntityRepository.findBySocialIdAndSocialType(user.getSocialId(), user.getSocialType()).orElseThrow(()-> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
+        final String categoryValue = request.getCategoryValue();
+        final String tagValue = request.getTagValue();
+        if (!isEmpty(categoryValue)) {
+            validValue(ValueType.CATEGORY, categoryValue);
+        }
+        if (!isEmpty(tagValue)) {
+            validValue(ValueType.TAG, tagValue);
+        }
+        return challengeRoomEntityRepository.getChallengeRoomsByCategory(request, pageable, userEntity);
     }
 
     @Transactional
@@ -136,6 +152,15 @@ public class ChallengeRoomService {
         challengeRoomEntityRepository.save(challengeRoom);
     }
 
+    private void validValue(ValueType valueType, String value) {
+        if (valueType.getCode().equals(ValueType.TAG.name())) {
+            tagEntityRepository.findByTagValue(value).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_TAG));
+        } else {
+            categoryEntityRepository.findByCategoryValue(value).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_CATEGORY));
+        }
+    }
+
+
     private UserEntity getUserEntityByAuthentication(Authentication authentication) {
         User userInfo = UserUtils.getUserInfo(authentication);
         return userEntityRepository.findBySocialIdAndSocialType(userInfo.getSocialId(), userInfo.getSocialType()).orElseThrow(() -> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
@@ -186,7 +211,6 @@ public class ChallengeRoomService {
                 .certCorrectImgUrl(challengeRoomEntity.getCertCorrectImgUrl())
                 .certWrongImgUrl(challengeRoomEntity.getCertWrongImgUrl())
                 .bookmarkCnt(challengeRoomEntity.getBookmarkCnt())
-                .warnContent(challengeRoomEntity.getWarnContent())
                 .accuseCnt(challengeRoomEntity.getAccuseCnt())
                 .userCnt(challengeRoomEntity.getUserCnt())
                 .noticeContent(challengeRoomEntity.getNoticeContent())
@@ -208,5 +232,6 @@ public class ChallengeRoomService {
                 .tagValue(tagEntity.getTagValue())
                 .build();
     }
+
 
 }

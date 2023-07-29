@@ -64,9 +64,6 @@ public class ChallengeRoomDetailResponse {
     @Schema(description = "잘못된 인증 예시 이미지 URL")
     private String certWrongImgUrl;
 
-    @Schema(description = "주의 글", example = "허위 사진 금지합니다.")
-    private String warnContent;
-
     @Schema(description = "도전방 북마크 수", example = "1")
     private int bookmarkCnt;
 
@@ -83,7 +80,7 @@ public class ChallengeRoomDetailResponse {
     private Timestamp registeredAt;
 
     @QueryProjection
-    public ChallengeRoomDetailResponse(Integer roomId, String thumbnailImgUrl, String tagValue, String tagName, int certCnt, String title, Long hostId, String hostNickname, int userCnt, int recruitCnt, String content, String certContent, String certCorrectImgUrl, String certWrongImgUrl, String warnContent, int bookmarkCnt, String bookmarkYN, int accuseCnt, String noticeContent, Timestamp registeredAt) {
+    public ChallengeRoomDetailResponse(Integer roomId, String thumbnailImgUrl, String tagValue, String tagName, int certCnt, String title, Long hostId, String hostNickname, int userCnt, int recruitCnt, String content, String certContent, String certCorrectImgUrl, String certWrongImgUrl, int bookmarkCnt, String bookmarkYN, int accuseCnt, String noticeContent, Timestamp registeredAt) {
         this.roomId = roomId;
         this.thumbnailImgUrl = thumbnailImgUrl;
         this.tagValue = tagValue;
@@ -98,7 +95,6 @@ public class ChallengeRoomDetailResponse {
         this.certContent = certContent;
         this.certCorrectImgUrl = certCorrectImgUrl;
         this.certWrongImgUrl = certWrongImgUrl;
-        this.warnContent = warnContent;
         this.bookmarkCnt = bookmarkCnt;
         this.bookmarkYN = bookmarkYN;
         this.accuseCnt = accuseCnt;

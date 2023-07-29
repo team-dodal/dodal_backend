@@ -1,17 +1,16 @@
 package com.dodal.meet.controller.response.challenge;
 
 import com.dodal.meet.controller.request.challengeRoom.ChallengeRoomCondition;
+import com.dodal.meet.controller.request.challengeRoom.ChallengeRoomSearchCategoryRequest;
 import com.dodal.meet.exception.DodalApplicationException;
 import com.dodal.meet.exception.ErrorCode;
 import com.dodal.meet.model.RoomRole;
 import com.dodal.meet.model.RoomSearchType;
 import com.dodal.meet.model.entity.*;
 import com.querydsl.core.QueryResults;
-import com.querydsl.core.types.Expression;
-import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CaseBuilder;
-import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -21,8 +20,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
-
-import static com.querydsl.core.types.ExpressionUtils.count;
 import static org.springframework.util.ObjectUtils.*;
 
 @RequiredArgsConstructor
@@ -47,12 +44,42 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
     }
 
     @Override
+    public Page<ChallengeRoomSearchResponse> getChallengeRoomsByCategory(ChallengeRoomSearchCategoryRequest request, Pageable pageable, UserEntity userEntity) {
+        QueryResults<ChallengeRoomSearchResponse> results = queryFactory
+                .select(new QChallengeRoomSearchResponse(
+                        room.id, challengeUser.userId, challengeUser.nickname, user.profileUrl, room.title, room.certCnt, room.thumbnailImgUrl, room.recruitCnt,
+                        room.userCnt, room.bookmarkCnt, new CaseBuilder().when(bookmark.userEntity.isNotNull()).then("Y").otherwise("N").as("bookmarkYN"),
+                        room.registeredAt, roomTag.categoryName, roomTag.categoryValue, roomTag.tagName, roomTag.tagValue
+                )).from(room)
+                .innerJoin(challengeUser)
+                .on(challengeUser.challengeRoomEntity.eq(room))
+                .innerJoin(roomTag)
+                .on(roomTag.challengeRoomEntity.eq(room))
+                .innerJoin(user)
+                .on(challengeUser.userId.eq(user.id))
+                .leftJoin(bookmark)
+                .on(bookmark.userEntity.eq(userEntity).and(bookmark.challengeRoomEntity.eq(room)))
+                .where(challengeUser.roomRole.eq(RoomRole.HOST).and(tagValueEq(request.getTagValue()))
+                        .and(categoryValueEq(request.getCategoryValue())).and(certCntListIn(request.getCertCntList())))
+                .orderBy(orderByConditionCode(request.getConditionCode()))
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetchResults()
+                ;
+
+        List<ChallengeRoomSearchResponse> content = results.getResults();
+        long total = results.getTotal();
+
+        return new PageImpl<>(content, pageable, total);
+    }
+
+    @Override
     public ChallengeRoomDetailResponse getChallengeRoomDetail(final Integer roomId, final UserEntity userEntity) {
         ChallengeRoomDetailResponse response = queryFactory
                 .select(new QChallengeRoomDetailResponse(
                         room.id, room.thumbnailImgUrl, roomTag.tagValue, roomTag.tagName, room.certCnt, room.title,
                         challengeUser.userId, challengeUser.nickname, room.userCnt, room.recruitCnt, room.content,
-                        room.certContent, room.certCorrectImgUrl, room.certWrongImgUrl, room.warnContent, room.bookmarkCnt, new CaseBuilder().when(bookmark.userEntity.isNotNull()).then("Y").otherwise("N").as("bookmarkYN"),
+                        room.certContent, room.certCorrectImgUrl, room.certWrongImgUrl, room.bookmarkCnt, new CaseBuilder().when(bookmark.userEntity.isNotNull()).then("Y").otherwise("N").as("bookmarkYN"),
                         room.accuseCnt, room.noticeContent, room.registeredAt
                 )).from(room)
                 .innerJoin(challengeUser)
@@ -136,6 +163,36 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
 
     private OrderSpecifier<?> orderByBookmarkCnt(final String searchCode) {
         return searchCode.equals(RoomSearchType.INTEREST.getCode()) ? room.bookmarkCnt.desc() : null;
+    }
+
+    private OrderSpecifier<?> orderByConditionCode(final String conditionCode) {
+        switch (conditionCode) {
+            // 인기순
+            case "":
+            case "0":
+                return room.bookmarkCnt.desc();
+            // 최신순
+            case "1":
+                return room.registeredAt.desc();
+            // 유저 많은 순
+            case "2":
+                return room.userCnt.desc();
+            // 유저 적은 순
+            default:
+                return room.userCnt.asc();
+        }
+    }
+
+    private BooleanExpression categoryValueEq(String categoryValue) {
+        return isEmpty(categoryValue) ? null : roomTag.categoryValue.eq(categoryValue);
+    }
+
+    private BooleanExpression tagValueEq(String tagValue) {
+        return isEmpty(tagValue) ? null : roomTag.tagValue.eq(tagValue);
+    }
+
+    private BooleanExpression certCntListIn(List<Integer> certCntList) {
+        return isEmpty(certCntList) ? null : room.certCnt.in(certCntList);
     }
 
     QUserEntity user = QUserEntity.userEntity;

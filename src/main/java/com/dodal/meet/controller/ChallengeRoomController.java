@@ -1,9 +1,9 @@
 package com.dodal.meet.controller;
 
 import com.dodal.meet.controller.request.challengeRoom.ChallengeRoomCreateRequest;
+import com.dodal.meet.controller.request.challengeRoom.ChallengeRoomSearchCategoryRequest;
 import com.dodal.meet.controller.response.Response;
 import com.dodal.meet.controller.response.challenge.ChallengeCreateResponse;
-import com.dodal.meet.controller.request.challengeRoom.ChallengeRoomCondition;
 import com.dodal.meet.controller.response.challenge.ChallengeRoomDetailResponse;
 import com.dodal.meet.controller.response.challenge.ChallengeRoomSearchResponse;
 import com.dodal.meet.service.ChallengeRoomService;
@@ -33,6 +33,8 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
+import java.util.List;
+
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
 @Tag(name = "ChallengeRoom", description = "도전방 API")
@@ -55,13 +57,45 @@ public class ChallengeRoomController {
                     @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = Response.class)))
             })
     @GetMapping("/challenge/rooms")
-    public ResponseEntity<EntityModel<Response<Page<ChallengeRoomSearchResponse>>>> getChallengeRoom(@Schema(name = "condition", example = "recency") @RequestParam(name = "condition") String condition,
-                                                                                                     @RequestParam(name = "tag_value", required = false) String tagValue,
-                                                                                                     @RequestParam(name = "page", defaultValue= "0", required = false) Integer page ,
-                                                                                                     @RequestParam(name = "page_size", defaultValue= "3", required = false) Integer pageSize,
+    public ResponseEntity<EntityModel<Response<Page<ChallengeRoomSearchResponse>>>> getChallengeRoom(@Schema(name = "조회 조건", example = "recency") @RequestParam(name = "condition") String condition,
+                                                                                                     @Schema(description = "태그 코드 값", example = "001001") @RequestParam(name = "tag_value", required = false) String tagValue,
+                                                                                                     @Schema(description = "요청 페이지 번호", example = "0") @RequestParam(name = "page") Integer page ,
+                                                                                                     @Schema(description = "요청 페이지 사이즈", example = "3") @RequestParam(name = "page_size") Integer pageSize,
                                                                                                      Authentication authentication) {
         Pageable pageable = PageRequest.of(page, pageSize);
         return new ResponseEntity<>(EntityModel.of(Response.success(challengeRoomService.getChallengeRooms(condition, tagValue, pageable, authentication))), HttpStatus.OK);
+    }
+
+    @Operation(summary = "도전방 카테고리별 조회 API"
+            , description = "홈 화면 - 전체 / 카테고리 / 태그 별 도전방 조회 정보를 반환한다.\n" +
+            "카테고리 / 태그 값 정보가 없으면 전체 조회\n" +
+            "condition_code : 0(인기순) , 1(최신순), 2(인원 많은 순), 3(인원 적은순)\n" +
+            "cert_cnt_list : 빈도 선택 값 아무 선택이 없으면 전체 조회 그 외는 빈도 수 리스트 요청",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "성공", useReturnTypeSchema = true),
+                    @ApiResponse(responseCode = "400", description = "INVALID_REQUEST_FIELD", content = @Content(schema = @Schema(implementation = Response.class))),
+                    @ApiResponse(responseCode = "401", description = "INVALID_TOKEN", content = @Content(schema = @Schema(implementation = Response.class))),
+                    @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = Response.class)))
+            })
+    @GetMapping("/challenge/rooms/category")
+    public ResponseEntity<EntityModel<Response<Page<ChallengeRoomSearchResponse>>>> getChallengeRoomByCategory(@Schema(description = "카테고리 코드 값", example = "001") @RequestParam(name="category_value",required = false) String categoryValue,
+                                                                                                               @Schema(description = "태그 코드 값", example = "001001") @RequestParam(name = "tag_value", required = false) String tagValue,
+                                                                                                               @Schema(description = "조회 코드 값 - 0(인기순) , 1(최신순), 2(인원 많은 순), 3(인원 적은순) ", allowableValues = {"0", "1", "2", "3"}, example = "0") @RequestParam(name = "condition_code", defaultValue = "0") String conditionCode,
+                                                                                                               @Schema(description = "도전 빈도 리스트", example = "[1, 3, 5]", type = "array") @RequestParam(name = "cert_cnt_list") List<Integer> certCntList,
+                                                                                                               @Schema(description = "요청 페이지 번호", example = "0") @RequestParam(name = "page") Integer page,
+                                                                                                               @Schema(description = "요청 페이지 사이즈", example = "3") @RequestParam(name = "page_size") Integer pageSize,
+                                                                                                               Authentication authentication) {
+        ChallengeRoomSearchCategoryRequest request = ChallengeRoomSearchCategoryRequest
+                .builder()
+                .tagValue(tagValue)
+                .categoryValue(categoryValue)
+                .conditionCode(conditionCode)
+                .certCntList(certCntList)
+                .page(page)
+                .pageSize(pageSize)
+                .build();
+        Pageable pageable = PageRequest.of(request.getPage(), request.getPageSize());
+        return new ResponseEntity<>(EntityModel.of(Response.success(challengeRoomService.getChallengeRoomsByCategory(request, pageable, authentication))), HttpStatus.OK);
     }
 
     @Operation(summary = "도전방 상세 조회 API"
@@ -153,10 +187,6 @@ public class ChallengeRoomController {
             @Parameter(name = "cert_wrong_img", content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE))
             @RequestPart(name = "cert_wrong_img") MultipartFile certWrongImg,
 
-            @Size(min = 1, max = 500, message = "warn_content는 1자 ~ 500자 사이여야 합니다.")
-            @Schema(name =  "warn_content", example = "10번 이상 인증 실패 시 강퇴 처리 됩니다. \n 꾸준히 인증 해주세요.")
-            @RequestParam(name = "warn_content") String warnContent,
-
             final Authentication authentication
     ) {
         final ChallengeRoomCreateRequest challengeRoomCreateRequest = ChallengeRoomCreateRequest.builder()
@@ -169,10 +199,9 @@ public class ChallengeRoomController {
                 .certContent(certContent)
                 .certCorrectImg(certCorrectImg)
                 .certWrongImg(certWrongImg)
-                .warnContent(warnContent)
                 .build();
         Link selfRel = linkTo(methodOn(ChallengeRoomController.class).createChallengeRoom(tagValue, title, thumbnailImg, content,
-                recruitCnt, certCnt, certContent, certCorrectImg, certWrongImg, warnContent, authentication)).withSelfRel();
+                recruitCnt, certCnt, certContent, certCorrectImg, certWrongImg, authentication)).withSelfRel();
         return new ResponseEntity<>(EntityModel.of(Response.success(challengeRoomService.createChallengeRoom(challengeRoomCreateRequest, authentication)), selfRel), HttpStatus.CREATED);
     }
 
