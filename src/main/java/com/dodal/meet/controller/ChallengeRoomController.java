@@ -213,8 +213,8 @@ public class ChallengeRoomController {
                     @ApiResponse(responseCode = "401", description = "INVALID_TOKEN", content = @Content(schema = @Schema(implementation = Response.class))),
                     @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = Response.class)))
             })
-    @PostMapping("/challenge/room/{roomId}/bookmark")
-    public ResponseEntity<EntityModel<Response<Void>>> createBookmark(@PathVariable Integer roomId, Authentication authentication) {
+    @PostMapping("/challenge/room/{room_id}/bookmark")
+    public ResponseEntity<EntityModel<Response<Void>>> createBookmark(@PathVariable(name = "room_id") Integer roomId, Authentication authentication) {
         Link selfRel = linkTo(methodOn(ChallengeRoomController.class).createBookmark(roomId, authentication)).withSelfRel();
         challengeRoomService.createBookmark(roomId, authentication);
         return new ResponseEntity<>(EntityModel.of(Response.success(), selfRel), HttpStatus.CREATED);
@@ -228,8 +228,8 @@ public class ChallengeRoomController {
                     @ApiResponse(responseCode = "401", description = "INVALID_TOKEN", content = @Content(schema = @Schema(implementation = Response.class))),
                     @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = Response.class)))
             })
-    @DeleteMapping("/challenge/room/{roomId}/bookmark")
-    public ResponseEntity<EntityModel<Response<Void>>> deleteBookmark(@PathVariable Integer roomId, Authentication authentication) {
+    @DeleteMapping("/challenge/room/{room_id}/bookmark")
+    public ResponseEntity<EntityModel<Response<Void>>> deleteBookmark(@PathVariable(name = "room_id") Integer roomId, Authentication authentication) {
         Link selfRel = linkTo(methodOn(ChallengeRoomController.class).deleteBookmark(roomId, authentication)).withSelfRel();
         challengeRoomService.deleteBookmark(roomId, authentication);
         return new ResponseEntity<>(EntityModel.of(Response.success(), selfRel), HttpStatus.NO_CONTENT);
