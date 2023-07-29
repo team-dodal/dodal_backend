@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
@@ -70,8 +71,19 @@ public class GlobalControllerAdvice {
                         .build());
     }
 
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<?> handleValidationException(MissingServletRequestParameterException e) {
+        log.error("ExceptionHandler - MissingServletRequestParameterException {} ", e.toString());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Response.builder()
+                        .resultCode(ErrorCode.INVALID_REQUEST_FIELD.name())
+                        .result(parsingConstraintViolationMessage(e.getMessage()))
+                        .build());
+    }
+
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public ResponseEntity<?> handleValidationException(MaxUploadSizeExceededException e) {
+
         log.error("ExceptionHandler - MaxUploadSizeExceededException {} ", e.toString());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(Response.builder()
