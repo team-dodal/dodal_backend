@@ -57,7 +57,7 @@ public class ChallengeRoomController {
                     @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = Response.class)))
             })
     @GetMapping("/challenge/rooms")
-    public ResponseEntity<EntityModel<Response<Page<ChallengeRoomSearchResponse>>>> getChallengeRoom(@Schema(name = "조회 조건", example = "recency") @RequestParam(name = "condition") String condition,
+    public ResponseEntity<EntityModel<Response<Page<ChallengeRoomSearchResponse>>>> getChallengeRoom(@Schema(description = "조회 조건", example = "recency") @RequestParam(name = "condition") String condition,
                                                                                                      @Schema(description = "태그 코드 값", example = "001001") @RequestParam(name = "tag_value", required = false) String tagValue,
                                                                                                      @Schema(description = "요청 페이지 번호", example = "0") @RequestParam(name = "page") Integer page ,
                                                                                                      @Schema(description = "요청 페이지 사이즈", example = "3") @RequestParam(name = "page_size") Integer pageSize,
