@@ -15,10 +15,8 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 
@@ -44,6 +42,20 @@ public class FcmPushController {
     @PostMapping("/all")
     public ResponseEntity<EntityModel<Response<Void>>> sendFcmPushAllUsers(@Valid @RequestBody final FcmPushRequest fcmPushRequest) {
         fcmPushService.sendFcmPushAllUsers(fcmPushRequest);
+        Link selfRel = linkTo(methodOn(FcmPushController.class).sendFcmPushAllUsers(fcmPushRequest)).withSelfRel();
+        return new ResponseEntity<>(EntityModel.of(Response.success(), selfRel), HttpStatus.OK) ;
+    }
+
+    @Operation(summary = "FCM 일대일 PUSH API"
+            , description = "요청한 사용자에게 FCM PUSH 메시지를 보낸다.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "성공", useReturnTypeSchema = true),
+                    @ApiResponse(responseCode = "400", description = "실패 - INVALID_REQUEST_FILED", content = @Content(schema = @Schema(implementation = Response.class))),
+                    @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = Response.class)))
+            })
+    @PostMapping("/{receive_user_id}")
+    public ResponseEntity<EntityModel<Response<Void>>> sendFcmPushUser(@PathVariable(name = "receive_user_id") Long receiveUserId, @Valid @RequestBody final FcmPushRequest fcmPushRequest, Authentication authentication) {
+        fcmPushService.sendFcmPushUser(receiveUserId, fcmPushRequest);
         Link selfRel = linkTo(methodOn(FcmPushController.class).sendFcmPushAllUsers(fcmPushRequest)).withSelfRel();
         return new ResponseEntity<>(EntityModel.of(Response.success(), selfRel), HttpStatus.OK) ;
     }
