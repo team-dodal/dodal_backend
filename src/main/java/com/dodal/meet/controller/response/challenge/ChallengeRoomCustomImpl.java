@@ -7,6 +7,7 @@ import com.dodal.meet.exception.ErrorCode;
 import com.dodal.meet.model.RoomRole;
 import com.dodal.meet.model.RoomSearchType;
 import com.dodal.meet.model.entity.*;
+import com.dodal.meet.utils.DateUtils;
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -19,6 +20,8 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.util.StringUtils;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.List;
 import static org.springframework.util.ObjectUtils.*;
 
@@ -80,20 +83,43 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
                         room.id, room.thumbnailImgUrl, roomTag.tagValue, roomTag.tagName, room.certCnt, room.title,
                         challengeUser.userId, challengeUser.nickname, room.userCnt, room.recruitCnt, room.content,
                         room.certContent, room.certCorrectImgUrl, room.certWrongImgUrl, room.bookmarkCnt, new CaseBuilder().when(bookmark.userEntity.isNotNull()).then("Y").otherwise("N").as("bookmarkYN"),
-                        room.accuseCnt, room.noticeContent, room.registeredAt
+                        new CaseBuilder().when(user.isNotNull()).then("Y").otherwise("N").as("joinYN"), room.accuseCnt, room.noticeContent, room.registeredAt
                 )).from(room)
                 .innerJoin(challengeUser)
                 .on(challengeUser.challengeRoomEntity.eq(room))
                 .innerJoin(roomTag)
                 .on(roomTag.challengeRoomEntity.eq(room))
-                .innerJoin(user)
+                .leftJoin(user)
                 .on(challengeUser.userId.eq(user.id))
                 .leftJoin(bookmark)
                 .on(bookmark.userEntity.eq(userEntity).and(bookmark.challengeRoomEntity.eq(room)))
                 .where(challengeUser.roomRole.eq(RoomRole.HOST).and(room.id.eq(roomId)))
                 .fetchOne();
 
-        // TODO : 피드 리스트 추가
+        // 피드 리스트 추가
+        List<String> feedUrlList = queryFactory
+                .select(feed.certImgUrl)
+                .from(feed)
+                .innerJoin(room)
+                .on(room.id.eq(feed.roomId))
+                .where(room.id.eq(roomId).and(feed.certImgUrl.isNotNull()))
+                .orderBy(feed.registeredAt.desc())
+                .fetch();
+        response.setFeedUrlList(feedUrlList);
+
+        // 오늘 인증 여부
+        String date = DateUtils.parsingTimestamp(Timestamp.from(Instant.now()));
+        long certCnt = queryFactory
+                .select(feed.count())
+                .from(feed)
+                .innerJoin(room)
+                .on(room.id.eq(feed.roomId))
+                .where(room.id.eq(roomId).and(feed.certImgUrl.isNotNull())
+                        .and(feed.userId.eq(userEntity.getId())).and(feed.registeredDate.eq(date)))
+                .fetchCount();
+
+        response.setTodayCertYN(certCnt != 0 ? "Y" : "N");
+
         return response;
     }
 
@@ -201,4 +227,5 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
     QChallengeTagEntity roomTag = QChallengeTagEntity.challengeTagEntity;
     QChallengeBookmarkEntity bookmark = QChallengeBookmarkEntity.challengeBookmarkEntity;
     QUserTagEntity userTag = QUserTagEntity.userTagEntity;
+    QChallengeFeedEntity feed = QChallengeFeedEntity.challengeFeedEntity;
 }

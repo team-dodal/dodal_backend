@@ -220,6 +220,7 @@ public class ChallengeRoomController {
         return new ResponseEntity<>(EntityModel.of(Response.success(), selfRel), HttpStatus.CREATED);
     }
 
+
     @Operation(summary = "북마크 삭제 API"
             , description = "도전방에 북마크를 삭제한다.",
             responses = {
@@ -233,5 +234,28 @@ public class ChallengeRoomController {
         Link selfRel = linkTo(methodOn(ChallengeRoomController.class).deleteBookmark(roomId, authentication)).withSelfRel();
         challengeRoomService.deleteBookmark(roomId, authentication);
         return new ResponseEntity<>(EntityModel.of(Response.success(), selfRel), HttpStatus.NO_CONTENT);
+    }
+
+    @Operation(summary = "도전방 인증 API"
+            , description = "도전방에 이미지 / 인증글을 통해 인증한다. (인증글은 100자 이내)",
+            responses = {
+                    @ApiResponse(responseCode = "201", description = "성공", useReturnTypeSchema = true),
+                    @ApiResponse(responseCode = "400", description = "BOOKMARK_ALREADY_EXIST", content = @Content(schema = @Schema(implementation = Response.class))),
+                    @ApiResponse(responseCode = "401", description = "INVALID_TOKEN", content = @Content(schema = @Schema(implementation = Response.class))),
+                    @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = Response.class)))
+            })
+    @PostMapping(value = "/challenge/room/{room_id}/certification", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<EntityModel<Response<Void>>> createCertification(@PathVariable(name = "room_id") Integer roomId,
+                                                                           @Schema(name = "certification_img")
+                                                                           @Parameter(name = "certification_img", content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE))
+                                                                           @RequestPart(name = "certification_img") MultipartFile certificationImg,
+
+                                                                           @Size(min = 1, max = 100, message = "content는 1자 ~ 100자 사이여야 합니다.")
+                                                                           @Schema(name =  "content", example = "인증합니다.")
+                                                                           @RequestParam(name = "content") String content,
+                                                                           Authentication authentication) {
+        Link selfRel = linkTo(methodOn(ChallengeRoomController.class).createCertification(roomId, certificationImg, content, authentication)).withSelfRel();
+        challengeRoomService.createCertification(roomId, certificationImg, content, authentication);
+        return new ResponseEntity<>(EntityModel.of(Response.success(), selfRel), HttpStatus.CREATED);
     }
 }

@@ -70,6 +70,12 @@ public class ChallengeRoomDetailResponse {
     @Schema(description = "현재 유저의 도전방 북마크 등록 여부", example = "N")
     private String bookmarkYN;
 
+    @Schema(description = "현재 유저의 도전방 가입 여부", example = "N")
+    private String joinYN;
+
+    @Schema(description = "현재 유저의 오늘 인증 여부", example = "N")
+    private String todayCertYN;
+
     @Schema(description = "도전방 신고 횟수", example = "0")
     private int accuseCnt;
 
@@ -80,7 +86,7 @@ public class ChallengeRoomDetailResponse {
     private Timestamp registeredAt;
 
     @QueryProjection
-    public ChallengeRoomDetailResponse(Integer roomId, String thumbnailImgUrl, String tagValue, String tagName, int certCnt, String title, Long hostId, String hostNickname, int userCnt, int recruitCnt, String content, String certContent, String certCorrectImgUrl, String certWrongImgUrl, int bookmarkCnt, String bookmarkYN, int accuseCnt, String noticeContent, Timestamp registeredAt) {
+    public ChallengeRoomDetailResponse(Integer roomId, String thumbnailImgUrl, String tagValue, String tagName, int certCnt, String title, Long hostId, String hostNickname, int userCnt, int recruitCnt, String content, String certContent, String certCorrectImgUrl, String certWrongImgUrl, int bookmarkCnt, String bookmarkYN, String joinYN, int accuseCnt, String noticeContent, Timestamp registeredAt) {
         this.roomId = roomId;
         this.thumbnailImgUrl = thumbnailImgUrl;
         this.tagValue = tagValue;
@@ -97,6 +103,7 @@ public class ChallengeRoomDetailResponse {
         this.certWrongImgUrl = certWrongImgUrl;
         this.bookmarkCnt = bookmarkCnt;
         this.bookmarkYN = bookmarkYN;
+        this.joinYN = joinYN;
         this.accuseCnt = accuseCnt;
         this.noticeContent = noticeContent;
         this.registeredAt = registeredAt;

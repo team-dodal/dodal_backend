@@ -13,6 +13,8 @@ import com.dodal.meet.model.RoomSearchType;
 import com.dodal.meet.model.User;
 import com.dodal.meet.model.entity.*;
 import com.dodal.meet.repository.*;
+import com.dodal.meet.utils.MessageType;
+import com.dodal.meet.utils.MessageUtils;
 import com.dodal.meet.utils.UserUtils;
 import com.dodal.meet.utils.ValueType;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +24,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import static org.springframework.util.ObjectUtils.*;
 
@@ -29,6 +32,7 @@ import static org.springframework.util.ObjectUtils.*;
 @RequiredArgsConstructor
 @Slf4j
 public class ChallengeRoomService {
+    private final ChallengeFeedEntityRepository challengeFeedEntityRepository;
     private final CategoryEntityRepository categoryEntityRepository;
     private final ChallengeBookmarkEntityRepository challengeBookmarkEntityRepository;
     private final UserEntityRepository userEntityRepository;
@@ -40,7 +44,7 @@ public class ChallengeRoomService {
 
     private final UserService userService;
     private final ImageService imageService;
-
+    private final FcmPushService fcmPushService;
 
 
     @Transactional
@@ -152,6 +156,27 @@ public class ChallengeRoomService {
         challengeRoomEntityRepository.save(challengeRoom);
     }
 
+    @Transactional
+    public void createCertification(final Integer roomId, final MultipartFile certificationImg, final String content, final Authentication authentication) {
+        ChallengeRoomEntity challengeRoom = getChallengeRoomEntityById(roomId);
+        UserEntity userEntity = getUserEntityByAuthentication(authentication);
+        ChallengeUserEntity challengeUser = challengeUserEntityRepository.findByUserIdAndChallengeRoomEntity(userEntity.getId(), challengeRoom).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM_USER));
+        String certImgUrl = imageService.uploadMultipartFile(certificationImg);
+        ChallengeFeedEntity entity = ChallengeFeedEntity
+                .builder()
+                .userId(challengeUser.getUserId())
+                .certImgUrl(certImgUrl)
+                .certContent(content)
+                .roomId(challengeRoom.getId())
+                .roomTitle(challengeRoom.getTitle())
+                .challengeTagId(challengeRoom.getChallengeTagEntity().getTagValue())
+                .build();
+        challengeFeedEntityRepository.save(entity);
+        // TODO : FCM 푸시 알림
+//        ChallengeUserEntity host = challengeUserEntityRepository.findByChallengeRoomEntityAndRoomRole(challengeRoom, RoomRole.HOST).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM_HOST_USER));
+//        fcmPushService.sendFcmPushUser(host.getUserId(), MessageUtils.makeFcmPushRequest(MessageType.REQUEST, challengeRoom.getTitle()));
+    }
+
     private void validValue(ValueType valueType, String value) {
         if (valueType.getCode().equals(ValueType.TAG.name())) {
             tagEntityRepository.findByTagValue(value).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_TAG));
@@ -232,6 +257,7 @@ public class ChallengeRoomService {
                 .tagValue(tagEntity.getTagValue())
                 .build();
     }
+
 
 
 }
