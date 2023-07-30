@@ -29,10 +29,14 @@ public enum ErrorCode {
     NOT_FOUND_ROOM(HttpStatus.BAD_REQUEST, "요청한 도전방이 존재하지 않습니다."),
     NOT_FOUND_CATEGORY(HttpStatus.BAD_REQUEST, "카테고리 정보가 존재하지 않습니다."),
     NOT_FOUND_ROOM_USER(HttpStatus.BAD_REQUEST, "도전방에 사용자가 가입되어 있지 않습니다."),
+    NOT_FOUND_ROOM_NOTI(HttpStatus.BAD_REQUEST, "도전방에 요청한 공지사항이 존재하지 않습니다."),
+
 
     // 401 - UNAUTHORIZED
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다."),
     EXPIRED_TOKEN(HttpStatus.UNAUTHORIZED, "기간이 만료된 토큰 입니다."),
+
+    UNAUTHORIZED_ROOM_HOST(HttpStatus.UNAUTHORIZED, "해당 사용자는 방장 권한이 없습니다"),
 
     // 500 - INTERNAL SERVER ERROR
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 오류가 발생했습니다."),
