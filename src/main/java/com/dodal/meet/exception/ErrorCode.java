@@ -28,6 +28,7 @@ public enum ErrorCode {
     IMAGE_SIZE_EXCEEDED(HttpStatus.BAD_REQUEST, "이미지 요청 용량은 1MB 이하여야 합니다."),
     NOT_FOUND_ROOM(HttpStatus.BAD_REQUEST, "요청한 도전방이 존재하지 않습니다."),
     NOT_FOUND_CATEGORY(HttpStatus.BAD_REQUEST, "카테고리 정보가 존재하지 않습니다."),
+    NOT_FOUND_ROOM_USER(HttpStatus.BAD_REQUEST, "도전방에 사용자가 가입되어 있지 않습니다."),
 
     // 401 - UNAUTHORIZED
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다."),
@@ -36,8 +37,10 @@ public enum ErrorCode {
     // 500 - INTERNAL SERVER ERROR
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 오류가 발생했습니다."),
     NOT_FOUND_TOKEN_INFO(HttpStatus.INTERNAL_SERVER_ERROR, "사용자 정보는 있으나, 토큰 정보가 없습니다."),
+    NOT_FOUND_FCM_TOKEN_INFO(HttpStatus.INTERNAL_SERVER_ERROR, "사용자 정보는 있으나, FCM 토큰 정보가 없습니다."),
     NOT_FOUND_JWT_TOKEN(HttpStatus.INTERNAL_SERVER_ERROR, "JWT 토큰 정보가 없습니다."),
     NOT_FOUND_FCM_TOKEN(HttpStatus.INTERNAL_SERVER_ERROR, "FCM 토큰 정보가 없습니다."),
+    NOT_FOUND_ROOM_HOST_USER(HttpStatus.BAD_REQUEST, "도전방 방장 정보가 없습니다"),
 
     NOT_FOUND_TAG(HttpStatus.INTERNAL_SERVER_ERROR, "태그 정보가 서버에 존재하지 않습니다."),
     FCM_PUSH_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "FCM PUSH 알림 발송 중 오류가 발생했습니다.")
