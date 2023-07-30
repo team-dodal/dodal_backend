@@ -5,6 +5,7 @@ import com.dodal.meet.controller.request.challengeRoom.ChallengeRoomCreateReques
 import com.dodal.meet.controller.request.challengeRoom.ChallengeRoomSearchCategoryRequest;
 import com.dodal.meet.controller.response.Response;
 import com.dodal.meet.controller.response.challenge.ChallengeCreateResponse;
+import com.dodal.meet.controller.response.challenge.ChallengeNotiResponse;
 import com.dodal.meet.controller.response.challenge.ChallengeRoomDetailResponse;
 import com.dodal.meet.controller.response.challenge.ChallengeRoomSearchResponse;
 import com.dodal.meet.service.ChallengeRoomService;
@@ -264,8 +265,8 @@ public class ChallengeRoomController {
             , description = "도전방에 공지사항을 등록한다.",
             responses = {
                     @ApiResponse(responseCode = "201", description = "성공", useReturnTypeSchema = true),
-                    @ApiResponse(responseCode = "400", description = "BOOKMARK_ALREADY_EXIST", content = @Content(schema = @Schema(implementation = Response.class))),
-                    @ApiResponse(responseCode = "401", description = "INVALID_TOKEN", content = @Content(schema = @Schema(implementation = Response.class))),
+                    @ApiResponse(responseCode = "400", description = "NOT_FOUND_ROOM", content = @Content(schema = @Schema(implementation = Response.class))),
+                    @ApiResponse(responseCode = "401", description = "INVALID_TOKEN, UNAUTHORIZED_ROOM_HOST", content = @Content(schema = @Schema(implementation = Response.class))),
                     @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = Response.class)))
             })
     @PostMapping("/challenge/room/{room_id}/noti")
@@ -273,5 +274,19 @@ public class ChallengeRoomController {
         Link selfRel = linkTo(methodOn(ChallengeRoomController.class).registNoti(roomId, challengeNotiRequest, authentication)).withSelfRel();
         challengeRoomService.registNoti(roomId, challengeNotiRequest, authentication);
         return new ResponseEntity<>(EntityModel.of(Response.success(), selfRel), HttpStatus.CREATED);
+    }
+
+    @Operation(summary = "공지사항 조회 API"
+            , description = "도전방에 공지사항을 등록한다.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "성공", useReturnTypeSchema = true),
+                    @ApiResponse(responseCode = "400", description = "NOT_FOUND_ROOM", content = @Content(schema = @Schema(implementation = Response.class))),
+                    @ApiResponse(responseCode = "401", description = "INVALID_TOKEN, UNAUTHORIZED_ROOM_HOST", content = @Content(schema = @Schema(implementation = Response.class))),
+                    @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = Response.class)))
+            })
+    @GetMapping("/challenge/room/{room_id}/noti")
+    public ResponseEntity<EntityModel<Response<List<ChallengeNotiResponse>>>> getNotis(@PathVariable(name = "room_id") Integer roomId, Authentication authentication) {
+        Link selfRel = linkTo(methodOn(ChallengeRoomController.class).getNotis(roomId, authentication)).withSelfRel();
+        return new ResponseEntity<>(EntityModel.of(Response.success(challengeRoomService.getNotis(roomId, authentication)), selfRel), HttpStatus.OK);
     }
 }

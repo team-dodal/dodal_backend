@@ -9,9 +9,12 @@ import com.dodal.meet.model.RoomSearchType;
 import com.dodal.meet.model.entity.*;
 import com.dodal.meet.utils.DateUtils;
 import com.querydsl.core.QueryResults;
+import com.querydsl.core.types.ConstantImpl;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CaseBuilder;
+import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.StringTemplate;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +26,8 @@ import org.springframework.util.StringUtils;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
+import java.util.stream.Collectors;
+
 import static org.springframework.util.ObjectUtils.*;
 
 @RequiredArgsConstructor
@@ -123,6 +128,21 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
         response.setTodayCertYN(certCnt != 0 ? "Y" : "N");
 
         return response;
+    }
+
+    @Override
+    public List<ChallengeNotiResponse> getChallengeRoomNoti(Integer roomId) {
+        List<ChallengeNotiResponse> results = queryFactory
+                .select(new QChallengeNotiResponse(noti.id, noti.challengeRoomEntity.id, noti.title, noti.content, Expressions.dateTemplate(String.class, "DATE_FORMAT({0}, {1})", noti.registeredAt, ConstantImpl.create("%Y.%m.%d %r"))))
+                .from(noti)
+                .where(noti.challengeRoomEntity.id.eq(roomId))
+                .orderBy(noti.registeredAt.desc())
+                .fetch()
+                .stream()
+                .peek(x -> x.setDate(DateUtils.parsingString(x.getDate())))
+                .collect(Collectors.toList());
+
+        return results;
     }
 
     private Page<ChallengeRoomSearchResponse> getInterestRooms(Pageable pageable, UserEntity userEntity, String tagValue) {

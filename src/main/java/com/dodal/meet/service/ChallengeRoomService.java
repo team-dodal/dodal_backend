@@ -3,8 +3,10 @@ package com.dodal.meet.service;
 import com.dodal.meet.controller.request.challengeRoom.ChallengeNotiRequest;
 import com.dodal.meet.controller.request.challengeRoom.ChallengeRoomCreateRequest;
 import com.dodal.meet.controller.request.challengeRoom.ChallengeRoomSearchCategoryRequest;
+import com.dodal.meet.controller.response.Response;
 import com.dodal.meet.controller.response.challenge.ChallengeCreateResponse;
 import com.dodal.meet.controller.request.challengeRoom.ChallengeRoomCondition;
+import com.dodal.meet.controller.response.challenge.ChallengeNotiResponse;
 import com.dodal.meet.controller.response.challenge.ChallengeRoomDetailResponse;
 import com.dodal.meet.controller.response.challenge.ChallengeRoomSearchResponse;
 import com.dodal.meet.exception.DodalApplicationException;
@@ -20,10 +22,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 import static org.springframework.util.ObjectUtils.*;
 
@@ -198,6 +204,20 @@ public class ChallengeRoomService {
         roomNotiEntity.addChallengeRoomEntity(roomEntity);
         challengeNotiEntityRepository.save(roomNotiEntity);
     }
+
+    @Transactional
+    public List<ChallengeNotiResponse> getNotis(Integer roomId, Authentication authentication) {
+        User user = UserUtils.getUserInfo(authentication);
+        UserEntity entity = userEntityRepository.findBySocialIdAndSocialType(user.getSocialId(), user.getSocialType()).orElseThrow(() -> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
+        ChallengeRoomEntity roomEntity = challengeRoomEntityRepository.findById(roomId).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM));
+        ChallengeUserEntity challengeUserEntity = challengeUserEntityRepository.findByUserIdAndChallengeRoomEntity(entity.getId(), roomEntity).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM_USER));
+        if (challengeUserEntity.getRoomRole() != RoomRole.HOST) {
+            throw new DodalApplicationException(ErrorCode.UNAUTHORIZED_ROOM_HOST);
+        }
+
+        return challengeNotiEntityRepository.getChallengeRoomNoti(roomId);
+    }
+
 
     private void validValue(ValueType valueType, String value) {
         if (valueType.getCode().equals(ValueType.TAG.name())) {
