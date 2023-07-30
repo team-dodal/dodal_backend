@@ -1,7 +1,7 @@
 package com.dodal.meet.model.entity;
 
 
-import com.dodal.meet.controller.request.challengeRoom.ChallengeRoomCreateRequest;
+import com.dodal.meet.controller.request.challengeroom.ChallengeRoomCreateRequest;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.*;

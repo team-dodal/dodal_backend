@@ -1,14 +1,14 @@
 package com.dodal.meet.controller;
 
-import com.dodal.meet.controller.request.challengeRoom.ChallengeNotiCreateRequest;
-import com.dodal.meet.controller.request.challengeRoom.ChallengeNotiUpdateRequest;
-import com.dodal.meet.controller.request.challengeRoom.ChallengeRoomCreateRequest;
-import com.dodal.meet.controller.request.challengeRoom.ChallengeRoomSearchCategoryRequest;
+import com.dodal.meet.controller.request.challengeroom.ChallengeNotiCreateRequest;
+import com.dodal.meet.controller.request.challengeroom.ChallengeNotiUpdateRequest;
+import com.dodal.meet.controller.request.challengeroom.ChallengeRoomCreateRequest;
+import com.dodal.meet.controller.request.challengeroom.ChallengeRoomSearchCategoryRequest;
 import com.dodal.meet.controller.response.Response;
-import com.dodal.meet.controller.response.challenge.ChallengeCreateResponse;
-import com.dodal.meet.controller.response.challenge.ChallengeNotiResponse;
-import com.dodal.meet.controller.response.challenge.ChallengeRoomDetailResponse;
-import com.dodal.meet.controller.response.challenge.ChallengeRoomSearchResponse;
+import com.dodal.meet.controller.response.challengeroom.ChallengeCreateResponse;
+import com.dodal.meet.controller.response.challengeroom.ChallengeNotiResponse;
+import com.dodal.meet.controller.response.challengeroom.ChallengeRoomDetailResponse;
+import com.dodal.meet.controller.response.challengeroom.ChallengeRoomSearchResponse;
 import com.dodal.meet.service.ChallengeRoomService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

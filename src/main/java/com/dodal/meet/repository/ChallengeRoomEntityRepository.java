@@ -1,8 +1,8 @@
 package com.dodal.meet.repository;
 
-import com.dodal.meet.controller.request.challengeRoom.ChallengeRoomCondition;
-import com.dodal.meet.controller.response.challenge.ChallengeRoomCustom;
-import com.dodal.meet.controller.response.challenge.ChallengeRoomSearchResponse;
+import com.dodal.meet.controller.request.challengeroom.ChallengeRoomCondition;
+import com.dodal.meet.controller.response.challengeroom.ChallengeRoomCustom;
+import com.dodal.meet.controller.response.challengeroom.ChallengeRoomSearchResponse;
 import com.dodal.meet.model.entity.ChallengeRoomEntity;
 import com.dodal.meet.model.entity.UserEntity;
 import org.springframework.data.domain.Page;

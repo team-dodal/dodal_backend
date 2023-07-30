@@ -1,10 +1,10 @@
 package com.dodal.meet.service;
 
-import com.dodal.meet.controller.request.challengeRoom.*;
-import com.dodal.meet.controller.response.challenge.ChallengeCreateResponse;
-import com.dodal.meet.controller.response.challenge.ChallengeNotiResponse;
-import com.dodal.meet.controller.response.challenge.ChallengeRoomDetailResponse;
-import com.dodal.meet.controller.response.challenge.ChallengeRoomSearchResponse;
+import com.dodal.meet.controller.request.challengeroom.*;
+import com.dodal.meet.controller.response.challengeroom.ChallengeCreateResponse;
+import com.dodal.meet.controller.response.challengeroom.ChallengeNotiResponse;
+import com.dodal.meet.controller.response.challengeroom.ChallengeRoomDetailResponse;
+import com.dodal.meet.controller.response.challengeroom.ChallengeRoomSearchResponse;
 import com.dodal.meet.exception.DodalApplicationException;
 import com.dodal.meet.exception.ErrorCode;
 import com.dodal.meet.model.RoomRole;

@@ -1,7 +1,7 @@
-package com.dodal.meet.controller.response.challenge;
+package com.dodal.meet.controller.response.challengeroom;
 
-import com.dodal.meet.controller.request.challengeRoom.ChallengeRoomCondition;
-import com.dodal.meet.controller.request.challengeRoom.ChallengeRoomSearchCategoryRequest;
+import com.dodal.meet.controller.request.challengeroom.ChallengeRoomCondition;
+import com.dodal.meet.controller.request.challengeroom.ChallengeRoomSearchCategoryRequest;
 import com.dodal.meet.exception.DodalApplicationException;
 import com.dodal.meet.exception.ErrorCode;
 import com.dodal.meet.model.RoomRole;
@@ -14,7 +14,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
-import com.querydsl.core.types.dsl.StringTemplate;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;

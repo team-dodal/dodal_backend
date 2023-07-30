@@ -1,7 +1,7 @@
 package com.dodal.meet.repository;
 
-import com.dodal.meet.controller.response.challenge.ChallengeNotiResponse;
-import com.dodal.meet.controller.response.challenge.ChallengeRoomCustom;
+import com.dodal.meet.controller.response.challengeroom.ChallengeNotiResponse;
+import com.dodal.meet.controller.response.challengeroom.ChallengeRoomCustom;
 import com.dodal.meet.model.entity.ChallengeNotiEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

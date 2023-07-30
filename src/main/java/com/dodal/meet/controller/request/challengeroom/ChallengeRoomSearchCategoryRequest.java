@@ -1,4 +1,4 @@
-package com.dodal.meet.controller.request.challengeRoom;
+package com.dodal.meet.controller.request.challengeroom;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;

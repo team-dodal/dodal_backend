@@ -1,4 +1,4 @@
-package com.dodal.meet.controller.request.challengeRoom;
+package com.dodal.meet.controller.request.challengeroom;
 
 
 import com.dodal.meet.model.RoomSearchType;

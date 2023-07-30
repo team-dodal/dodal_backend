@@ -1,4 +1,4 @@
-package com.dodal.meet.controller.response.challenge;
+package com.dodal.meet.controller.response.challengeroom;
 
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;

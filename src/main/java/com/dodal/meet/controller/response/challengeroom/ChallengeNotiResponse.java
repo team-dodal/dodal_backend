@@ -1,11 +1,10 @@
-package com.dodal.meet.controller.response.challenge;
+package com.dodal.meet.controller.response.challengeroom;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.querydsl.core.annotations.QueryProjection;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
-import org.hibernate.validator.constraints.Length;
 
 @Getter
 @Setter
