@@ -202,26 +202,13 @@ public class ChallengeRoomService {
 
     @Transactional
     public List<ChallengeNotiResponse> getNotis(Integer roomId, Authentication authentication) {
-        User user = UserUtils.getUserInfo(authentication);
-        UserEntity entity = userEntityRepository.findBySocialIdAndSocialType(user.getSocialId(), user.getSocialType()).orElseThrow(() -> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
-        ChallengeRoomEntity roomEntity = challengeRoomEntityRepository.findById(roomId).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM));
-        ChallengeUserEntity challengeUserEntity = challengeUserEntityRepository.findByUserIdAndChallengeRoomEntity(entity.getId(), roomEntity).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM_USER));
-        if (challengeUserEntity.getRoomRole() != RoomRole.HOST) {
-            throw new DodalApplicationException(ErrorCode.UNAUTHORIZED_ROOM_HOST);
-        }
-
+        validNotiEntity(roomId, authentication);
         return challengeNotiEntityRepository.getChallengeRoomNoti(roomId);
     }
 
     @Transactional
     public void updateNoti(Integer roomId, Integer notiId, ChallengeNotiUpdateRequest challengeNotiUpdateRequest, Authentication authentication) {
-        User user = UserUtils.getUserInfo(authentication);
-        UserEntity entity = userEntityRepository.findBySocialIdAndSocialType(user.getSocialId(), user.getSocialType()).orElseThrow(() -> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
-        ChallengeRoomEntity roomEntity = challengeRoomEntityRepository.findById(roomId).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM));
-        ChallengeUserEntity challengeUserEntity = challengeUserEntityRepository.findByUserIdAndChallengeRoomEntity(entity.getId(), roomEntity).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM_USER));
-        if (challengeUserEntity.getRoomRole() != RoomRole.HOST) {
-            throw new DodalApplicationException(ErrorCode.UNAUTHORIZED_ROOM_HOST);
-        }
+        validNotiEntity(roomId, authentication);
         ChallengeNotiEntity notiEntity = challengeNotiEntityRepository.findById(notiId).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM_NOTI));
         final String title = challengeNotiUpdateRequest.getTitle();
         final String content = challengeNotiUpdateRequest.getContent();
@@ -234,6 +221,23 @@ public class ChallengeRoomService {
         challengeNotiEntityRepository.save(notiEntity);
     }
 
+    @Transactional
+    public void deleteNoti(Integer roomId, Integer notiId, Authentication authentication) {
+        validNotiEntity(roomId, authentication);
+        ChallengeNotiEntity notiEntity = challengeNotiEntityRepository.findById(notiId).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM_NOTI));
+        challengeNotiEntityRepository.delete(notiEntity);
+    }
+
+
+    private void validNotiEntity(Integer roomId, Authentication authentication) {
+        User user = UserUtils.getUserInfo(authentication);
+        UserEntity entity = userEntityRepository.findBySocialIdAndSocialType(user.getSocialId(), user.getSocialType()).orElseThrow(() -> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
+        ChallengeRoomEntity roomEntity = challengeRoomEntityRepository.findById(roomId).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM));
+        ChallengeUserEntity challengeUserEntity = challengeUserEntityRepository.findByUserIdAndChallengeRoomEntity(entity.getId(), roomEntity).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM_USER));
+        if (challengeUserEntity.getRoomRole() != RoomRole.HOST) {
+            throw new DodalApplicationException(ErrorCode.UNAUTHORIZED_ROOM_HOST);
+        }
+    }
 
     private void validValue(ValueType valueType, String value) {
         if (valueType.getCode().equals(ValueType.TAG.name())) {

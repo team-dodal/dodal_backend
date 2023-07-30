@@ -304,4 +304,19 @@ public class ChallengeRoomController {
         challengeRoomService.updateNoti(roomId, notiId, challengeNotiUpdateRequest, authentication);
         return new ResponseEntity<>(EntityModel.of(Response.success(), selfRel), HttpStatus.OK);
     }
+
+    @Operation(summary = "공지사항 삭제 API"
+            , description = "도전방 공지사항을 삭제한다.",
+            responses = {
+                    @ApiResponse(responseCode = "204", description = "성공", useReturnTypeSchema = true),
+                    @ApiResponse(responseCode = "400", description = "NOT_FOUND_ROOM", content = @Content(schema = @Schema(implementation = Response.class))),
+                    @ApiResponse(responseCode = "401", description = "INVALID_TOKEN, UNAUTHORIZED_ROOM_HOST", content = @Content(schema = @Schema(implementation = Response.class))),
+                    @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = Response.class)))
+            })
+    @DeleteMapping("/challenge/room/{room_id}/noti/{noti_id}")
+    public ResponseEntity<EntityModel<Response<Void>>> deleteNoti(@PathVariable(name = "room_id") Integer roomId, @PathVariable(name = "noti_id") Integer notiId, Authentication authentication) {
+        Link selfRel = linkTo(methodOn(ChallengeRoomController.class).deleteNoti(roomId, notiId, authentication)).withSelfRel();
+        challengeRoomService.deleteNoti(roomId, notiId, authentication);
+        return new ResponseEntity<>(EntityModel.of(Response.success(), selfRel), HttpStatus.NO_CONTENT);
+    }
 }
