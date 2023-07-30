@@ -48,4 +48,11 @@ public class ChallengeNotiEntity {
         challengeRoomEntity.getChallengeNotiEntities().add(this);
     }
 
+    public void updateTitle(String title) {
+        this.title = title;
+    }
+
+    public void updateContent(String content) {
+        this.content = content;
+    }
 }

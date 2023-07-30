@@ -1,6 +1,7 @@
 package com.dodal.meet.controller;
 
-import com.dodal.meet.controller.request.challengeRoom.ChallengeNotiRequest;
+import com.dodal.meet.controller.request.challengeRoom.ChallengeNotiCreateRequest;
+import com.dodal.meet.controller.request.challengeRoom.ChallengeNotiUpdateRequest;
 import com.dodal.meet.controller.request.challengeRoom.ChallengeRoomCreateRequest;
 import com.dodal.meet.controller.request.challengeRoom.ChallengeRoomSearchCategoryRequest;
 import com.dodal.meet.controller.response.Response;
@@ -21,7 +22,6 @@ import org.hibernate.validator.constraints.Range;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
 import org.springframework.http.HttpStatus;
@@ -270,9 +270,9 @@ public class ChallengeRoomController {
                     @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = Response.class)))
             })
     @PostMapping("/challenge/room/{room_id}/noti")
-    public ResponseEntity<EntityModel<Response<Void>>> registNoti(@PathVariable(name = "room_id") Integer roomId, @RequestBody ChallengeNotiRequest challengeNotiRequest, Authentication authentication) {
-        Link selfRel = linkTo(methodOn(ChallengeRoomController.class).registNoti(roomId, challengeNotiRequest, authentication)).withSelfRel();
-        challengeRoomService.registNoti(roomId, challengeNotiRequest, authentication);
+    public ResponseEntity<EntityModel<Response<Void>>> registNoti(@PathVariable(name = "room_id") Integer roomId, @RequestBody ChallengeNotiCreateRequest challengeNotiCreateRequest, Authentication authentication) {
+        Link selfRel = linkTo(methodOn(ChallengeRoomController.class).registNoti(roomId, challengeNotiCreateRequest, authentication)).withSelfRel();
+        challengeRoomService.registNoti(roomId, challengeNotiCreateRequest, authentication);
         return new ResponseEntity<>(EntityModel.of(Response.success(), selfRel), HttpStatus.CREATED);
     }
 
@@ -288,5 +288,20 @@ public class ChallengeRoomController {
     public ResponseEntity<EntityModel<Response<List<ChallengeNotiResponse>>>> getNotis(@PathVariable(name = "room_id") Integer roomId, Authentication authentication) {
         Link selfRel = linkTo(methodOn(ChallengeRoomController.class).getNotis(roomId, authentication)).withSelfRel();
         return new ResponseEntity<>(EntityModel.of(Response.success(challengeRoomService.getNotis(roomId, authentication)), selfRel), HttpStatus.OK);
+    }
+
+    @Operation(summary = "공지사항 수정 API"
+            , description = "도전방에 공지사항을 수정한다.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "성공", useReturnTypeSchema = true),
+                    @ApiResponse(responseCode = "400", description = "NOT_FOUND_ROOM", content = @Content(schema = @Schema(implementation = Response.class))),
+                    @ApiResponse(responseCode = "401", description = "INVALID_TOKEN, UNAUTHORIZED_ROOM_HOST", content = @Content(schema = @Schema(implementation = Response.class))),
+                    @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = Response.class)))
+            })
+    @PatchMapping("/challenge/room/{room_id}/noti/{noti_id}")
+    public ResponseEntity<EntityModel<Response<Void>>> updateNoti(@PathVariable(name = "room_id") Integer roomId, @PathVariable(name = "noti_id") Integer notiId, @RequestBody ChallengeNotiUpdateRequest challengeNotiUpdateRequest, Authentication authentication) {
+        Link selfRel = linkTo(methodOn(ChallengeRoomController.class).updateNoti(roomId, notiId, challengeNotiUpdateRequest, authentication)).withSelfRel();
+        challengeRoomService.updateNoti(roomId, notiId, challengeNotiUpdateRequest, authentication);
+        return new ResponseEntity<>(EntityModel.of(Response.success(), selfRel), HttpStatus.OK);
     }
 }

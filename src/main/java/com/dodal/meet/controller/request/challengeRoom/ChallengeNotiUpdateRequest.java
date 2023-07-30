@@ -14,7 +14,7 @@ import org.hibernate.validator.constraints.Length;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @ToString
-public class ChallengeNotiRequest {
+public class ChallengeNotiUpdateRequest {
 
     @Length(max = 50, message = "title는 50자 이하여야합니다.")
     @Schema(description = "한 줄 소개", example = "안녕하세요")
