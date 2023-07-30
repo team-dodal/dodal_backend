@@ -83,7 +83,7 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
                         room.id, room.thumbnailImgUrl, roomTag.tagValue, roomTag.tagName, room.certCnt, room.title,
                         challengeUser.userId, challengeUser.nickname, room.userCnt, room.recruitCnt, room.content,
                         room.certContent, room.certCorrectImgUrl, room.certWrongImgUrl, room.bookmarkCnt, new CaseBuilder().when(bookmark.userEntity.isNotNull()).then("Y").otherwise("N").as("bookmarkYN"),
-                        new CaseBuilder().when(user.isNotNull()).then("Y").otherwise("N").as("joinYN"), room.accuseCnt, room.noticeContent, room.registeredAt
+                        new CaseBuilder().when(user.isNotNull()).then("Y").otherwise("N").as("joinYN"), room.accuseCnt, noti.title, noti.content, room.registeredAt
                 )).from(room)
                 .innerJoin(challengeUser)
                 .on(challengeUser.challengeRoomEntity.eq(room))
@@ -93,6 +93,8 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
                 .on(challengeUser.userId.eq(user.id))
                 .leftJoin(bookmark)
                 .on(bookmark.userEntity.eq(userEntity).and(bookmark.challengeRoomEntity.eq(room)))
+                .leftJoin(noti)
+                .on(noti.challengeRoomEntity.eq(room)).orderBy(noti.registeredAt.desc()).limit(1)
                 .where(challengeUser.roomRole.eq(RoomRole.HOST).and(room.id.eq(roomId)))
                 .fetchOne();
 
@@ -228,4 +230,5 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
     QChallengeBookmarkEntity bookmark = QChallengeBookmarkEntity.challengeBookmarkEntity;
     QUserTagEntity userTag = QUserTagEntity.userTagEntity;
     QChallengeFeedEntity feed = QChallengeFeedEntity.challengeFeedEntity;
+    QChallengeNotiEntity noti = QChallengeNotiEntity.challengeNotiEntity;
 }

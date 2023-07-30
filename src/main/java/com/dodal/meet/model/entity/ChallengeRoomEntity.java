@@ -47,7 +47,7 @@ public class ChallengeRoomEntity {
 
     private int userCnt;
 
-    private String noticeContent;
+    private String noticeTitle;
 
     private Timestamp registeredAt;
 
@@ -58,6 +58,10 @@ public class ChallengeRoomEntity {
     @Builder.Default
     @OneToMany(mappedBy = "challengeRoomEntity", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ChallengeUserEntity> challengeUserEntities = new ArrayList<>();
+
+    @Builder.Default
+    @OneToMany(mappedBy = "challengeRoomEntity", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ChallengeNotiEntity> challengeNotiEntities = new ArrayList<>();
 
     @PrePersist
     void prePersist() {
@@ -70,6 +74,10 @@ public class ChallengeRoomEntity {
     public void addChallengeTagEntity(ChallengeTagEntity challengeTagEntity) {
         this.challengeTagEntity = challengeTagEntity;
         challengeTagEntity.addChallengeRoomEntity(this);
+    }
+
+    public void updateNotiTitle(String notiTitle) {
+        this.noticeTitle = notiTitle;
     }
 
     public void updateBookmark(int num) {

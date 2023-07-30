@@ -79,14 +79,17 @@ public class ChallengeRoomDetailResponse {
     @Schema(description = "도전방 신고 횟수", example = "0")
     private int accuseCnt;
 
-    @Schema(description = "도전방 공지사항", example = "매일 20시 인증 승인합니다.")
+    @Schema(description = "도전방 공지사항 제목", example = "매일 20시 인증 승인합니다.")
+    private String noticeTitle;
+
+    @Schema(description = "도전방 공지사항", example = "이렇게 인증 부탁 드립니다.")
     private String noticeContent;
 
     @Schema(description = "도전방 생성 시간")
     private Timestamp registeredAt;
 
     @QueryProjection
-    public ChallengeRoomDetailResponse(Integer roomId, String thumbnailImgUrl, String tagValue, String tagName, int certCnt, String title, Long hostId, String hostNickname, int userCnt, int recruitCnt, String content, String certContent, String certCorrectImgUrl, String certWrongImgUrl, int bookmarkCnt, String bookmarkYN, String joinYN, int accuseCnt, String noticeContent, Timestamp registeredAt) {
+    public ChallengeRoomDetailResponse(Integer roomId, String thumbnailImgUrl, String tagValue, String tagName, int certCnt, String title, Long hostId, String hostNickname, int userCnt, int recruitCnt, String content, String certContent, String certCorrectImgUrl, String certWrongImgUrl, int bookmarkCnt, String bookmarkYN, String joinYN, int accuseCnt, String noticeTitle, String noticeContent, Timestamp registeredAt) {
         this.roomId = roomId;
         this.thumbnailImgUrl = thumbnailImgUrl;
         this.tagValue = tagValue;
@@ -105,6 +108,7 @@ public class ChallengeRoomDetailResponse {
         this.bookmarkYN = bookmarkYN;
         this.joinYN = joinYN;
         this.accuseCnt = accuseCnt;
+        this.noticeTitle = noticeTitle;
         this.noticeContent = noticeContent;
         this.registeredAt = registeredAt;
     }

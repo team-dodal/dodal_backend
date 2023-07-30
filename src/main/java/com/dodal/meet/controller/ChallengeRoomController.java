@@ -1,5 +1,6 @@
 package com.dodal.meet.controller;
 
+import com.dodal.meet.controller.request.challengeRoom.ChallengeNotiRequest;
 import com.dodal.meet.controller.request.challengeRoom.ChallengeRoomCreateRequest;
 import com.dodal.meet.controller.request.challengeRoom.ChallengeRoomSearchCategoryRequest;
 import com.dodal.meet.controller.response.Response;
@@ -256,6 +257,21 @@ public class ChallengeRoomController {
                                                                            Authentication authentication) {
         Link selfRel = linkTo(methodOn(ChallengeRoomController.class).createCertification(roomId, certificationImg, content, authentication)).withSelfRel();
         challengeRoomService.createCertification(roomId, certificationImg, content, authentication);
+        return new ResponseEntity<>(EntityModel.of(Response.success(), selfRel), HttpStatus.CREATED);
+    }
+
+    @Operation(summary = "공지사항 등록 API"
+            , description = "도전방에 공지사항을 등록한다.",
+            responses = {
+                    @ApiResponse(responseCode = "201", description = "성공", useReturnTypeSchema = true),
+                    @ApiResponse(responseCode = "400", description = "BOOKMARK_ALREADY_EXIST", content = @Content(schema = @Schema(implementation = Response.class))),
+                    @ApiResponse(responseCode = "401", description = "INVALID_TOKEN", content = @Content(schema = @Schema(implementation = Response.class))),
+                    @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = Response.class)))
+            })
+    @PostMapping("/challenge/room/{room_id}/noti")
+    public ResponseEntity<EntityModel<Response<Void>>> registNoti(@PathVariable(name = "room_id") Integer roomId, @RequestBody ChallengeNotiRequest challengeNotiRequest, Authentication authentication) {
+        Link selfRel = linkTo(methodOn(ChallengeRoomController.class).registNoti(roomId, challengeNotiRequest, authentication)).withSelfRel();
+        challengeRoomService.registNoti(roomId, challengeNotiRequest, authentication);
         return new ResponseEntity<>(EntityModel.of(Response.success(), selfRel), HttpStatus.CREATED);
     }
 }
