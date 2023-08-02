@@ -25,6 +25,12 @@ public class ChallengeRoomEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    private Long hostId;
+
+    private String hostNickname;
+
+    private String hostProfileUrl;
+
     private String title;
 
     private String content;
@@ -103,5 +109,11 @@ public class ChallengeRoomEntity {
         this.thumbnailImgUrl = thumbnailImgUrl;
         this.certCorrectImgUrl = certCorrectImgUrl;
         this.certWrongImgUrl = certWrongImgUrl;
+    }
+
+    public void updateUserInfo(UserEntity userEntity) {
+        this.hostId = userEntity.getId();
+        this.hostProfileUrl = userEntity.getProfileUrl();
+        this.hostNickname = userEntity.getNickname();
     }
 }

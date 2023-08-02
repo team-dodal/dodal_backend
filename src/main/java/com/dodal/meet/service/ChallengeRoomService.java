@@ -59,11 +59,14 @@ public class ChallengeRoomService {
         final String certCorrectImgUrl = imageService.uploadMultipartFile(challengeRoomCreateRequest.getCertCorrectImg());
         final String certWrongImgUrl = imageService.uploadMultipartFile(challengeRoomCreateRequest.getCertWrongImg());
         final String tagValue = challengeRoomCreateRequest.getTagValue();
-        challengeRoomEntity.updateImgUrl(thumbnailImgUrl, certCorrectImgUrl, certWrongImgUrl);
-        challengeRoomEntityRepository.save(challengeRoomEntity);
+
 
         UserEntity userEntity = userService.userToUserEntity(authentication);
         ChallengeUserEntity challengeUserEntity = ChallengeUserEntity.getHostEntity(userEntity);
+
+        challengeRoomEntity.updateImgUrl(thumbnailImgUrl, certCorrectImgUrl, certWrongImgUrl);
+        challengeRoomEntity.updateUserInfo(userEntity);
+        challengeRoomEntityRepository.save(challengeRoomEntity);
 
         challengeUserEntity.addChallengeRoomEntity(challengeRoomEntity);
         challengeUserEntityRepository.save(challengeUserEntity);
@@ -287,8 +290,8 @@ public class ChallengeRoomService {
     private ChallengeCreateResponse getChallengeCreateRequestFromEntities(ChallengeRoomEntity challengeRoomEntity, ChallengeTagEntity challengeTagEntity, ChallengeUserEntity challengeUserEntity) {
         return ChallengeCreateResponse.builder()
                 .challengeRoomId(challengeRoomEntity.getId())
-                .userId(challengeUserEntity.getUserId())
-                .nickname(challengeUserEntity.getNickname())
+                .userId(challengeRoomEntity.getHostId())
+                .nickname(challengeRoomEntity.getHostNickname())
                 .title(challengeRoomEntity.getTitle())
                 .content(challengeRoomEntity.getTitle())
                 .thumbnailImgUrl(challengeRoomEntity.getThumbnailImgUrl())
