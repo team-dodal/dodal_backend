@@ -30,7 +30,7 @@ public class ChallengeFeedEntity {
 
     private int likeCnt;
 
-    private String confirmYN;
+    private String certCode;
 
     private int accuseCnt;
 
@@ -45,7 +45,7 @@ public class ChallengeFeedEntity {
 
     @PrePersist
     void prePersist() {
-        this.confirmYN="N";
+        this.certCode="1";
         this.likeCnt = 0;
         this.accuseCnt = 0;
         this.registeredAt = Timestamp.from(Instant.now());
