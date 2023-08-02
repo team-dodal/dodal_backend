@@ -12,6 +12,8 @@ import com.dodal.meet.model.RoomSearchType;
 import com.dodal.meet.model.User;
 import com.dodal.meet.model.entity.*;
 import com.dodal.meet.repository.*;
+import com.dodal.meet.utils.MessageType;
+import com.dodal.meet.utils.MessageUtils;
 import com.dodal.meet.utils.UserUtils;
 import com.dodal.meet.utils.ValueType;
 import lombok.RequiredArgsConstructor;
@@ -176,9 +178,8 @@ public class ChallengeRoomService {
                 .challengeTagId(challengeRoom.getChallengeTagEntity().getTagValue())
                 .build();
         challengeFeedEntityRepository.save(entity);
-        // TODO : FCM 푸시 알림
-//        ChallengeUserEntity host = challengeUserEntityRepository.findByChallengeRoomEntityAndRoomRole(challengeRoom, RoomRole.HOST).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM_HOST_USER));
-//        fcmPushService.sendFcmPushUser(host.getUserId(), MessageUtils.makeFcmPushRequest(MessageType.REQUEST, challengeRoom.getTitle()));
+
+        fcmPushService.sendFcmPushUser(challengeRoom.getHostId(), MessageUtils.makeFcmPushRequest(MessageType.REQUEST, challengeRoom.getTitle()));
     }
 
     @Transactional
