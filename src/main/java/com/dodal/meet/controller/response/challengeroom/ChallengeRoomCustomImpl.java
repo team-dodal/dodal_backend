@@ -8,7 +8,6 @@ import com.dodal.meet.model.RoomRole;
 import com.dodal.meet.model.RoomSearchType;
 import com.dodal.meet.model.entity.*;
 import com.dodal.meet.utils.DateUtils;
-import com.querydsl.core.QueryResults;
 import com.querydsl.core.types.ConstantImpl;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -52,7 +51,7 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
 
     @Override
     public Page<ChallengeRoomSearchResponse> getChallengeRoomsByCategory(ChallengeRoomSearchCategoryRequest request, Pageable pageable, UserEntity userEntity) {
-        QueryResults<ChallengeRoomSearchResponse> results = queryFactory
+        List<ChallengeRoomSearchResponse> content = queryFactory
                 .select(new QChallengeRoomSearchResponse(
                         room.id, challengeUser.userId, challengeUser.nickname, user.profileUrl, room.title, room.certCnt, room.thumbnailImgUrl, room.recruitCnt,
                         room.userCnt, room.bookmarkCnt, new CaseBuilder().when(bookmark.userEntity.isNotNull()).then("Y").otherwise("N").as("bookmarkYN"),
@@ -71,36 +70,38 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
                 .orderBy(orderByConditionCode(request.getConditionCode()))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
-                .fetchResults()
-                ;
-
-        List<ChallengeRoomSearchResponse> content = results.getResults();
-        long total = results.getTotal();
-
-        return new PageImpl<>(content, pageable, total);
+                .fetch();
+        return new PageImpl<>(content, pageable, content.size());
     }
 
     @Override
     public ChallengeRoomDetailResponse getChallengeRoomDetail(final Integer roomId, final UserEntity userEntity) {
+        // challengeUser (방장 / 일반 사용자)
+        // 조회하려는 유저가 가입한 사용자일 수도 있고, 가입하지 않은 사용자일 수 있다.
+
+        QChallengeUserEntity commonUser = QChallengeUserEntity.challengeUserEntity;
+        Long commonUserCnt = queryFactory.
+                select(commonUser.count()).
+                from(commonUser).
+                where(commonUser.challengeRoomEntity.id.eq(roomId).and(commonUser.userId.eq(userEntity.getId()))).fetchOne();
+
+
         ChallengeRoomDetailResponse response = queryFactory
                 .select(new QChallengeRoomDetailResponse(
                         room.id, room.thumbnailImgUrl, roomTag.tagValue, roomTag.tagName, room.certCnt, room.title,
                         challengeUser.userId, challengeUser.nickname, room.userCnt, room.recruitCnt, room.content,
                         room.certContent, room.certCorrectImgUrl, room.certWrongImgUrl, room.bookmarkCnt, new CaseBuilder().when(bookmark.userEntity.isNotNull()).then("Y").otherwise("N").as("bookmarkYN"),
-                        new CaseBuilder().when(user.isNotNull()).then("Y").otherwise("N").as("joinYN"), room.accuseCnt, noti.title, noti.content, room.registeredAt
+                        room.accuseCnt, noti.title, noti.content, room.registeredAt
                 )).from(room)
-                .innerJoin(challengeUser)
-                .on(challengeUser.challengeRoomEntity.eq(room))
-                .innerJoin(roomTag)
-                .on(roomTag.challengeRoomEntity.eq(room))
-                .leftJoin(user)
-                .on(challengeUser.userId.eq(user.id))
+                .innerJoin(room.challengeTagEntity, roomTag)
+                .innerJoin(room.challengeUserEntities, challengeUser)
                 .leftJoin(bookmark)
-                .on(bookmark.userEntity.eq(userEntity).and(bookmark.challengeRoomEntity.eq(room)))
-                .leftJoin(noti)
-                .on(noti.challengeRoomEntity.eq(room)).orderBy(noti.registeredAt.desc()).limit(1)
-                .where(challengeUser.roomRole.eq(RoomRole.HOST).and(room.id.eq(roomId)))
+                .on(bookmark.challengeRoomEntity.eq(room).and(bookmark.userEntity.id.eq(userEntity.getId())))
+                .leftJoin(room.challengeNotiEntities, noti).limit(1)
+                .where(room.id.eq(roomId).and(challengeUser.roomRole.eq(RoomRole.HOST)))
                 .fetchOne();
+
+        response.setJoinYN(commonUserCnt != 0 ? "Y" : "N");
 
         // 피드 리스트 추가
         List<String> feedUrlList = queryFactory
@@ -115,16 +116,16 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
 
         // 오늘 인증 여부
         String date = DateUtils.parsingTimestamp(Timestamp.from(Instant.now()));
-        long certCnt = queryFactory
-                .select(feed.count())
+        String certCode = queryFactory
+                .select(feed.certCode)
                 .from(feed)
                 .innerJoin(room)
                 .on(room.id.eq(feed.roomId))
-                .where(room.id.eq(roomId).and(feed.certImgUrl.isNotNull())
+                .where(room.id.eq(roomId).and(feed.certImgUrl.isNotNull()).and(room.id.eq(roomId))
                         .and(feed.userId.eq(userEntity.getId())).and(feed.registeredDate.eq(date)))
-                .fetchCount();
+                .fetchOne();
 
-        response.setTodayCertYN(certCnt != 0 ? "Y" : "N");
+        response.setTodayCertCode(!StringUtils.hasText(certCode)? "-1" : certCode);
 
         return response;
     }
@@ -140,12 +141,11 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
                 .stream()
                 .peek(x -> x.setDate(DateUtils.parsingString(x.getDate())))
                 .collect(Collectors.toList());
-
         return results;
     }
 
     private Page<ChallengeRoomSearchResponse> getInterestRooms(Pageable pageable, UserEntity userEntity, String tagValue) {
-        QueryResults<ChallengeRoomSearchResponse> results = queryFactory
+        List<ChallengeRoomSearchResponse> content = queryFactory
                 .select(new QChallengeRoomSearchResponse(
                         room.id, challengeUser.userId, challengeUser.nickname, user.profileUrl, room.title, room.certCnt, room.thumbnailImgUrl, room.recruitCnt,
                         room.userCnt, room.bookmarkCnt, new CaseBuilder().when(bookmark.userEntity.isNotNull()).then("Y").otherwise("N").as("bookmarkYN"),
@@ -163,13 +163,9 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
                 .orderBy(room.bookmarkCnt.desc(), room.registeredAt.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
-                .fetchResults()
-                ;
+                .fetch();
 
-        List<ChallengeRoomSearchResponse> content = results.getResults();
-        long total = results.getTotal();
-
-        return new PageImpl<>(content, pageable, total);
+        return new PageImpl<>(content, pageable, content.size());
     }
 
     private Page<ChallengeRoomSearchResponse> getChallengeRooms(String searchCode, Pageable pageable, UserEntity userEntity) {
@@ -195,16 +191,13 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
             query.orderBy(orderByBookmarkCnt(searchCode));
         }
 
-        QueryResults<ChallengeRoomSearchResponse> results = query
+        List<ChallengeRoomSearchResponse> content = query
                 .orderBy(room.registeredAt.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
-                .fetchResults();
+                .fetch();
 
-        List<ChallengeRoomSearchResponse> content = results.getResults();
-        long total = results.getTotal();
-
-        return new PageImpl<>(content, pageable, total);
+        return new PageImpl<>(content, pageable, content.size());
 
     }
 
