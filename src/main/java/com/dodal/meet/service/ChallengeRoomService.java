@@ -82,16 +82,16 @@ public class ChallengeRoomService {
     }
 
     @Transactional
-    public Page<ChallengeRoomSearchResponse> getChallengeRooms(String condition, String tagValue, Pageable pageable, Authentication authentication) {
+    public Page<ChallengeRoomSearchResponse> getChallengeRooms(String condition, String categoryValue, Pageable pageable, Authentication authentication) {
         User user = UserUtils.getUserInfo(authentication);
         UserEntity userEntity = userEntityRepository.findBySocialIdAndSocialType(user.getSocialId(), user.getSocialType()).orElseThrow(()-> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
-        if (!isEmpty(tagValue)) {
-            validValue(ValueType.TAG, tagValue);
+        if (!isEmpty(categoryValue)) {
+            validValue(ValueType.CATEGORY, categoryValue);
         }
         ChallengeRoomCondition challengeRoomCondition = ChallengeRoomCondition
                 .builder()
-                .roomSearchType(RoomSearchType.of(condition.toUpperCase()))
-                .tagValue(tagValue)
+                .roomSearchType(RoomSearchType.of(condition))
+                .categoryValue(categoryValue)
                 .build();
 
         return challengeRoomEntityRepository.getChallengeRooms(challengeRoomCondition, pageable, userEntity);

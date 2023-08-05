@@ -51,21 +51,21 @@ public class ChallengeRoomController {
 
 
     @Operation(summary = "도전방 조회 API"
-            , description = "홈 화면 - 요청에 따라 최근 도전: recency, 인기있는 도전 : popularity, 관심있는 도전 : interest 정보를 반환한다. (관심있는 도전의 경우 조회 할 태그 값을 파라미터에 전달 필수) pageable의 경우 page : 0부터 시작, 조회할 개수 size를 입력한다.",
+            , description = "홈 화면 - 0 : 관심있는 도전,  1 : 인기있는 도전, 2 : 최근 도전 정보를 반환한다. (관심있는 도전의 경우 조회 할 태그 값을 파라미터에 전달 필수) pageable의 경우 page : 0부터 시작, 조회할 개수 size를 입력한다.",
             responses = {
                     @ApiResponse(responseCode = "200", description = "성공", useReturnTypeSchema = true),
-                    @ApiResponse(responseCode = "401", description = "NOT_FOUND_TAG", content = @Content(schema = @Schema(implementation = Response.class))),
+                    @ApiResponse(responseCode = "400", description = "INVALID_ROOM_SEARCH_TYPE, NOT_FOUND_CATEGORY", content = @Content(schema = @Schema(implementation = Response.class))),
                     @ApiResponse(responseCode = "401", description = "INVALID_TOKEN", content = @Content(schema = @Schema(implementation = Response.class))),
                     @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = Response.class)))
             })
     @GetMapping("/challenge/rooms")
-    public ResponseEntity<EntityModel<Response<Page<ChallengeRoomSearchResponse>>>> getChallengeRoom(@Schema(description = "조회 조건", example = "recency") @RequestParam(name = "condition") String condition,
-                                                                                                     @Schema(description = "태그 코드 값", example = "001001") @RequestParam(name = "tag_value", required = false) String tagValue,
+    public ResponseEntity<EntityModel<Response<Page<ChallengeRoomSearchResponse>>>> getChallengeRoom(@Schema(description = "조회 조건 (0, 1, 2)", example = "0") @RequestParam(name = "condition") String condition,
+                                                                                                     @Schema(description = "카테고리 코드 값 (관심있는 도전에서 사용)", example = "001") @RequestParam(name = "categoryValue", required = false) String categoryValue,
                                                                                                      @Schema(description = "요청 페이지 번호", example = "0") @RequestParam(name = "page") Integer page ,
                                                                                                      @Schema(description = "요청 페이지 사이즈", example = "3") @RequestParam(name = "page_size") Integer pageSize,
                                                                                                      Authentication authentication) {
         Pageable pageable = PageRequest.of(page, pageSize);
-        return new ResponseEntity<>(EntityModel.of(Response.success(challengeRoomService.getChallengeRooms(condition, tagValue, pageable, authentication))), HttpStatus.OK);
+        return new ResponseEntity<>(EntityModel.of(Response.success(challengeRoomService.getChallengeRooms(condition, categoryValue, pageable, authentication))), HttpStatus.OK);
     }
 
     @Operation(summary = "도전방 카테고리별 조회 API"

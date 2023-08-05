@@ -43,6 +43,9 @@ public class ChallengeRoomDetailResponse {
     @Schema(description = "방장 닉네임", example = "노래하는 어피치")
     private String hostNickname;
 
+    @Schema(description = "방장 프로필 이미지 url", example = "https://")
+    private String hostProfileUrl;
+
     @Schema(description = "가입 유저 수", example = "5")
     private int userCnt;
 
@@ -89,7 +92,7 @@ public class ChallengeRoomDetailResponse {
     private Timestamp registeredAt;
 
     @QueryProjection
-    public ChallengeRoomDetailResponse(Integer roomId, String thumbnailImgUrl, String tagValue, String tagName, int certCnt, String title, Long hostId, String hostNickname, int userCnt, int recruitCnt, String content, String certContent, String certCorrectImgUrl, String certWrongImgUrl, int bookmarkCnt, String bookmarkYN, int accuseCnt, String noticeTitle, String noticeContent, Timestamp registeredAt) {
+    public ChallengeRoomDetailResponse(Integer roomId, String thumbnailImgUrl, String tagValue, String tagName, int certCnt, String title, Long hostId, String hostNickname, String hostProfileUrl, int userCnt, int recruitCnt, String content, String certContent, String certCorrectImgUrl, String certWrongImgUrl, int bookmarkCnt, String bookmarkYN, int accuseCnt, String noticeTitle, String noticeContent, Timestamp registeredAt) {
         this.roomId = roomId;
         this.thumbnailImgUrl = thumbnailImgUrl;
         this.tagValue = tagValue;
@@ -98,6 +101,7 @@ public class ChallengeRoomDetailResponse {
         this.title = title;
         this.hostId = hostId;
         this.hostNickname = hostNickname;
+        this.hostProfileUrl = hostProfileUrl;
         this.userCnt = userCnt;
         this.recruitCnt = recruitCnt;
         this.content = content;

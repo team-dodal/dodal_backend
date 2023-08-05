@@ -8,7 +8,10 @@ import com.dodal.meet.model.RoomRole;
 import com.dodal.meet.model.RoomSearchType;
 import com.dodal.meet.model.entity.*;
 import com.dodal.meet.utils.DateUtils;
+import com.dodal.meet.utils.OrderByNull;
 import com.querydsl.core.types.ConstantImpl;
+import com.querydsl.core.types.NullExpression;
+import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CaseBuilder;
@@ -33,20 +36,21 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
 
     private final JPAQueryFactory queryFactory;
 
+    // 도전방 홈 화면 조회 - 검색 조건 (0 : 관심있는 도전, 1 : 인기있는 도전, 2 : 최근 도전)
     @Override
     public Page<ChallengeRoomSearchResponse> getChallengeRooms(final ChallengeRoomCondition challengeRoomCondition, final Pageable pageable, final UserEntity userEntity) {
-        final String searchType = challengeRoomCondition.getRoomSearchType().name();
+        final String searchType = challengeRoomCondition.getRoomSearchType().getCode();
         if (!RoomSearchType.isValidSearchType(searchType)) {
             throw new DodalApplicationException(ErrorCode.INVALID_ROOM_SEARCH_TYPE);
         }
         if (searchType.equals(RoomSearchType.INTEREST.getCode())) {
-            final String tagValue = challengeRoomCondition.getTagValue();
-            if (!StringUtils.hasText(tagValue)) {
-                throw new DodalApplicationException(ErrorCode.NOT_FOUND_TAG);
+            final String categoryValue = challengeRoomCondition.getCategoryValue();
+            if (!StringUtils.hasText(categoryValue)) {
+                throw new DodalApplicationException(ErrorCode.NOT_FOUND_CATEGORY);
             }
-            return getInterestRooms(pageable, userEntity, tagValue);
+            return getInterestRooms(userEntity, categoryValue, pageable);
         }
-        return getChallengeRooms(searchType, pageable, userEntity);
+        return getChallengeRooms(userEntity, searchType, pageable);
     }
 
     @Override
@@ -89,14 +93,14 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
         ChallengeRoomDetailResponse response = queryFactory
                 .select(new QChallengeRoomDetailResponse(
                         room.id, room.thumbnailImgUrl, roomTag.tagValue, roomTag.tagName, room.certCnt, room.title,
-                        challengeUser.userId, challengeUser.nickname, room.userCnt, room.recruitCnt, room.content,
+                        room.hostId, room.hostNickname, room.hostProfileUrl, room.userCnt, room.recruitCnt, room.content,
                         room.certContent, room.certCorrectImgUrl, room.certWrongImgUrl, room.bookmarkCnt, new CaseBuilder().when(bookmark.userEntity.isNotNull()).then("Y").otherwise("N").as("bookmarkYN"),
                         room.accuseCnt, noti.title, noti.content, room.registeredAt
                 )).from(room)
                 .innerJoin(room.challengeTagEntity, roomTag)
                 .innerJoin(room.challengeUserEntities, challengeUser)
                 .leftJoin(bookmark)
-                .on(bookmark.challengeRoomEntity.eq(room).and(bookmark.userEntity.id.eq(userEntity.getId())))
+                .on(room.eq(bookmark.challengeRoomEntity).and(bookmark.userEntity.id.eq(userEntity.getId())))
                 .leftJoin(room.challengeNotiEntities, noti).limit(1)
                 .where(room.id.eq(roomId).and(challengeUser.roomRole.eq(RoomRole.HOST)))
                 .fetchOne();
@@ -144,50 +148,55 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
         return results;
     }
 
-    private Page<ChallengeRoomSearchResponse> getInterestRooms(Pageable pageable, UserEntity userEntity, String tagValue) {
+    private Page<ChallengeRoomSearchResponse> getInterestRooms(UserEntity userEntity, String categoryValue, Pageable pageable) {
+        /*
+            관심있는 도전 - 사용자가 설정한 태그 정보를 기준으로 해당 태그를 지정한 도전방 정보를 반환한다.
+            정렬 기준 - 북마크 많은 순, 최신 순
+            연관 테이블 : challenge_room, challenge_tag, challenge_user, users, user_tag
+            가입을 하지 않아도 조회할 수 있어야한다.
+         */
+
+        List<String> userTagValues = queryFactory.select(userTag.tagValue).from(userTag)
+                .innerJoin(user).on(userTag.userEntity.eq(user))
+                .where(user.eq(userEntity).and(userTag.tagValue.substring(0,3).eq(categoryValue)))
+                .fetch();
+
         List<ChallengeRoomSearchResponse> content = queryFactory
                 .select(new QChallengeRoomSearchResponse(
-                        room.id, challengeUser.userId, challengeUser.nickname, user.profileUrl, room.title, room.certCnt, room.thumbnailImgUrl, room.recruitCnt,
+                        room.id, room.hostId, room.hostNickname, room.hostProfileUrl, room.title, room.certCnt, room.thumbnailImgUrl, room.recruitCnt,
                         room.userCnt, room.bookmarkCnt, new CaseBuilder().when(bookmark.userEntity.isNotNull()).then("Y").otherwise("N").as("bookmarkYN"),
                         room.registeredAt, roomTag.categoryName, roomTag.categoryValue, roomTag.tagName, roomTag.tagValue
                 )).from(room)
-                .innerJoin(challengeUser)
-                .on(challengeUser.challengeRoomEntity.eq(room))
-                .innerJoin(roomTag)
-                .on(roomTag.challengeRoomEntity.eq(room))
-                .innerJoin(user)
-                .on(challengeUser.userId.eq(user.id))
+                .innerJoin(room.challengeTagEntity, roomTag)
                 .leftJoin(bookmark)
-                .on(bookmark.userEntity.eq(userEntity).and(bookmark.challengeRoomEntity.eq(room)))
-                .where(challengeUser.roomRole.eq(RoomRole.HOST).and(roomTag.tagValue.eq(tagValue)))
+                .on(room.eq(bookmark.challengeRoomEntity).and(bookmark.userEntity.id.eq(userEntity.getId())))
+                .where(roomTag.tagValue.in(userTagValues))
                 .orderBy(room.bookmarkCnt.desc(), room.registeredAt.desc())
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
                 .fetch();
 
         return new PageImpl<>(content, pageable, content.size());
     }
 
-    private Page<ChallengeRoomSearchResponse> getChallengeRooms(String searchCode, Pageable pageable, UserEntity userEntity) {
-
+    private Page<ChallengeRoomSearchResponse> getChallengeRooms(UserEntity userEntity, String searchCode, Pageable pageable) {
+        /*
+            인기 있는 도전 - 북마크 많은 순, 최근 생성 순 기준으로 도전방 정보를 반환한다.
+            최근 도전 - 최근 생성 순으로 도전방 정보를 반환한다.
+            연관 테이블 : challenge_room, challenge_tag, challenge_user, users, user_tag
+            가입을 하지 않아도 조회할 수 있어야한다.
+         */
         JPAQuery<ChallengeRoomSearchResponse> query = queryFactory
                 .select(new QChallengeRoomSearchResponse(
-                        room.id, challengeUser.userId, challengeUser.nickname, user.profileUrl, room.title, room.certCnt, room.thumbnailImgUrl, room.recruitCnt,
+                        room.id, room.hostId, room.hostNickname, room.hostProfileUrl, room.title, room.certCnt, room.thumbnailImgUrl, room.recruitCnt,
                         room.userCnt, room.bookmarkCnt, new CaseBuilder().when(bookmark.userEntity.isNotNull()).then("Y").otherwise("N").as("bookmarkYN"),
                         room.registeredAt, roomTag.categoryName, roomTag.categoryValue, roomTag.tagName, roomTag.tagValue
                 )).from(room)
-                .innerJoin(challengeUser)
-                .on(challengeUser.challengeRoomEntity.eq(room))
-                .innerJoin(roomTag)
-                .on(roomTag.challengeRoomEntity.eq(room))
-                .innerJoin(user)
-                .on(challengeUser.userId.eq(user.id))
+                .innerJoin(room.challengeTagEntity, roomTag)
                 .leftJoin(bookmark)
-                .on(bookmark.userEntity.eq(userEntity).and(bookmark.challengeRoomEntity.eq(room)))
-                .where(challengeUser.roomRole.eq(RoomRole.HOST))
+                .on(room.eq(bookmark.challengeRoomEntity).and(bookmark.userEntity.id.eq(userEntity.getId())))
                 ;
 
-        if (!isEmpty(orderByBookmarkCnt(searchCode))) {
+        // 인기 있는 도전의 경우 북마크 많은 순으로 추가 정렬
+        if (!isEmpty(searchCode)) {
             query.orderBy(orderByBookmarkCnt(searchCode));
         }
 
@@ -202,7 +211,7 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
     }
 
     private OrderSpecifier<?> orderByBookmarkCnt(final String searchCode) {
-        return searchCode.equals(RoomSearchType.INTEREST.getCode()) ? room.bookmarkCnt.desc() : null;
+        return searchCode.equals(RoomSearchType.POPULARITY.getCode()) ? room.bookmarkCnt.desc() : OrderByNull.getDefault();
     }
 
     private OrderSpecifier<?> orderByConditionCode(final String conditionCode) {

@@ -18,6 +18,6 @@ public class ChallengeRoomCondition {
     @Schema(description = "검색 조건", example = "RECENCY")
     private RoomSearchType roomSearchType;
 
-    @Schema(description = "태그 값", example = "001002")
-    private String tagValue;
+    @Schema(description = "카테고리 값", example = "001")
+    private String categoryValue;
 }

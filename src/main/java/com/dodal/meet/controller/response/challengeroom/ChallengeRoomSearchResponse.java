@@ -18,14 +18,14 @@ public class ChallengeRoomSearchResponse {
     @Schema(description = "도전방 시퀀스 번호", example = "1")
     private Integer challengeRoomId;
 
-    @Schema(description = "유저 시퀀스 번호", example = "1")
-    private Long userId;
+    @Schema(description = "방장 시퀀스 번호", example = "1")
+    private Long hostId;
 
     @Schema(description = "방장 닉네임", example = "1")
-    private String nickname;
+    private String hostNickname;
 
     @Schema(description = "방장 프로필 이미지 URL", example = "https://dodal-bucket.s3.ap-northeast-2.amazonaws.com")
-    private String profileUrl;
+    private String hostProfileUrl;
 
     @Schema(description = "도전방 제목", example = "[주 2회] 헬스 인증")
     private String title;
@@ -65,13 +65,13 @@ public class ChallengeRoomSearchResponse {
 
 
     @QueryProjection
-    public ChallengeRoomSearchResponse(Integer challengeRoomId, Long userId, String nickname, String profileUrl, String title, int certCnt,
+    public ChallengeRoomSearchResponse(Integer challengeRoomId, Long hostId, String hostNickname, String hostProfileUrl, String title, int certCnt,
                                        String thumbnailImgUrl, int recruitCnt, int userCnt, int bookmarkCnt, String bookmarkYN, Timestamp registeredAt,
                                        String categoryName, String categoryValue, String tagName, String tagValue) {
         this.challengeRoomId = challengeRoomId;
-        this.userId = userId;
-        this.nickname = nickname;
-        this.profileUrl = profileUrl;
+        this.hostId = hostId;
+        this.hostNickname = hostNickname;
+        this.hostProfileUrl = hostProfileUrl;
         this.title = title;
         this.certCnt = certCnt;
         this.thumbnailImgUrl = thumbnailImgUrl;

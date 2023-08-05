@@ -17,16 +17,17 @@ import java.util.stream.Stream;
 public enum
 RoomSearchType {
 
-    INTEREST("INTEREST", "관심있는 도전"),
-    RECENCY("RECENCY", "최신 도전"),
-    POPULARITY("POPULARITY", "인기있는 도전")
+    INTEREST("0", "관심있는 도전"),
+    POPULARITY("1", "인기있는 도전"),
+
+    RECENCY("2", "최근 도전")
     ;
 
     private static final Map<String, String> CODE = Collections
             .unmodifiableMap(Stream.of(values()).collect(Collectors.toMap(RoomSearchType::getCode, RoomSearchType::name)));
 
     public static RoomSearchType of(final String code) {
-        if (!StringUtils.hasText(CODE.get(code))) {
+        if (!isValidSearchType(code)) {
             throw new DodalApplicationException(ErrorCode.INVALID_ROOM_SEARCH_TYPE);
         }
         return RoomSearchType.valueOf(CODE.get(code));
