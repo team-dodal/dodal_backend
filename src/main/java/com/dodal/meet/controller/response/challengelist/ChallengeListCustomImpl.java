@@ -2,8 +2,8 @@ package com.dodal.meet.controller.response.challengelist;
 
 import com.dodal.meet.model.RoomRole;
 import com.dodal.meet.model.entity.*;
-import com.dodal.meet.utils.DateDto;
 import com.dodal.meet.utils.DateUtils;
+import com.dodal.meet.utils.FeedUtils;
 import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.jpa.JPAExpressions;
@@ -15,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 
 @RequiredArgsConstructor
 public class ChallengeListCustomImpl implements ChallengeListCustom {
@@ -23,7 +24,7 @@ public class ChallengeListCustomImpl implements ChallengeListCustom {
 
     @Override
     public Page<ChallengeUserRoleResponse> getChallengeUser(Pageable pageable, UserEntity userEntity) {
-        DateDto weekInfo = DateUtils.getWeekInfo();
+        Map<Integer, String> weekInfo = DateUtils.getWeekInfo();
         String today = DateUtils.parsingTimestamp(Timestamp.from(Instant.now()));
 
         List<ChallengeUserRoleResponse> content = queryFactory
@@ -38,12 +39,11 @@ public class ChallengeListCustomImpl implements ChallengeListCustom {
                                         on(room.id.eq(feed.roomId)).
                                         where(
                                                 feed.userId.eq(userEntity.getId()).
-                                                and(feed.certCode.eq("2")).
-                                                and(feed.registeredDate.goe(weekInfo.getMonday())).
-                                                and(feed.registeredDate.loe(weekInfo.getSunday())))
+                                                and(feed.certCode.eq(FeedUtils.CONFIRM)).
+                                                and(feed.registeredDate.goe(weekInfo.get(DateUtils.MON))).
+                                                and(feed.registeredDate.loe(weekInfo.get(DateUtils.SUN))))
                                 , "weekUserCertCnt"),
-                        // certCode [  -1 : 미인증, 0 : 거절, 1 : 승인 요청 중, 2 : 승인 ]
-                        new CaseBuilder().when(feed.certCode.isNotNull()).then(feed.certCode).otherwise("-1").as("certCode")
+                        new CaseBuilder().when(feed.certCode.isNotNull()).then(feed.certCode).otherwise(FeedUtils.EMPTY).as("certCode")
                 ))
                 .from(room)
                 .innerJoin(room.challengeUserEntities, challengeUser)

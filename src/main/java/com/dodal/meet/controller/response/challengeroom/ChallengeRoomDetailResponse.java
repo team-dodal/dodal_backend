@@ -1,6 +1,7 @@
 package com.dodal.meet.controller.response.challengeroom;
 
 
+import com.dodal.meet.controller.response.user.UserCertPerWeek;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.querydsl.core.annotations.QueryProjection;
@@ -87,6 +88,9 @@ public class ChallengeRoomDetailResponse {
 
     @Schema(description = "도전방 공지사항", example = "이렇게 인증 부탁 드립니다.")
     private String noticeContent;
+
+    @Schema(description = "유저 주간 인증 정보")
+    private List<UserCertPerWeek> userCertPerWeekList;
 
     @Schema(description = "도전방 생성 시간")
     private Timestamp registeredAt;

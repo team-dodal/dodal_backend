@@ -2,16 +2,18 @@ package com.dodal.meet.controller.response.challengeroom;
 
 import com.dodal.meet.controller.request.challengeroom.ChallengeRoomCondition;
 import com.dodal.meet.controller.request.challengeroom.ChallengeRoomSearchCategoryRequest;
+import com.dodal.meet.controller.response.user.QUserCertPerWeek;
+import com.dodal.meet.controller.response.user.UserCertPerWeek;
 import com.dodal.meet.exception.DodalApplicationException;
 import com.dodal.meet.exception.ErrorCode;
 import com.dodal.meet.model.RoomRole;
 import com.dodal.meet.model.RoomSearchType;
 import com.dodal.meet.model.entity.*;
 import com.dodal.meet.utils.DateUtils;
+import com.dodal.meet.utils.FeedUtils;
 import com.dodal.meet.utils.OrderByNull;
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.ConstantImpl;
-import com.querydsl.core.types.NullExpression;
-import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CaseBuilder;
@@ -27,6 +29,7 @@ import org.springframework.util.StringUtils;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.springframework.util.ObjectUtils.*;
@@ -107,19 +110,41 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
 
         response.setJoinYN(commonUserCnt != 0 ? "Y" : "N");
 
+
+        String date = DateUtils.parsingTimestamp(Timestamp.from(Instant.now()));
+
         // 피드 리스트 추가
+        // TODO : 오늘 ~ N 일전 데이터 Feed 인증
         List<String> feedUrlList = queryFactory
                 .select(feed.certImgUrl)
                 .from(feed)
                 .innerJoin(room)
                 .on(room.id.eq(feed.roomId))
-                .where(room.id.eq(roomId).and(feed.certImgUrl.isNotNull()))
+                .where(room.id.eq(roomId).and(feed.certImgUrl.isNotNull()).and(feed.certCode.eq(FeedUtils.CONFIRM)))
                 .orderBy(feed.registeredAt.desc())
+                .limit(6)
                 .fetch();
         response.setFeedUrlList(feedUrlList);
+        System.out.println(DateUtils.getWeekInfo().get(DateUtils.MON));
+
+        // 가입한 유저라면 주간 인증 여부 및 인증 이미지 url을 요일별로 반환
+        if (commonUserCnt != 0) {
+            Map<Integer, String> weekInfo = DateUtils.getWeekInfo();
+            List<UserCertPerWeek> userCertPerWeekList = queryFactory
+                    .select(new QUserCertPerWeek(feed.registeredDate, feed.certImgUrl))
+                    .from(feed)
+                    .innerJoin(room)
+                    .on(room.id.eq(feed.roomId))
+                    .where(feed.userId.eq(userEntity.getId())
+                            .and(feed.certCode.eq(FeedUtils.CONFIRM))
+                            .and(feed.registeredDate.goe(weekInfo.get(DateUtils.MON)))
+                            .and(feed.registeredDate.loe(weekInfo.get(DateUtils.SUN))))
+                    .orderBy(feed.registeredDate.asc())
+                    .fetch();
+            response.setUserCertPerWeekList(userCertPerWeekList);
+        }
 
         // 오늘 인증 여부
-        String date = DateUtils.parsingTimestamp(Timestamp.from(Instant.now()));
         String certCode = queryFactory
                 .select(feed.certCode)
                 .from(feed)
@@ -129,7 +154,7 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
                         .and(feed.userId.eq(userEntity.getId())).and(feed.registeredDate.eq(date)))
                 .fetchOne();
 
-        response.setTodayCertCode(!StringUtils.hasText(certCode)? "-1" : certCode);
+        response.setTodayCertCode(!StringUtils.hasText(certCode)? FeedUtils.EMPTY : certCode);
 
         return response;
     }
