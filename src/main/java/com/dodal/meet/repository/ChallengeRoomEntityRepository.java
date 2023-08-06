@@ -12,11 +12,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface ChallengeRoomEntityRepository extends JpaRepository<ChallengeRoomEntity, Integer>, ChallengeRoomCustom, ChallengeListCustom {
     @Override
     Page<ChallengeRoomSearchResponse> getChallengeRooms(ChallengeRoomCondition challengeRoomCondition, Pageable pageable, UserEntity userEntity);
 
     @Override
-    Page<ChallengeUserRoleResponse> getChallengeUser(Pageable pageable, UserEntity userEntity);
+    List<ChallengeUserRoleResponse> getChallengeUser(UserEntity userEntity);
 }

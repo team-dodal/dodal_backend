@@ -1,6 +1,7 @@
 package com.dodal.meet.service;
 
 import com.dodal.meet.controller.response.Response;
+import com.dodal.meet.controller.response.challengelist.ChallengeHostRoleResponse;
 import com.dodal.meet.controller.response.challengelist.ChallengeUserRoleResponse;
 import com.dodal.meet.exception.DodalApplicationException;
 import com.dodal.meet.exception.ErrorCode;
@@ -42,10 +43,16 @@ public class ChallengeListService {
 
 
     @Transactional
-    public Page<ChallengeUserRoleResponse> getUserRoleChallengeRooms(Authentication authentication) {
+    public List<ChallengeUserRoleResponse> getUserRoleChallengeRooms(Authentication authentication) {
         User user = UserUtils.getUserInfo(authentication);
         UserEntity userEntity = userEntityRepository.findBySocialIdAndSocialType(user.getSocialId(), user.getSocialType()).orElseThrow(() -> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
-        Pageable pageable = PageRequest.of(0, 3);
-        return challengeRoomEntityRepository.getChallengeUser(pageable, userEntity);
+        return challengeRoomEntityRepository.getChallengeUser(userEntity);
+    }
+
+    @Transactional
+    public List<ChallengeHostRoleResponse> getHostRoleChallengeRooms(Authentication authentication) {
+        User user = UserUtils.getUserInfo(authentication);
+        UserEntity userEntity = userEntityRepository.findBySocialIdAndSocialType(user.getSocialId(), user.getSocialType()).orElseThrow(() -> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
+        return challengeRoomEntityRepository.getChallengeHost(userEntity);
     }
 }

@@ -151,6 +151,8 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
                 .on(room.id.eq(feed.roomId))
                 .where(room.id.eq(roomId).and(feed.certImgUrl.isNotNull()).and(room.id.eq(roomId))
                         .and(feed.userId.eq(userEntity.getId())).and(feed.registeredDate.eq(date)))
+                .orderBy(feed.registeredAt.desc())
+                .limit(1)
                 .fetchOne();
 
         response.setTodayCertCode(!StringUtils.hasText(certCode)? FeedUtils.EMPTY : certCode);

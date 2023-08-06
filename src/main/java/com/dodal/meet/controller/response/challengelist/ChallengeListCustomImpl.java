@@ -6,12 +6,11 @@ import com.dodal.meet.utils.DateUtils;
 import com.dodal.meet.utils.FeedUtils;
 import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.dsl.CaseBuilder;
+import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
@@ -23,7 +22,7 @@ public class ChallengeListCustomImpl implements ChallengeListCustom {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Page<ChallengeUserRoleResponse> getChallengeUser(Pageable pageable, UserEntity userEntity) {
+    public List<ChallengeUserRoleResponse> getChallengeUser(UserEntity userEntity) {
         Map<Integer, String> weekInfo = DateUtils.getWeekInfo();
         String today = DateUtils.parsingTimestamp(Timestamp.from(Instant.now()));
 
@@ -32,7 +31,7 @@ public class ChallengeListCustomImpl implements ChallengeListCustom {
                         room.id, room.hostId, room.hostNickname, room.hostProfileUrl, room.title, room.certCnt, room.thumbnailImgUrl, room.recruitCnt,
                         room.userCnt, room.bookmarkCnt, new CaseBuilder().when(bookmark.userEntity.isNotNull()).then("Y").otherwise("N").as("bookmarkYN"),
                         room.registeredAt, roomTag.categoryName, roomTag.categoryValue, roomTag.tagName, roomTag.tagValue,
-                        ExpressionUtils.as(JPAExpressions.
+                            ExpressionUtils.as(JPAExpressions.
                                         select(feed.count().intValue()).
                                         from(feed).
                                         innerJoin(room).
@@ -54,12 +53,36 @@ public class ChallengeListCustomImpl implements ChallengeListCustom {
                 .on(room.id.eq(feed.roomId).and(feed.registeredDate.eq(today)))
                 .where(challengeUser.roomRole.eq(RoomRole.USER).and(challengeUser.userId.eq(userEntity.getId())))
                 .orderBy(feed.certCode.asc())
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
                 .fetch();
-        return new PageImpl<>(content, pageable, content.size());
+
+        return content;
     }
 
+    @Override
+    public List<ChallengeHostRoleResponse> getChallengeHost(UserEntity userEntity) {
+
+        StringPath certRequestCnt = Expressions.stringPath("certRequestCnt");
+
+        List<ChallengeHostRoleResponse> content = queryFactory
+                .select(new QChallengeHostRoleResponse(
+                        room.id, room.hostId, room.hostNickname, room.hostProfileUrl, room.title, room.certCnt, room.thumbnailImgUrl, room.recruitCnt,
+                        room.userCnt, room.bookmarkCnt, new CaseBuilder().when(bookmark.userEntity.isNotNull()).then("Y").otherwise("N").as("bookmarkYN"),
+                        room.registeredAt, roomTag.categoryName, roomTag.categoryValue, roomTag.tagName, roomTag.tagValue,
+                        ExpressionUtils.as(JPAExpressions.
+                                select(feed.count().intValue()).
+                                from(feed).
+                                where(room.id.eq(feed.roomId).and(feed.certCode.eq(FeedUtils.REQUEST))), "certRequestCnt")
+                ))
+                .from(room)
+                .innerJoin(room.challengeUserEntities, challengeUser)
+                .innerJoin(room.challengeTagEntity, roomTag)
+                .leftJoin(bookmark)
+                .on(bookmark.challengeRoomEntity.eq(room).and(bookmark.userEntity.eq(userEntity)))
+                .where(challengeUser.userId.eq(userEntity.getId()).and(challengeUser.roomRole.eq(RoomRole.HOST)))
+                .orderBy(certRequestCnt.desc())
+                .fetch();
+        return content;
+    }
 
     QUserEntity user = QUserEntity.userEntity;
     QChallengeRoomEntity room = QChallengeRoomEntity.challengeRoomEntity;
@@ -69,9 +92,5 @@ public class ChallengeListCustomImpl implements ChallengeListCustom {
     QChallengeFeedEntity feed = QChallengeFeedEntity.challengeFeedEntity;
     QChallengeNotiEntity noti = QChallengeNotiEntity.challengeNotiEntity;
 
-    @Override
-    public Page<ChallengeUserRoleResponse> getChallengeHost(Pageable pageable, UserEntity userEntity) {
-        return null;
-    }
 
 }
