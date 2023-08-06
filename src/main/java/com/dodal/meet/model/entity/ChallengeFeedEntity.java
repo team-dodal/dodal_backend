@@ -1,6 +1,7 @@
 package com.dodal.meet.model.entity;
 
 import com.dodal.meet.utils.DateUtils;
+import com.dodal.meet.utils.FeedUtils;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.*;
@@ -50,5 +51,9 @@ public class ChallengeFeedEntity {
         this.accuseCnt = 0;
         this.registeredAt = Timestamp.from(Instant.now());
         this.registeredDate = DateUtils.parsingTimestamp(this.registeredAt);
+    }
+
+    public void updateCertCode(String code) {
+        this.certCode = code;
     }
 }

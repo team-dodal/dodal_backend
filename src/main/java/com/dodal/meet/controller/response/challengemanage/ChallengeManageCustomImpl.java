@@ -91,7 +91,7 @@ public class ChallengeManageCustomImpl implements ChallengeManageCustom {
                 .from(room)
                 .innerJoin(feed)
                 .on(room.id.eq(feed.roomId))
-                .where(room.id.eq(roomId).and(feed.certCode.eq(FeedUtils.REQUEST)).and(feed.registeredDate.substring(0, 6).eq(dateYM)))
+                .where(room.id.eq(roomId).and(feed.registeredDate.substring(0, 6).eq(dateYM)))
                 .orderBy(feed.registeredDate.desc(), feed.registeredAt.desc())
                 .fetch();
         return content;

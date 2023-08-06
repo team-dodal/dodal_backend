@@ -7,12 +7,12 @@ import com.dodal.meet.exception.DodalApplicationException;
 import com.dodal.meet.exception.ErrorCode;
 import com.dodal.meet.model.RoomRole;
 import com.dodal.meet.model.User;
+import com.dodal.meet.model.entity.ChallengeFeedEntity;
 import com.dodal.meet.model.entity.ChallengeRoomEntity;
 import com.dodal.meet.model.entity.ChallengeUserEntity;
 import com.dodal.meet.model.entity.UserEntity;
 import com.dodal.meet.repository.*;
-import com.dodal.meet.utils.DateUtils;
-import com.dodal.meet.utils.UserUtils;
+import com.dodal.meet.utils.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -54,6 +54,29 @@ public class ChallengeListService {
         return challengeRoomEntityRepository.getChallengeHost(userEntity);
     }
 
+    @Transactional
+    public void updateFeedStatus(Integer roomId, Long feedId, String confirmYN, Authentication authentication) {
+        UserEntity userEntity = getUserEntity(authentication);
+        ChallengeRoomEntity roomEntity = challengeRoomEntityRepository.findById(roomId).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM));
+        ChallengeUserEntity challengeUserEntity = challengeUserEntityRepository.findByUserIdAndChallengeRoomEntity(userEntity.getId(), roomEntity).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM_USER));
+        if (!challengeUserEntity.getRoomRole().equals(RoomRole.HOST)) {
+            throw new DodalApplicationException(ErrorCode.UNAUTHORIZED_ROOM_HOST);
+        }
+        ChallengeFeedEntity feedEntity = challengeFeedEntityRepository.findById(feedId).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_FEED));
+        if (!confirmYN.equals("Y") && !confirmYN.equals("N")) {
+            throw new DodalApplicationException(ErrorCode.INVALID_YN_REQUEST);
+        }
+
+        if (confirmYN.equals("Y")) {
+            feedEntity.updateCertCode(FeedUtils.CONFIRM);
+            fcmPushService.sendFcmPushUser(feedEntity.getUserId(), MessageUtils.makeFcmPushRequest(MessageType.CONFIRM, roomEntity.getTitle()));
+        } else {
+            feedEntity.updateCertCode(FeedUtils.REJECT);
+            fcmPushService.sendFcmPushUser(feedEntity.getUserId(), MessageUtils.makeFcmPushRequest(MessageType.REJECT, roomEntity.getTitle()));
+        }
+    }
+
+    @Transactional
     public Map<String, List<ChallengeCertImgManage>> getCertImgList(Integer roomId, String dateYM, Authentication authentication) {
         DateUtils.validDateYM(dateYM);
         UserEntity userEntity = getUserEntity(authentication);
@@ -84,4 +107,6 @@ public class ChallengeListService {
         User user = UserUtils.getUserInfo(authentication);
         return userEntityRepository.findBySocialIdAndSocialType(user.getSocialId(), user.getSocialType()).orElseThrow(() -> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
     }
+
+
 }
