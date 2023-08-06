@@ -12,10 +12,7 @@ import com.dodal.meet.model.RoomSearchType;
 import com.dodal.meet.model.User;
 import com.dodal.meet.model.entity.*;
 import com.dodal.meet.repository.*;
-import com.dodal.meet.utils.MessageType;
-import com.dodal.meet.utils.MessageUtils;
-import com.dodal.meet.utils.UserUtils;
-import com.dodal.meet.utils.ValueType;
+import com.dodal.meet.utils.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -23,9 +20,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.List;
 
 import static org.springframework.util.ObjectUtils.*;
@@ -167,6 +167,15 @@ public class ChallengeRoomService {
         ChallengeRoomEntity challengeRoom = getChallengeRoomEntityById(roomId);
         UserEntity userEntity = getUserEntityByAuthentication(authentication);
         ChallengeUserEntity challengeUser = challengeUserEntityRepository.findByUserIdAndChallengeRoomEntity(userEntity.getId(), challengeRoom).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM_USER));
+        String today = DateUtils.parsingTimestamp(Timestamp.from(Instant.now()));
+        List<ChallengeFeedEntity> userTodayFeedList = challengeFeedEntityRepository.findAllByUserIdAndRegisteredDate(userEntity.getId(), today);
+        if (!ObjectUtils.isEmpty(userTodayFeedList)) {
+            for (ChallengeFeedEntity entity : userTodayFeedList) {
+                if (entity.getCertCode().equals(FeedUtils.REQUEST) || entity.getCertCode().equals(FeedUtils.CONFIRM)) {
+                    throw new DodalApplicationException(ErrorCode.FEED_ALREADY_REQUEST);
+                }
+            }
+        }
         String certImgUrl = imageService.uploadMultipartFile(certificationImg);
         ChallengeFeedEntity entity = ChallengeFeedEntity
                 .builder()

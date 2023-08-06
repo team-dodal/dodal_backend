@@ -125,7 +125,6 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
                 .limit(6)
                 .fetch();
         response.setFeedUrlList(feedUrlList);
-        System.out.println(DateUtils.getWeekInfo().get(DateUtils.MON));
 
         // 가입한 유저라면 주간 인증 여부 및 인증 이미지 url을 요일별로 반환
         if (commonUserCnt != 0) {

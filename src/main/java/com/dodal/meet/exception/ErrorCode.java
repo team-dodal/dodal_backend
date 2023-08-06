@@ -32,6 +32,8 @@ public enum ErrorCode {
     NOT_FOUND_ROOM_NOTI(HttpStatus.BAD_REQUEST, "도전방에 요청한 공지사항이 존재하지 않습니다."),
     INVALID_DAY_CODE(HttpStatus.BAD_REQUEST, "요일 코드가 올바르지 않습니다."),
 
+    FEED_ALREADY_REQUEST(HttpStatus.BAD_REQUEST, "피드 인증 요청 중이거나 인증 완료 상태입니다."),
+
     // 401 - UNAUTHORIZED
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다."),
     EXPIRED_TOKEN(HttpStatus.UNAUTHORIZED, "기간이 만료된 토큰 입니다."),
