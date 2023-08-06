@@ -87,10 +87,12 @@ public class ChallengeManageCustomImpl implements ChallengeManageCustom {
     @Override
     public List<ChallengeCertImgManage> getCertImgList(final Integer roomId, final String dateYM) {
         List<ChallengeCertImgManage> content = queryFactory
-                .select(new QChallengeCertImgManage(room.id, feed.id, feed.userId, feed.certImgUrl, feed.certContent, feed.certCode, feed.registeredAt, feed.registeredDate))
+                .select(new QChallengeCertImgManage(room.id, feed.id, feed.userId, user.nickname, feed.certImgUrl, feed.certContent, feed.certCode, feed.registeredAt, feed.registeredDate))
                 .from(room)
                 .innerJoin(feed)
                 .on(room.id.eq(feed.roomId))
+                .innerJoin(user)
+                .on(user.id.eq(feed.userId))
                 .where(room.id.eq(roomId).and(feed.registeredDate.substring(0, 6).eq(dateYM)))
                 .orderBy(feed.registeredDate.desc(), feed.registeredAt.desc())
                 .fetch();

@@ -26,6 +26,9 @@ public class ChallengeCertImgManage {
     @Schema(description = "인증 요청한 유저 시퀀스 번호", example = "1")
     private Long requestUserId;
 
+    @Schema(description = "인증 요청한 유저 닉네임", example = "노래하는 어피치")
+    private String requestUserNickname;
+
     @Schema(description = "인증 이미지 url", example = "https://dodal-bucket.s3.ap-northeast-2.amazonaws.com")
     private String certImageUrl;
 
@@ -42,10 +45,11 @@ public class ChallengeCertImgManage {
 
     @QueryProjection
 
-    public ChallengeCertImgManage(Integer challengeRoomId, Long challengeFeedId, Long requestUserId, String certImageUrl, String certContent, String certCode, Timestamp registeredAt, String registeredDate) {
+    public ChallengeCertImgManage(Integer challengeRoomId, Long challengeFeedId, Long requestUserId, String requestUserNickname, String certImageUrl, String certContent, String certCode, Timestamp registeredAt, String registeredDate) {
         this.challengeRoomId = challengeRoomId;
         this.challengeFeedId = challengeFeedId;
         this.requestUserId = requestUserId;
+        this.requestUserNickname = requestUserNickname;
         this.certImageUrl = certImageUrl;
         this.certContent = certContent;
         this.certCode = certCode;
