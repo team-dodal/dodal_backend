@@ -2,8 +2,9 @@ package com.dodal.meet.controller;
 
 
 import com.dodal.meet.controller.response.Response;
-import com.dodal.meet.controller.response.challengelist.ChallengeHostRoleResponse;
-import com.dodal.meet.controller.response.challengelist.ChallengeUserRoleResponse;
+import com.dodal.meet.controller.response.challengemanage.ChallengeCertImgManage;
+import com.dodal.meet.controller.response.challengemanage.ChallengeHostRoleResponse;
+import com.dodal.meet.controller.response.challengemanage.ChallengeUserRoleResponse;
 import com.dodal.meet.service.ChallengeListService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -18,16 +19,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
-@Tag(name = "ChallengeList", description = "진행중인 도전 리스트 API")
+@Tag(name = "ChallengeList", description = "도전방 관리 API")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/users/me/challenges")
@@ -63,5 +63,19 @@ public class ChallengeListController {
     public ResponseEntity<EntityModel<Response<List<ChallengeHostRoleResponse>>>> getHostRoleChallengeRooms(Authentication authentication) {
         Link selfRel = linkTo(methodOn(ChallengeListController.class).getHostRoleChallengeRooms(authentication)).withSelfRel();
         return new ResponseEntity<>(EntityModel.of(Response.success(challengeListService.getHostRoleChallengeRooms(authentication)), selfRel), HttpStatus.OK);
+    }
+
+    @Operation(summary = "도전방 인증 관리 API"
+            , description = "유저가 방장으로 관리중인 도전방에서 요청 온 인증 정보를 반환한다.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "성공", useReturnTypeSchema = true),
+                    @ApiResponse(responseCode = "400", description = "NOT_FOUND_ROOM", content = @Content(schema = @Schema(implementation = Response.class))),
+                    @ApiResponse(responseCode = "401", description = "INVALID_TOKEN, UNAUTHORIZED_ROOM_HOST", content = @Content(schema = @Schema(implementation = Response.class))),
+                    @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = Response.class)))
+            })
+    @GetMapping("/manage/{room_id}/certifications")
+    public ResponseEntity<EntityModel<Response<Map<String, List<ChallengeCertImgManage>>>>> getCertImgList(@PathVariable(name = "room_id") Integer roomId, @RequestParam(name = "date_ym") String dateYM, Authentication authentication) {
+        Link selfRel = linkTo(methodOn(ChallengeListController.class).getCertImgList(roomId, dateYM, authentication)).withSelfRel();
+        return new ResponseEntity<>(EntityModel.of(Response.success(challengeListService.getCertImgList(roomId, dateYM, authentication)), selfRel), HttpStatus.OK);
     }
 }

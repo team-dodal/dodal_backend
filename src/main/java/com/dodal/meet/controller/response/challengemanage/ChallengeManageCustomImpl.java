@@ -1,4 +1,4 @@
-package com.dodal.meet.controller.response.challengelist;
+package com.dodal.meet.controller.response.challengemanage;
 
 import com.dodal.meet.model.RoomRole;
 import com.dodal.meet.model.entity.*;
@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 @RequiredArgsConstructor
-public class ChallengeListCustomImpl implements ChallengeListCustom {
+public class ChallengeManageCustomImpl implements ChallengeManageCustom {
 
     private final JPAQueryFactory queryFactory;
 
@@ -80,6 +80,19 @@ public class ChallengeListCustomImpl implements ChallengeListCustom {
                 .on(bookmark.challengeRoomEntity.eq(room).and(bookmark.userEntity.eq(userEntity)))
                 .where(challengeUser.userId.eq(userEntity.getId()).and(challengeUser.roomRole.eq(RoomRole.HOST)))
                 .orderBy(certRequestCnt.desc())
+                .fetch();
+        return content;
+    }
+
+    @Override
+    public List<ChallengeCertImgManage> getCertImgList(final Integer roomId, final String dateYM) {
+        List<ChallengeCertImgManage> content = queryFactory
+                .select(new QChallengeCertImgManage(room.id, feed.id, feed.userId, feed.certImgUrl, feed.certContent, feed.certCode, feed.registeredAt, feed.registeredDate))
+                .from(room)
+                .innerJoin(feed)
+                .on(room.id.eq(feed.roomId))
+                .where(room.id.eq(roomId).and(feed.certCode.eq(FeedUtils.REQUEST)).and(feed.registeredDate.substring(0, 6).eq(dateYM)))
+                .orderBy(feed.registeredDate.desc(), feed.registeredAt.desc())
                 .fetch();
         return content;
     }

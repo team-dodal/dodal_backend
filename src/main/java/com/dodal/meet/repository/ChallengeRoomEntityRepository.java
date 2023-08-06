@@ -1,8 +1,8 @@
 package com.dodal.meet.repository;
 
 import com.dodal.meet.controller.request.challengeroom.ChallengeRoomCondition;
-import com.dodal.meet.controller.response.challengelist.ChallengeListCustom;
-import com.dodal.meet.controller.response.challengelist.ChallengeUserRoleResponse;
+import com.dodal.meet.controller.response.challengemanage.ChallengeManageCustom;
+import com.dodal.meet.controller.response.challengemanage.ChallengeUserRoleResponse;
 import com.dodal.meet.controller.response.challengeroom.ChallengeRoomCustom;
 import com.dodal.meet.controller.response.challengeroom.ChallengeRoomSearchResponse;
 import com.dodal.meet.model.entity.ChallengeRoomEntity;
@@ -15,7 +15,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface ChallengeRoomEntityRepository extends JpaRepository<ChallengeRoomEntity, Integer>, ChallengeRoomCustom, ChallengeListCustom {
+public interface ChallengeRoomEntityRepository extends JpaRepository<ChallengeRoomEntity, Integer>, ChallengeRoomCustom, ChallengeManageCustom {
     @Override
     Page<ChallengeRoomSearchResponse> getChallengeRooms(ChallengeRoomCondition challengeRoomCondition, Pageable pageable, UserEntity userEntity);
 

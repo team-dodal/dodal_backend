@@ -1,4 +1,4 @@
-package com.dodal.meet.controller.response.challengelist;
+package com.dodal.meet.controller.response.challengemanage;
 
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
@@ -12,11 +12,11 @@ import java.sql.Timestamp;
 @Builder
 @Getter
 @Setter
-@Schema(description = "진행중인 도전방 정보 응답")
+@Schema(description = "운영중인 도전방 정보 응답")
 @JsonNaming(value = PropertyNamingStrategy.SnakeCaseStrategy.class)
 @NoArgsConstructor
 @ToString
-public class ChallengeUserRoleResponse {
+public class ChallengeHostRoleResponse {
     @Schema(description = "도전방 시퀀스 번호", example = "1")
     private Integer challengeRoomId;
 
@@ -65,15 +65,12 @@ public class ChallengeUserRoleResponse {
     @Schema(description = "태그 값", example = "001004")
     private String tagValue;
 
-    @Schema(description = "주간 인증 횟수", example = "2")
-    private int weekUserCertCnt;
-
-    @Schema(description = "오늘 인증 완료 여부", example = "N")
-    private String certCode;
+    @Schema(description = "인증 요청 수", example = "32")
+    private int certRequestCnt;
 
 
     @QueryProjection
-    public ChallengeUserRoleResponse(Integer challengeRoomId, Long userId, String nickname, String profileUrl, String title, int certCnt, String thumbnailImgUrl, int recruitCnt, int userCnt, int bookmarkCnt, String bookmarkYN, Timestamp registeredAt, String categoryName, String categoryValue, String tagName, String tagValue, int weekUserCertCnt, String certCode) {
+    public ChallengeHostRoleResponse(Integer challengeRoomId, Long userId, String nickname, String profileUrl, String title, int certCnt, String thumbnailImgUrl, int recruitCnt, int userCnt, int bookmarkCnt, String bookmarkYN, Timestamp registeredAt, String categoryName, String categoryValue, String tagName, String tagValue, int certRequestCnt) {
         this.challengeRoomId = challengeRoomId;
         this.userId = userId;
         this.nickname = nickname;
@@ -90,7 +87,6 @@ public class ChallengeUserRoleResponse {
         this.categoryValue = categoryValue;
         this.tagName = tagName;
         this.tagValue = tagValue;
-        this.weekUserCertCnt = weekUserCertCnt;
-        this.certCode = certCode;
+        this.certRequestCnt = certRequestCnt;
     }
 }
