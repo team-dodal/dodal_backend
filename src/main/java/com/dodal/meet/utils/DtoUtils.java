@@ -8,6 +8,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class DtoUtils {
+
+    public static final String Y = "Y";
+    public static final String N = "N";
     private static String[] getNullPropertyNames (Object source) {
         final BeanWrapper src = new BeanWrapperImpl(source);
         java.beans.PropertyDescriptor[] pds = src.getPropertyDescriptors();

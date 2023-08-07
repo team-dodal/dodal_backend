@@ -15,10 +15,12 @@ import com.dodal.meet.repository.*;
 import com.dodal.meet.utils.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
 
@@ -27,57 +29,48 @@ import java.util.*;
 @Slf4j
 public class ChallengeListService {
 
-    private final ChallengeNotiEntityRepository challengeNotiEntityRepository;
     private final ChallengeFeedEntityRepository challengeFeedEntityRepository;
-    private final CategoryEntityRepository categoryEntityRepository;
-    private final ChallengeBookmarkEntityRepository challengeBookmarkEntityRepository;
     private final UserEntityRepository userEntityRepository;
     private final ChallengeRoomEntityRepository challengeRoomEntityRepository;
     private final ChallengeUserEntityRepository challengeUserEntityRepository;
-    private final ChallengeTagEntityRepository challengeTagEntityRepository;
-    private final TagEntityRepository tagEntityRepository;
-    private final UserService userService;
-    private final ImageService imageService;
     private final FcmPushService fcmPushService;
-    private final ChallengeRoomService challengeRoomService;
-
 
     @Transactional
-    public List<ChallengeUserRoleResponse> getUserRoleChallengeRooms(Authentication authentication) {
+    public List<ChallengeUserRoleResponse> getUserRoleChallengeRooms(final Authentication authentication) {
         UserEntity userEntity = getUserEntity(authentication);
         return challengeRoomEntityRepository.getChallengeUser(userEntity);
     }
 
     @Transactional
-    public List<ChallengeHostRoleResponse> getHostRoleChallengeRooms(Authentication authentication) {
+    public List<ChallengeHostRoleResponse> getHostRoleChallengeRooms(final Authentication authentication) {
         UserEntity userEntity = getUserEntity(authentication);
         return challengeRoomEntityRepository.getChallengeHost(userEntity);
     }
 
     @Transactional
-    public void updateFeedStatus(Integer roomId, Long feedId, String confirmYN, Authentication authentication) {
-        UserEntity userEntity = getUserEntity(authentication);
-        ChallengeRoomEntity roomEntity = challengeRoomEntityRepository.findById(roomId).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM));
-        ChallengeUserEntity challengeUserEntity = challengeUserEntityRepository.findByUserIdAndChallengeRoomEntity(userEntity.getId(), roomEntity).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM_USER));
+    public void updateFeedStatus(final Integer roomId, final Long feedId, final String confirmYN, final Authentication authentication) {
+        final UserEntity userEntity = getUserEntity(authentication);
+        final ChallengeRoomEntity roomEntity = challengeRoomEntityRepository.findById(roomId).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM));
+        final ChallengeUserEntity challengeUserEntity = challengeUserEntityRepository.findByUserIdAndChallengeRoomEntity(userEntity.getId(), roomEntity).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM_USER));
         if (!challengeUserEntity.getRoomRole().equals(RoomRole.HOST)) {
             throw new DodalApplicationException(ErrorCode.UNAUTHORIZED_ROOM_HOST);
         }
         ChallengeFeedEntity feedEntity = challengeFeedEntityRepository.findById(feedId).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_FEED));
-        if (!confirmYN.equals("Y") && !confirmYN.equals("N")) {
-            throw new DodalApplicationException(ErrorCode.INVALID_YN_REQUEST);
-        }
 
-        if (confirmYN.equals("Y")) {
+        StringUtils.equalsAny(confirmYN, DtoUtils.Y, DtoUtils.N);
+        if(StringUtils.equals(confirmYN, DtoUtils.Y)){
             feedEntity.updateCertCode(FeedUtils.CONFIRM);
             fcmPushService.sendFcmPushUser(feedEntity.getUserId(), MessageUtils.makeFcmPushRequest(MessageType.CONFIRM, roomEntity.getTitle()));
-        } else {
+        } else if (StringUtils.equals(confirmYN, DtoUtils.N)) {
             feedEntity.updateCertCode(FeedUtils.REJECT);
             fcmPushService.sendFcmPushUser(feedEntity.getUserId(), MessageUtils.makeFcmPushRequest(MessageType.REJECT, roomEntity.getTitle()));
+        } else {
+            throw new DodalApplicationException(ErrorCode.INVALID_YN_REQUEST);
         }
     }
 
     @Transactional
-    public Map<String, List<ChallengeCertImgManage>> getCertImgList(Integer roomId, String dateYM, Authentication authentication) {
+    public Map<String, List<ChallengeCertImgManage>> getCertImgList(final Integer roomId, final String dateYM, final Authentication authentication) {
         DateUtils.validDateYM(dateYM);
         UserEntity userEntity = getUserEntity(authentication);
         ChallengeRoomEntity roomEntity = challengeRoomEntityRepository.findById(roomId).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM));
