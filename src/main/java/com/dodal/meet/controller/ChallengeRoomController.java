@@ -183,11 +183,11 @@ public class ChallengeRoomController {
 
             @Schema(name = "cert_correct_img")
             @Parameter(name = "cert_correct_img", content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE))
-            @RequestPart(name = "cert_correct_img") MultipartFile certCorrectImg,
+            @RequestPart(name = "cert_correct_img", required = false) MultipartFile certCorrectImg,
 
             @Schema(name = "cert_wrong_img")
             @Parameter(name = "cert_wrong_img", content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE))
-            @RequestPart(name = "cert_wrong_img") MultipartFile certWrongImg,
+            @RequestPart(name = "cert_wrong_img", required = false) MultipartFile certWrongImg,
 
             final Authentication authentication
     ) {

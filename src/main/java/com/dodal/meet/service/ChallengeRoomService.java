@@ -55,13 +55,21 @@ public class ChallengeRoomService {
 
         ChallengeRoomEntity challengeRoomEntity = ChallengeRoomEntity.dtoToEntity(challengeRoomCreateRequest);
         String thumbnailImgUrl = null;
-        if (challengeRoomEntity.getThumbnailImgUrl() != null) {
+        String certCorrectImgUrl = null;
+        String certWrongImgUrl = null;
+        if (!ObjectUtils.isEmpty(challengeRoomEntity.getThumbnailImgUrl())) {
             thumbnailImgUrl = imageService.uploadMultipartFile(challengeRoomCreateRequest.getThumbnailImg());
         }
-        final String certCorrectImgUrl = imageService.uploadMultipartFile(challengeRoomCreateRequest.getCertCorrectImg());
-        final String certWrongImgUrl = imageService.uploadMultipartFile(challengeRoomCreateRequest.getCertWrongImg());
-        final String tagValue = challengeRoomCreateRequest.getTagValue();
 
+        if (!ObjectUtils.isEmpty(challengeRoomCreateRequest.getCertCorrectImg())) {
+            certCorrectImgUrl = imageService.uploadMultipartFile(challengeRoomCreateRequest.getCertCorrectImg());
+        }
+
+        if (!ObjectUtils.isEmpty(challengeRoomCreateRequest.getCertWrongImg())) {
+            certWrongImgUrl = imageService.uploadMultipartFile(challengeRoomCreateRequest.getCertWrongImg());
+        }
+
+        final String tagValue = challengeRoomCreateRequest.getTagValue();
 
         UserEntity userEntity = userService.userToUserEntity(authentication);
         ChallengeUserEntity challengeUserEntity = ChallengeUserEntity.getHostEntity(userEntity);
