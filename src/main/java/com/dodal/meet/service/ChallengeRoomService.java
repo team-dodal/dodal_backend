@@ -1,10 +1,7 @@
 package com.dodal.meet.service;
 
 import com.dodal.meet.controller.request.challengeroom.*;
-import com.dodal.meet.controller.response.challengeroom.ChallengeCreateResponse;
-import com.dodal.meet.controller.response.challengeroom.ChallengeNotiResponse;
-import com.dodal.meet.controller.response.challengeroom.ChallengeRoomDetailResponse;
-import com.dodal.meet.controller.response.challengeroom.ChallengeRoomSearchResponse;
+import com.dodal.meet.controller.response.challengeroom.*;
 import com.dodal.meet.exception.DodalApplicationException;
 import com.dodal.meet.exception.ErrorCode;
 import com.dodal.meet.model.RoomRole;
@@ -20,7 +17,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -53,23 +49,27 @@ public class ChallengeRoomService {
     @Transactional
     public ChallengeCreateResponse createChallengeRoom(final ChallengeRoomCreateRequest challengeRoomCreateRequest, final Authentication authentication) {
 
-        ChallengeRoomEntity challengeRoomEntity = ChallengeRoomEntity.dtoToEntity(challengeRoomCreateRequest);
+        ChallengeRoomEntity challengeRoomEntity = ChallengeRoomEntity.createDtoToEntity(challengeRoomCreateRequest);
         String thumbnailImgUrl = null;
         String certCorrectImgUrl = null;
         String certWrongImgUrl = null;
-        if (!ObjectUtils.isEmpty(challengeRoomEntity.getThumbnailImgUrl())) {
+        final String tagValue = challengeRoomCreateRequest.getTagValue();
+        TagEntity tagEntity = tagEntityRepository.findByTagValue(tagValue).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_TAG));
+
+        if (!isEmpty(challengeRoomEntity.getThumbnailImgUrl())) {
             thumbnailImgUrl = imageService.uploadMultipartFile(challengeRoomCreateRequest.getThumbnailImg());
+        } else {
+            final String categoryValue = tagEntity.getCategoryEntity().getCategoryValue();
+            thumbnailImgUrl = ImageUtils.findByCategoryValueToRoomThumbnailImageUrl(categoryValue);
         }
 
-        if (!ObjectUtils.isEmpty(challengeRoomCreateRequest.getCertCorrectImg())) {
+        if (!isEmpty(challengeRoomCreateRequest.getCertCorrectImg())) {
             certCorrectImgUrl = imageService.uploadMultipartFile(challengeRoomCreateRequest.getCertCorrectImg());
         }
 
-        if (!ObjectUtils.isEmpty(challengeRoomCreateRequest.getCertWrongImg())) {
+        if (!isEmpty(challengeRoomCreateRequest.getCertWrongImg())) {
             certWrongImgUrl = imageService.uploadMultipartFile(challengeRoomCreateRequest.getCertWrongImg());
         }
-
-        final String tagValue = challengeRoomCreateRequest.getTagValue();
 
         UserEntity userEntity = userService.userToUserEntity(authentication);
         ChallengeUserEntity challengeUserEntity = ChallengeUserEntity.getHostEntity(userEntity);
@@ -81,12 +81,12 @@ public class ChallengeRoomService {
         challengeUserEntity.addChallengeRoomEntity(challengeRoomEntity);
         challengeUserEntityRepository.save(challengeUserEntity);
 
-        TagEntity tagEntity = tagEntityRepository.findByTagValue(tagValue).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_TAG));
+
         ChallengeTagEntity challengeTagEntity = getChallengeTagEntity(challengeRoomEntity, tagEntity);
         challengeRoomEntity.addChallengeTagEntity(challengeTagEntity);
         challengeTagEntityRepository.save(challengeTagEntity);
 
-        return getChallengeCreateRequestFromEntities(challengeRoomEntity, challengeTagEntity, challengeUserEntity);
+        return getChallengeCreateRequestFromEntities(challengeRoomEntity, challengeTagEntity);
     }
 
     @Transactional
@@ -177,7 +177,7 @@ public class ChallengeRoomService {
         ChallengeUserEntity challengeUser = challengeUserEntityRepository.findByUserIdAndChallengeRoomEntity(userEntity.getId(), challengeRoom).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM_USER));
         String today = DateUtils.parsingTimestamp(Timestamp.from(Instant.now()));
         List<ChallengeFeedEntity> userTodayFeedList = challengeFeedEntityRepository.findAllByUserIdAndRegisteredDate(userEntity.getId(), today);
-        if (!ObjectUtils.isEmpty(userTodayFeedList)) {
+        if (!isEmpty(userTodayFeedList)) {
             for (ChallengeFeedEntity entity : userTodayFeedList) {
                 if (entity.getCertCode().equals(FeedUtils.REQUEST) || entity.getCertCode().equals(FeedUtils.CONFIRM)) {
                     throw new DodalApplicationException(ErrorCode.FEED_ALREADY_REQUEST);
@@ -249,6 +249,42 @@ public class ChallengeRoomService {
         challengeNotiEntityRepository.delete(notiEntity);
     }
 
+    @Transactional
+    public ChallengeUpdateResponse updateChallengeRoom(final Integer roomId, final ChallengeRoomUpdateRequest challengeRoomUpdateRequest, final Authentication authentication) {
+        final User user = UserUtils.getUserInfo(authentication);
+        final UserEntity entity = userEntityRepository.findBySocialIdAndSocialType(user.getSocialId(), user.getSocialType()).orElseThrow(() -> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
+        ChallengeRoomEntity challengeRoomEntity = challengeRoomEntityRepository.findById(roomId).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM));
+        final ChallengeUserEntity challengeUserEntity = challengeUserEntityRepository.findByUserIdAndChallengeRoomEntity(entity.getId(), challengeRoomEntity).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM_USER));
+        if (!challengeUserEntity.getRoomRole().equals(RoomRole.HOST)) {
+            throw new DodalApplicationException(ErrorCode.UNAUTHORIZED_ROOM_HOST);
+        }
+
+        // 이미지 수정은 값이 있을 경우 기존 이미지를 S3에서 제거한다.
+        final MultipartFile thumbnailImg = challengeRoomUpdateRequest.getThumbnailImg();
+        final MultipartFile certCorrectImg = challengeRoomUpdateRequest.getCertCorrectImg();
+        final MultipartFile certWrongImg = challengeRoomUpdateRequest.getCertWrongImg();
+
+        if (!isEmpty(thumbnailImg)) {
+            if (!isEmpty(challengeRoomEntity.getThumbnailImgUrl())) {
+                imageService.deleteImg(challengeRoomEntity.getThumbnailImgUrl());
+            }
+        }
+
+        if (!isEmpty(certCorrectImg)) {
+            if (!isEmpty(challengeRoomEntity.getCertCorrectImgUrl())) {
+                imageService.deleteImg(challengeRoomEntity.getCertCorrectImgUrl());
+            }
+        }
+
+        if (!isEmpty(certWrongImg)) {
+            if (!isEmpty(challengeRoomEntity.getCertWrongImgUrl())) {
+                imageService.deleteImg(challengeRoomEntity.getCertWrongImgUrl());
+            }
+        }
+
+        return null;
+    }
+
 
     private void validNotiEntity(Integer roomId, Authentication authentication) {
         User user = UserUtils.getUserInfo(authentication);
@@ -305,7 +341,7 @@ public class ChallengeRoomService {
         challengeRoomEntityRepository.save(challengeRoomEntity);
     }
 
-    private ChallengeCreateResponse getChallengeCreateRequestFromEntities(ChallengeRoomEntity challengeRoomEntity, ChallengeTagEntity challengeTagEntity, ChallengeUserEntity challengeUserEntity) {
+    private ChallengeCreateResponse getChallengeCreateRequestFromEntities(ChallengeRoomEntity challengeRoomEntity, ChallengeTagEntity challengeTagEntity) {
         return ChallengeCreateResponse.builder()
                 .challengeRoomId(challengeRoomEntity.getId())
                 .userId(challengeRoomEntity.getHostId())
@@ -340,7 +376,4 @@ public class ChallengeRoomService {
                 .tagValue(tagEntity.getTagValue())
                 .build();
     }
-
-
-
 }

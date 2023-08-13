@@ -1,15 +1,10 @@
 package com.dodal.meet.controller;
 
-import com.dodal.meet.controller.request.challengeroom.ChallengeNotiCreateRequest;
-import com.dodal.meet.controller.request.challengeroom.ChallengeNotiUpdateRequest;
-import com.dodal.meet.controller.request.challengeroom.ChallengeRoomCreateRequest;
-import com.dodal.meet.controller.request.challengeroom.ChallengeRoomSearchCategoryRequest;
+import com.dodal.meet.controller.request.challengeroom.*;
 import com.dodal.meet.controller.response.Response;
-import com.dodal.meet.controller.response.challengeroom.ChallengeCreateResponse;
-import com.dodal.meet.controller.response.challengeroom.ChallengeNotiResponse;
-import com.dodal.meet.controller.response.challengeroom.ChallengeRoomDetailResponse;
-import com.dodal.meet.controller.response.challengeroom.ChallengeRoomSearchResponse;
+import com.dodal.meet.controller.response.challengeroom.*;
 import com.dodal.meet.service.ChallengeRoomService;
+import com.dodal.meet.valid.NullOrNotBlank;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -205,6 +200,77 @@ public class ChallengeRoomController {
         Link selfRel = linkTo(methodOn(ChallengeRoomController.class).createChallengeRoom(tagValue, title, thumbnailImg, content,
                 recruitCnt, certCnt, certContent, certCorrectImg, certWrongImg, authentication)).withSelfRel();
         return new ResponseEntity<>(EntityModel.of(Response.success(challengeRoomService.createChallengeRoom(challengeRoomCreateRequest, authentication)), selfRel), HttpStatus.CREATED);
+    }
+
+    @Operation(summary = "도전방 수정 API"
+            , description = "도전방을 생성한다.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "성공", useReturnTypeSchema = true),
+                    @ApiResponse(responseCode = "400", description = "실패 - INVALID_REQUEST_FIELD", content = @Content(schema = @Schema(implementation = Response.class))),
+                    @ApiResponse(responseCode = "401", description = "실패 - INVALID_TOKEN", content = @Content(schema = @Schema(implementation = Response.class))),
+                    @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = Response.class)))
+            })
+    @PatchMapping(value = "/challenge/room/{room_id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<EntityModel<Response<ChallengeUpdateResponse>>> updateChallengeRoom(
+            @PathVariable(name = "room_id") Integer roomId,
+
+            @NullOrNotBlank
+            @Schema(name =  "tag_value", example = "001001")
+            @RequestParam(name = "tag_value", required = false) String tagValue,
+
+            @NullOrNotBlank
+            @Schema(name =  "title", example = "매일매일 자격증 공부!")
+            @RequestParam(name = "title", required = false) String title,
+
+            @Schema(name = "thumbnail_img")
+            @Parameter(name = "thumbnail_img", content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE))
+            @RequestPart(name = "thumbnail_img", required = false) MultipartFile thumbnailImg,
+
+//            @Size(min = 1, max = 500, message = "content는 1자 ~ 500자 사이여야 합니다.")
+            @NullOrNotBlank
+            @Schema(name =  "content", example = "이런 분들에게 추천해요! \n - 자격증 시험이 얼마 남지 않은 분 \n - 꾸준하게 공부하고 싶은 분 ")
+            @RequestParam(name = "content", required = false) String content,
+
+//            @Range(min = 5, max = 50, message = "recruit_cnt는 5 ~ 50 사이여야 합니다.")
+            @NullOrNotBlank
+            @Schema(name =  "recruit_cnt", example = "10")
+            @RequestParam(name = "recruit_cnt", required = false) int recruitCnt,
+
+//            @Range(min = 1, max = 7, message = "cert_cnt는 1 ~ 7 사이여야 합니다.")
+
+            @NullOrNotBlank
+            @Schema(name =  "cert_cnt", example = "3")
+            @RequestParam(name = "cert_cnt", required = false) int certCnt,
+
+//            @Size(min = 1, max = 500, message = "cert_content은 1자 ~ 500자 사이여야 합니다.")
+            @NullOrNotBlank
+            @Schema(name =  "cert_content", example = "인증은 아래의 예시 이미지와 같이 업로드해야 합니다.")
+            @RequestParam(name = "cert_content", required = false) String certContent,
+
+            @Schema(name = "cert_correct_img")
+            @Parameter(name = "cert_correct_img", content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE))
+            @RequestPart(name = "cert_correct_img", required = false) MultipartFile certCorrectImg,
+
+            @Schema(name = "cert_wrong_img")
+            @Parameter(name = "cert_wrong_img", content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE))
+            @RequestPart(name = "cert_wrong_img", required = false) MultipartFile certWrongImg,
+
+            final Authentication authentication
+    ) {
+        final ChallengeRoomUpdateRequest challengeRoomUpdateRequest = ChallengeRoomUpdateRequest.builder()
+                .tagValue(tagValue)
+                .title(title)
+                .thumbnailImg(thumbnailImg)
+                .content(content)
+                .recruitCnt(recruitCnt)
+                .certCnt(certCnt)
+                .certContent(certContent)
+                .certCorrectImg(certCorrectImg)
+                .certWrongImg(certWrongImg)
+                .build();
+        Link selfRel = linkTo(methodOn(ChallengeRoomController.class).createChallengeRoom(tagValue, title, thumbnailImg, content,
+                recruitCnt, certCnt, certContent, certCorrectImg, certWrongImg, authentication)).withSelfRel();
+        return new ResponseEntity<>(EntityModel.of(Response.success(challengeRoomService.updateChallengeRoom(roomId, challengeRoomUpdateRequest, authentication)), selfRel), HttpStatus.OK);
     }
 
     @Operation(summary = "북마크 등록 API"

@@ -38,7 +38,7 @@ public class SecurityConfig {
         return http.csrf().disable().
                 requestMatchers(matchers-> matchers.antMatchers("/v3/api-docs/**", "/v3/api-docs.yaml", "/swagger*/**",
                         "/api/**/users/sign-in", "/api/**/users/sign-up", "/api/**/users/nickname/**", "/api/**/users/profile",
-                        "/api/**/categories/tags"))
+                        "/api/**/categories/tags", "/img/**", "/favicon.ico"))
                 .authorizeHttpRequests(authorize -> authorize.anyRequest().permitAll())
                 .requestCache(RequestCacheConfigurer::disable)
                 .securityContext(AbstractHttpConfigurer::disable)

@@ -25,3 +25,5 @@ spring:
       mode: always
       encoding: utf-8
       platform: mysql
+server:
+  url: http://localhost:8080
