@@ -13,6 +13,7 @@ import java.sql.Timestamp;
 @Setter
 @Schema(description = "카테고리와 태그 정보 응답")
 @JsonNaming(value = PropertyNamingStrategy.SnakeCaseStrategy.class)
+@AllArgsConstructor
 @ToString
 public class ChallengeRoomSearchResponse {
     @Schema(description = "도전방 시퀀스 번호", example = "1")
@@ -47,6 +48,9 @@ public class ChallengeRoomSearchResponse {
 
     @Schema(description = "유저 북마크 여부", example = "N")
     private String bookmarkYN;
+
+    @Schema(description = "유저 가입 여부", example = "N")
+    private String joinYN = "N";
 
     @Schema(description = "도전방 생성 시간", example = "2023-07-15 18:58:51.056899")
     private Timestamp registeredAt;

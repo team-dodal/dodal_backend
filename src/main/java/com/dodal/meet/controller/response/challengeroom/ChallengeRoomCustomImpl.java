@@ -28,8 +28,10 @@ import org.springframework.util.StringUtils;
 
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.springframework.util.ObjectUtils.*;
@@ -58,9 +60,12 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
 
     @Override
     public Page<ChallengeRoomSearchResponse> getChallengeRoomsByCategory(ChallengeRoomSearchCategoryRequest request, Pageable pageable, UserEntity userEntity) {
+
+        List<Integer> userRoomList = queryFactory.select(challengeUser.challengeRoomEntity.id).from(challengeUser).where(challengeUser.userId.eq(userEntity.getId())).fetch();
+
         List<ChallengeRoomSearchResponse> content = queryFactory
                 .select(new QChallengeRoomSearchResponse(
-                        room.id, challengeUser.userId, challengeUser.nickname, user.profileUrl, room.title, room.certCnt, room.thumbnailImgUrl, room.recruitCnt,
+                        room.id, room.hostId, room.hostNickname, room.hostProfileUrl, room.title, room.certCnt, room.thumbnailImgUrl, room.recruitCnt,
                         room.userCnt, room.bookmarkCnt, new CaseBuilder().when(bookmark.userEntity.isNotNull()).then("Y").otherwise("N").as("bookmarkYN"),
                         room.registeredAt, roomTag.categoryName, roomTag.categoryValue, roomTag.tagName, roomTag.tagValue
                 )).from(room)
@@ -68,8 +73,6 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
                 .on(challengeUser.challengeRoomEntity.eq(room))
                 .innerJoin(roomTag)
                 .on(roomTag.challengeRoomEntity.eq(room))
-                .innerJoin(user)
-                .on(challengeUser.userId.eq(user.id))
                 .leftJoin(bookmark)
                 .on(bookmark.userEntity.eq(userEntity).and(bookmark.challengeRoomEntity.eq(room)))
                 .where(challengeUser.roomRole.eq(RoomRole.HOST).and(tagValueEq(request.getTagValue()))
@@ -78,6 +81,14 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
+
+        Set<Integer> userRoomSet = new HashSet<>(userRoomList);
+        content.forEach(row -> {
+            if (userRoomSet.contains(row.getChallengeRoomId())) {
+                row.setJoinYN("Y");
+            }
+        });
+
         return new PageImpl<>(content, pageable, content.size());
     }
 
