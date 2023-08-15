@@ -1,10 +1,10 @@
 package com.dodal.meet.controller;
 
 import com.dodal.meet.controller.request.user.*;
-import com.dodal.meet.controller.response.Response;
+import com.dodal.meet.controller.response.ResponseFail;
+import com.dodal.meet.controller.response.ResponseSuccess;
 import com.dodal.meet.controller.response.user.*;
 import com.dodal.meet.model.SocialType;
-import com.dodal.meet.service.ImageService;
 import com.dodal.meet.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -15,9 +15,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.Link;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -28,10 +25,8 @@ import javax.validation.Valid;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
+import java.net.URI;
 import java.util.List;
-
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Tag(name = "User", description = "유저 API")
 @RestController
@@ -41,32 +36,30 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @Validated
 public class UserController {
     private final UserService userService;
-    private final ImageService imageService;
 
     @Operation(summary = "로그인 API"
             , description = "사용자 정보(소셜 id, 소셜 type)를 받아 가입 여부를 반환한다.",
     responses = {
             @ApiResponse(responseCode = "200", description = "성공", useReturnTypeSchema = true),
-            @ApiResponse(responseCode = "400", description = "실패 - INVALID_LOGIN_REQUEST", content = @Content(schema = @Schema(implementation = Response.class))),
-            @ApiResponse(responseCode = "401", description = "실패 - INVALID_TOKEN", content = @Content(schema = @Schema(implementation = Response.class))),
-            @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = Response.class)))
+            @ApiResponse(responseCode = "400", description = "실패 - INVALID_LOGIN_REQUEST", content = @Content(schema = @Schema(implementation = ResponseFail.class))),
+            @ApiResponse(responseCode = "401", description = "실패 - INVALID_TOKEN", content = @Content(schema = @Schema(implementation = ResponseFail.class))),
+            @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = ResponseFail.class)))
     })
     @PostMapping("/sign-in")
-    public ResponseEntity<EntityModel<Response<UserSignInResponse>>> signIn(@Valid @RequestBody UserSignInRequest request) {
-        Link selfRel = linkTo(methodOn(UserController.class).signIn(request)).withSelfRel();
-        return new ResponseEntity<>(EntityModel.of(Response.success(userService.signIn(request)), selfRel), HttpStatus.OK) ;
+    public ResponseEntity<ResponseSuccess<UserSignInResponse>> signIn(@Valid @RequestBody UserSignInRequest request) {
+        return ResponseEntity.ok().body(ResponseSuccess.success(userService.signIn(request)));
     }
 
     @Operation(summary = "회원가입 API"
             , description = "사용자 정보(소셜 id, 소셜 type 등)을 받아서 토큰을 반환한다.",
             responses = {
                     @ApiResponse(responseCode = "201", description = "성공", useReturnTypeSchema = true),
-                    @ApiResponse(responseCode = "400", description = "실패 - INVALID_LOGIN_REQUEST", content = @Content(schema = @Schema(implementation = Response.class))),
-                    @ApiResponse(responseCode = "401", description = "실패 - INVALID_TOKEN", content = @Content(schema = @Schema(implementation = Response.class))),
-                    @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = Response.class)))
+                    @ApiResponse(responseCode = "400", description = "실패 - INVALID_LOGIN_REQUEST", content = @Content(schema = @Schema(implementation = ResponseFail.class))),
+                    @ApiResponse(responseCode = "401", description = "실패 - INVALID_TOKEN", content = @Content(schema = @Schema(implementation = ResponseFail.class))),
+                    @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = ResponseFail.class)))
             })
     @PostMapping(value = "/sign-up", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<EntityModel<Response<UserSignUpResponse>>> signUp(
+    public ResponseEntity<ResponseSuccess<UserSignUpResponse>> signUp(
                                                                             @Schema(name =  "social_type", example = "KAKAO")
                                                                             @RequestParam(name = "social_type") SocialType socialType,
 
@@ -93,7 +86,6 @@ public class UserController {
                                                                             @RequestParam(name = "profile", required = false) MultipartFile profile
                                                                             ) {
         final String trimNickname = nickname.trim();
-        Link selfRel = linkTo(methodOn(UserController.class).signUp(socialType, socialId, email, trimNickname, content, tagList, profile)).withSelfRel();
         UserSignUpRequest userSignUpRequest = UserSignUpRequest.builder()
                 .socialType(socialType)
                 .socialId(socialId)
@@ -102,19 +94,19 @@ public class UserController {
                 .content(content)
                 .tagList(tagList)
                 .build();
-        return new ResponseEntity<>(EntityModel.of(Response.success(userService.signUp(userSignUpRequest, profile)), selfRel, getSignInLink()), HttpStatus.CREATED) ;
+        return ResponseEntity.created(URI.create("/sign-up")).body(ResponseSuccess.success(userService.signUp(userSignUpRequest, profile)));
     }
 
     @Operation(summary = "유저 정보 수정 API"
             , description = "사용자 정보를 수정한다.",
             responses = {
                     @ApiResponse(responseCode = "200", description = "성공", useReturnTypeSchema = true),
-                    @ApiResponse(responseCode = "400", description = "실패 - INVALID_REQUEST_FIELD, ILLEGAL_IMAGE_REQUEST, INVALID_IMAGE_REQUEST, INVALID_TAG_LIST_FIELD", content = @Content(schema = @Schema(implementation = Response.class))),
-                    @ApiResponse(responseCode = "401", description = "실패 - INVALID_TOKEN", content = @Content(schema = @Schema(implementation = Response.class))),
-                    @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = Response.class)))
+                    @ApiResponse(responseCode = "400", description = "실패 - INVALID_REQUEST_FIELD, ILLEGAL_IMAGE_REQUEST, INVALID_IMAGE_REQUEST, INVALID_TAG_LIST_FIELD", content = @Content(schema = @Schema(implementation = ResponseFail.class))),
+                    @ApiResponse(responseCode = "401", description = "실패 - INVALID_TOKEN", content = @Content(schema = @Schema(implementation = ResponseFail.class))),
+                    @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = ResponseFail.class)))
             })
     @PatchMapping(value = "/me", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<EntityModel<Response<?>>> updateUser(
+    public ResponseEntity<ResponseSuccess<?>> updateUser(
                                                                 @Pattern(regexp = "^[가-힣a-zA-Z0-9\\s]{1,16}$", message = "nickname은 한글, 영어, 숫자로만 이루어진 1자리 이상 16자리 이하의 값이어야 합니다.")
                                                                 @Schema(name =  "nickname", example = "노래하는 어피치")
                                                                 @RequestParam(name = "nickname", required = false) String nickname,
@@ -135,91 +127,77 @@ public class UserController {
                                                                 Authentication authentication
                                                                 ) {
         final String trimNickname = nickname.trim();
-        Link selfRel = linkTo(methodOn(UserController.class).updateUser(trimNickname, content, tagList, profile, profileUrl, authentication)).withSelfRel();
         UserUpdateRequest userUpdateRequest = UserUpdateRequest.builder()
                 .nickname(trimNickname)
                 .content(content)
                 .tagList(tagList)
                 .build();
-        return new ResponseEntity<>(EntityModel.of(Response.success(userService.updateUser(userUpdateRequest, profile, profileUrl, authentication)), selfRel, getSignInLink()), HttpStatus.CREATED) ;
+        return ResponseEntity.ok().body(ResponseSuccess.success(userService.updateUser(userUpdateRequest, profile, profileUrl, authentication)));
     }
-
 
     @Operation(summary = "닉네임 중복 확인 API"
             , description = "닉네임이 사용 가능한 경우 200 OK, 불가능한 경우 400 오류를 반환한다.",
             responses = {
                     @ApiResponse(responseCode = "200", description = "SUCCESS 닉네임 사용 가능", useReturnTypeSchema = true),
                     @ApiResponse(responseCode = "400", description = "FAIL 닉네임 사용 불가", useReturnTypeSchema = true),
-                    @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = Response.class)))
+                    @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = ResponseFail.class)))
             })
     @GetMapping("/nickname/{nickname}")
-    public ResponseEntity<EntityModel<Response<Void>>> checkNickname(@Pattern(regexp = "^[가-힣a-zA-Z0-9\\s]{1,16}$", message = "nickname은 한글, 영어, 숫자로만 이루어진 1자리 이상 16자리 이하의 값이어야 합니다.") @PathVariable String nickname) {
+    public ResponseEntity<ResponseSuccess<Void>> checkNickname(@Pattern(regexp = "^[가-힣a-zA-Z0-9\\s]{1,16}$", message = "nickname은 한글, 영어, 숫자로만 이루어진 1자리 이상 16자리 이하의 값이어야 합니다.") @PathVariable String nickname) {
         final String trimNickname = nickname.trim();
         final boolean isExistNickname = userService.findByNickname(trimNickname);
-        final Link selfRel = linkTo(methodOn(UserController.class).checkNickname(trimNickname)).withSelfRel();
-
         return isExistNickname ?
-                new ResponseEntity<>(EntityModel.of(Response.fail(), selfRel), HttpStatus.BAD_REQUEST) :
-                new ResponseEntity<>(EntityModel.of(Response.success(), selfRel), HttpStatus.OK);
+                ResponseEntity.badRequest().body(ResponseSuccess.fail()) :
+                ResponseEntity.ok().body(ResponseSuccess.success());
     }
 
     @Operation(summary = "유저 정보 확인 API"
             , description = "요청한 유저 정보를 반환한다.",
             responses = {
                     @ApiResponse(responseCode = "200", description = "성공", useReturnTypeSchema = true),
-                    @ApiResponse(responseCode = "401", description = "실패 - INVALID_TOKEN", content = @Content(schema = @Schema(implementation = Response.class))),
-                    @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = Response.class)))
+                    @ApiResponse(responseCode = "401", description = "실패 - INVALID_TOKEN", content = @Content(schema = @Schema(implementation = ResponseFail.class))),
+                    @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = ResponseFail.class)))
             })
     @GetMapping("/me")
-    public ResponseEntity<EntityModel<Response<UserInfoResponse>>> getUser(Authentication authentication) {
-        Link selfRel = linkTo(methodOn(UserController.class).getUser(authentication)).withSelfRel();
-        return new ResponseEntity<>(EntityModel.of(Response.success(userService.getUser(authentication)), selfRel), HttpStatus.OK);
+    public ResponseEntity<ResponseSuccess<UserInfoResponse>> getUser(Authentication authentication) {
+        return ResponseEntity.ok().body(ResponseSuccess.success(userService.getUser(authentication)));
     }
 
     @Operation(summary = "FCM 토큰 저장 API"
             , description = "저장 성공인 경우 result_code : success 실패일 경우 에러 공통코드를 반환한다.",
             responses = {
                     @ApiResponse(responseCode = "201", description = "성공", useReturnTypeSchema = true),
-                    @ApiResponse(responseCode = "401", description = "실패 - INVALID_TOKEN", content = @Content(schema = @Schema(implementation = Response.class))),
-                    @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = Response.class)))
+                    @ApiResponse(responseCode = "401", description = "실패 - INVALID_TOKEN", content = @Content(schema = @Schema(implementation = ResponseFail.class))),
+                    @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = ResponseFail.class)))
             })
     @PostMapping("/fcm-token")
-    public ResponseEntity<EntityModel<Response<Void>>> postFcmToken(@Valid @RequestBody UserFcmTokenRequest request, Authentication authentication) {
+    public ResponseEntity<ResponseSuccess<Void>> postFcmToken(@Valid @RequestBody UserFcmTokenRequest request, Authentication authentication) {
         userService.postFcmToken(request.getFcmToken(), authentication);
-        Link selfRel = linkTo(methodOn(UserController.class).postFcmToken(request, authentication)).withSelfRel();
-        return new ResponseEntity<>(EntityModel.of(Response.success(), selfRel), HttpStatus.CREATED) ;
+        return ResponseEntity.created(URI.create("/fcm-token")).body(ResponseSuccess.success());
     }
 
     @Operation(summary = "액세스 토큰 재발급 API"
             , description = "DB에 저장되어 있는 현재 사용자의 리프레시 토큰 정보를 통해 액세스 토큰 정보를 반환한다. 만료 시 로그인 화면으로 이동한다.",
             responses = {
                     @ApiResponse(responseCode = "201", description = "성공", useReturnTypeSchema = true),
-                    @ApiResponse(responseCode = "401", description = "실패 - INVALID_TOKEN", content = @Content(schema = @Schema(implementation = Response.class))),
-                    @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = Response.class)))
+                    @ApiResponse(responseCode = "401", description = "실패 - INVALID_TOKEN", content = @Content(schema = @Schema(implementation = ResponseFail.class))),
+                    @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = ResponseFail.class)))
             })
     @PostMapping("/access-token")
-    public ResponseEntity<EntityModel<Response<UserAccessTokenResponse>>> postAccessToken(Authentication authentication) {
-        Link selfRel = linkTo(methodOn(UserController.class).postAccessToken(authentication)).withSelfRel();
-        return new ResponseEntity<>(EntityModel.of(Response.success(userService.postAccessToken(authentication)),
-                selfRel, getSignInLink()), HttpStatus.CREATED) ;
+    public ResponseEntity<ResponseSuccess<UserAccessTokenResponse>> postAccessToken(Authentication authentication) {
+        return ResponseEntity.created(URI.create("/access-token")).body(ResponseSuccess.success(userService.postAccessToken(authentication)));
     }
 
     @Operation(summary = "유저 회원 탈퇴 API"
             , description = "탈퇴 성공시 result_code SUCCESS를 반환한다.",
             responses = {
                     @ApiResponse(responseCode = "204", description = "성공", useReturnTypeSchema = true),
-                    @ApiResponse(responseCode = "401", description = "실패 - INVALID_TOKEN", content = @Content(schema = @Schema(implementation = Response.class))),
-                    @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = Response.class)))
+                    @ApiResponse(responseCode = "401", description = "실패 - INVALID_TOKEN", content = @Content(schema = @Schema(implementation = ResponseFail.class))),
+                    @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = ResponseFail.class)))
             })
     @DeleteMapping("/me")
-    public ResponseEntity<EntityModel<Response<Void>>> deleteUser(Authentication authentication) {
+    public ResponseEntity<ResponseSuccess<Void>> deleteUser(Authentication authentication) {
         userService.deleteUser(authentication);
-        Link selfRel = linkTo(methodOn(UserController.class).deleteUser(authentication)).withSelfRel();
-        return new ResponseEntity<>(EntityModel.of(Response.success(), selfRel), HttpStatus.NO_CONTENT) ;
+        return ResponseEntity.noContent().build();
     }
-
-    private Link getSignInLink() {
-        return linkTo(methodOn(UserController.class).signIn(null)).withRel("sign-in");
-    }
-
 }

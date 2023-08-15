@@ -15,14 +15,19 @@ import lombok.*;
 @ToString
 public class ChallengeNotiResponse {
 
+    @Schema(description = "공지사항 시퀀스", example = "1")
     private Integer notiId;
 
+    @Schema(description = "방 시퀀스", example = "5")
     private Integer roomId;
 
+    @Schema(description = "공지사항 제목", example = "주요 공지사항")
     private String title;
 
+    @Schema(description = "공지 내용", example = "공지 내용입니다.")
     private String content;
 
+    @Schema(description = "공지 일자", example = "2023.08.15 오후 10:17:31")
     private String date;
 
     @QueryProjection

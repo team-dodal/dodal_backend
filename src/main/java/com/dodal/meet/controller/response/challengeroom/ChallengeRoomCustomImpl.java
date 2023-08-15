@@ -198,6 +198,8 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
                 .on(room.eq(bookmark.challengeRoomEntity).and(bookmark.userEntity.id.eq(userEntity.getId())))
                 .where(roomTag.tagValue.in(userTagValues))
                 .orderBy(room.bookmarkCnt.desc(), room.registeredAt.desc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
                 .fetch();
 
         return new PageImpl<>(content, pageable, content.size());
