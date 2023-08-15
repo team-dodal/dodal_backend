@@ -2,6 +2,7 @@ package com.dodal.meet.model.entity;
 
 
 import com.dodal.meet.controller.request.challengeroom.ChallengeRoomCreateRequest;
+import com.dodal.meet.controller.request.challengeroom.ChallengeRoomUpdateRequest;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.*;
@@ -94,7 +95,7 @@ public class ChallengeRoomEntity {
         this.userCnt += num;
     }
 
-    public static ChallengeRoomEntity dtoToEntity(ChallengeRoomCreateRequest request) {
+    public static ChallengeRoomEntity createDtoToEntity(ChallengeRoomCreateRequest request) {
         return ChallengeRoomEntity.builder()
                 .title(request.getTitle())
                 .content(request.getContent())
@@ -108,6 +109,18 @@ public class ChallengeRoomEntity {
     public void updateImgUrl(String thumbnailImgUrl, String certCorrectImgUrl, String certWrongImgUrl) {
         this.thumbnailImgUrl = thumbnailImgUrl;
         this.certCorrectImgUrl = certCorrectImgUrl;
+        this.certWrongImgUrl = certWrongImgUrl;
+    }
+
+    public void updateThumbnailImgUrl(String thumbnailImgUrl) {
+        this.thumbnailImgUrl = thumbnailImgUrl;
+    }
+
+    public void updateCertCorrectImgUrl(String certCorrectImgUrl) {
+        this.certCorrectImgUrl = certCorrectImgUrl;
+    }
+
+    public void updateCertWrongImgUrl(String certWrongImgUrl) {
         this.certWrongImgUrl = certWrongImgUrl;
     }
 

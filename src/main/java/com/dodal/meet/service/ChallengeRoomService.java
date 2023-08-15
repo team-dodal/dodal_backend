@@ -263,21 +263,24 @@ public class ChallengeRoomService {
         final MultipartFile thumbnailImg = challengeRoomUpdateRequest.getThumbnailImg();
         final MultipartFile certCorrectImg = challengeRoomUpdateRequest.getCertCorrectImg();
         final MultipartFile certWrongImg = challengeRoomUpdateRequest.getCertWrongImg();
+        final String beforeThumbnailImgUrl = challengeRoomEntity.getThumbnailImgUrl();
+
 
         if (!isEmpty(thumbnailImg)) {
-            if (!isEmpty(challengeRoomEntity.getThumbnailImgUrl())) {
+            // 썸네일 이미지의 경우 디폴트 이미지 (서버 관리 이미지) 로직 비교
+            if (StringUtils.hasText(beforeThumbnailImgUrl) && beforeThumbnailImgUrl.indexOf("s3") != -1) {
                 imageService.deleteImg(challengeRoomEntity.getThumbnailImgUrl());
             }
         }
 
         if (!isEmpty(certCorrectImg)) {
-            if (!isEmpty(challengeRoomEntity.getCertCorrectImgUrl())) {
+            if (StringUtils.hasText(challengeRoomEntity.getCertCorrectImgUrl())) {
                 imageService.deleteImg(challengeRoomEntity.getCertCorrectImgUrl());
             }
         }
 
         if (!isEmpty(certWrongImg)) {
-            if (!isEmpty(challengeRoomEntity.getCertWrongImgUrl())) {
+            if (StringUtils.hasText(challengeRoomEntity.getCertWrongImgUrl())) {
                 imageService.deleteImg(challengeRoomEntity.getCertWrongImgUrl());
             }
         }
