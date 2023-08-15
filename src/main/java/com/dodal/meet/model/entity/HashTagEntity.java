@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.*;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "hash_tag")
@@ -25,4 +27,10 @@ public class HashTagEntity {
     @JoinColumn(name = "category_id")
     private CategoryEntity categoryEntity;
     private String name;
+
+    public static List<String> convertStringList(List<HashTagEntity> entityList) {
+        List<String> result = new ArrayList<>();
+        entityList.forEach(e -> result.add("#" + e.getName()));
+        return result;
+    }
 }

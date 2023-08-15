@@ -6,20 +6,16 @@ import com.dodal.meet.controller.request.user.UserProfileRequest;
 import com.dodal.meet.controller.request.user.UserSignUpRequest;
 import com.dodal.meet.controller.request.user.UserSignInRequest;
 import com.dodal.meet.controller.request.user.UserUpdateRequest;
+import com.dodal.meet.controller.response.category.CategoryResponse;
 import com.dodal.meet.controller.response.category.TagResponse;
+import com.dodal.meet.controller.response.category.UserCategoryResponse;
 import com.dodal.meet.controller.response.user.*;
 import com.dodal.meet.exception.DodalApplicationException;
 import com.dodal.meet.exception.ErrorCode;
 import com.dodal.meet.model.SocialType;
 import com.dodal.meet.model.User;
-import com.dodal.meet.model.entity.TagEntity;
-import com.dodal.meet.model.entity.TokenEntity;
-import com.dodal.meet.model.entity.UserEntity;
-import com.dodal.meet.model.entity.UserTagEntity;
-import com.dodal.meet.repository.TagEntityRepository;
-import com.dodal.meet.repository.TokenEntityRepository;
-import com.dodal.meet.repository.UserEntityRepository;
-import com.dodal.meet.repository.UserTagEntityRepository;
+import com.dodal.meet.model.entity.*;
+import com.dodal.meet.repository.*;
 import com.dodal.meet.utils.JwtTokenUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,12 +27,15 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class UserService {
+    private final CategoryEntityRepository categoryEntityRepository;
     private final TagEntityRepository tagEntityRepository;
     private final UserTagEntityRepository userTagEntityRepository;
     private final UserEntityRepository userEntityRepository;
@@ -160,6 +159,16 @@ public class UserService {
                 .orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_JWT_TOKEN));
         List<UserTagEntity> userTagList = userTagEntityRepository.findAllByUserEntity(userEntity);
 
+        List<String> userTagValueList = new ArrayList<>();
+        userTagList.forEach(entity -> userTagValueList.add(entity.getTagValue()));
+
+        List<TagEntity> tagList = tagEntityRepository.findAllByUserTagValue(userTagValueList);
+
+        Set<CategoryEntity> categorySet = new HashSet<>();
+        tagList.forEach(e -> categorySet.add(e.getCategoryEntity()));
+
+        List<CategoryEntity> categoryList = new ArrayList<>(categorySet);
+
         return UserInfoResponse.builder()
                 .userId(userEntity.getId())
                 .socialId(userEntity.getSocialId())
@@ -171,6 +180,7 @@ public class UserService {
                 .content(userEntity.getContent())
                 .alarmYn(userEntity.getAlarmYn())
                 .accuseCnt(userEntity.getAccuseCnt())
+                .categoryList(UserCategoryResponse.fromEntityList(categoryList))
                 .tagList(TagResponse.userEntitesToList(userTagList))
                 .fcmToken(tokenEntity.getFcmToken())
                 .refreshToken(tokenEntity.getRefreshToken())
