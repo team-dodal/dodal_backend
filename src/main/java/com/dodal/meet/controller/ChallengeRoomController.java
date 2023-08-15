@@ -7,6 +7,7 @@ import com.dodal.meet.service.ChallengeRoomService;
 import com.dodal.meet.valid.NullOrNotBlank;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -78,7 +79,7 @@ public class ChallengeRoomController {
     public ResponseEntity<EntityModel<Response<Page<ChallengeRoomSearchResponse>>>> getChallengeRoomByCategory(@Schema(description = "카테고리 코드 값", example = "001") @RequestParam(name="category_value",required = false) String categoryValue,
                                                                                                                @Schema(description = "태그 코드 값", example = "001001") @RequestParam(name = "tag_value", required = false) String tagValue,
                                                                                                                @Schema(description = "조회 코드 값 - 0(인기순) , 1(최신순), 2(인원 많은 순), 3(인원 적은순) ", allowableValues = {"0", "1", "2", "3"}, example = "0") @RequestParam(name = "condition_code", defaultValue = "0") String conditionCode,
-                                                                                                               @Schema(description = "도전 빈도 리스트", example = "[1, 3, 5]", type = "array") @RequestParam(name = "cert_cnt_list") List<Integer> certCntList,
+                                                                                                               @ArraySchema(schema = @Schema(implementation = Integer.class, description = "도전 빈도 리스트", example = "[1, 3, 5]", type = "array")) @RequestParam(name = "cert_cnt_list") List<Integer> certCntList,
                                                                                                                @Schema(description = "요청 페이지 번호", example = "0") @RequestParam(name = "page") Integer page,
                                                                                                                @Schema(description = "요청 페이지 사이즈", example = "3") @RequestParam(name = "page_size") Integer pageSize,
                                                                                                                Authentication authentication) {
@@ -214,6 +215,7 @@ public class ChallengeRoomController {
     public ResponseEntity<EntityModel<Response<ChallengeUpdateResponse>>> updateChallengeRoom(
             @PathVariable(name = "room_id") Integer roomId,
 
+            /*
             @NullOrNotBlank
             @Schema(name =  "tag_value", example = "001001")
             @RequestParam(name = "tag_value", required = false) String tagValue,
@@ -254,23 +256,12 @@ public class ChallengeRoomController {
             @Schema(name = "cert_wrong_img")
             @Parameter(name = "cert_wrong_img", content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE))
             @RequestPart(name = "cert_wrong_img", required = false) MultipartFile certWrongImg,
-
+*/
+            ChallengeRoomUpdateRequest request,
             final Authentication authentication
     ) {
-        final ChallengeRoomUpdateRequest challengeRoomUpdateRequest = ChallengeRoomUpdateRequest.builder()
-                .tagValue(tagValue)
-                .title(title)
-                .thumbnailImg(thumbnailImg)
-                .content(content)
-                .recruitCnt(recruitCnt)
-                .certCnt(certCnt)
-                .certContent(certContent)
-                .certCorrectImg(certCorrectImg)
-                .certWrongImg(certWrongImg)
-                .build();
-        Link selfRel = linkTo(methodOn(ChallengeRoomController.class).createChallengeRoom(tagValue, title, thumbnailImg, content,
-                recruitCnt, certCnt, certContent, certCorrectImg, certWrongImg, authentication)).withSelfRel();
-        return new ResponseEntity<>(EntityModel.of(Response.success(challengeRoomService.updateChallengeRoom(roomId, challengeRoomUpdateRequest, authentication)), selfRel), HttpStatus.OK);
+        Link selfRel = linkTo(methodOn(ChallengeRoomController.class).updateChallengeRoom(roomId, request, authentication)).withSelfRel();
+        return new ResponseEntity<>(EntityModel.of(Response.success(challengeRoomService.updateChallengeRoom(roomId, request, authentication)), selfRel), HttpStatus.OK);
     }
 
     @Operation(summary = "북마크 등록 API"

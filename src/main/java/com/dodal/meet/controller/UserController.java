@@ -8,6 +8,7 @@ import com.dodal.meet.service.ImageService;
 import com.dodal.meet.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -84,7 +85,7 @@ public class UserController {
                                                                             @Schema(name =  "content", example = "안녕하세요")
                                                                             @RequestParam(name = "content", required = false) String content,
 
-                                                                            @Schema(name =  "tag_list", type = "array", example = "[\"001001\", \"002001\", \"003001\"]")
+                                                                            @ArraySchema(schema = @Schema(implementation = String.class, name =  "tag_list", type = "array", example = "[\"001001\", \"002001\", \"003001\"]"))
                                                                             @RequestParam(name = "tag_list") List<String> tagList,
 
                                                                             @Schema(name = "profile")
@@ -122,7 +123,7 @@ public class UserController {
                                                                 @Schema(name =  "content", example = "안녕하세요")
                                                                 @RequestParam(name = "content", required = false) String content,
 
-                                                                @Schema(name =  "tag_list", type = "array", example = "[\"001001\", \"002001\", \"003001\"]")
+                                                                @ArraySchema(schema = @Schema(implementation = String.class, name =  "tag_list", type = "array", example = "[\"001001\", \"002001\", \"003001\"]"))
                                                                 @RequestParam(name = "tag_list", required = false) List<String> tagList,
 
                                                                 @Schema(name = "profile") @Parameter(name = "profile", content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE))
