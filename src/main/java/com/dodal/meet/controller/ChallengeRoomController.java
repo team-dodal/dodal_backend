@@ -112,9 +112,8 @@ public class ChallengeRoomController {
                     @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = ResponseFail.class)))
             })
     @PostMapping("/challenge/rooms/{room_id}/join")
-    public ResponseEntity<ResponseSuccess<Void>> joinChallengeRoom(@PathVariable(name = "room_id") Integer roomId, Authentication authentication) {
-        challengeRoomService.joinChallengeRoom(roomId, authentication);
-        return ResponseEntity.ok().body(ResponseSuccess.success());
+    public ResponseEntity<ResponseSuccess<ChallengeRoomDetailResponse>> joinChallengeRoom(@PathVariable(name = "room_id") Integer roomId, Authentication authentication) {
+        return ResponseEntity.ok().body(ResponseSuccess.success(challengeRoomService.joinChallengeRoom(roomId, authentication)));
     }
 
     @Operation(summary = "도전방 탈퇴 API"
@@ -193,7 +192,7 @@ public class ChallengeRoomController {
                 .certWrongImg(certWrongImg)
                 .build();
         ChallengeCreateResponse result = challengeRoomService.createChallengeRoom(challengeRoomCreateRequest, authentication);
-        return ResponseEntity.created(URI.create("/challenge/room/" + result.getChallengeRoomId())).body(ResponseSuccess.success(result));
+        return ResponseEntity.created(URI.create("/challenge/room/" + result.getRoomId())).body(ResponseSuccess.success(result));
     }
 
     @Operation(summary = "도전방 수정 API"
