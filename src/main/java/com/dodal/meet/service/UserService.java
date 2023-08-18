@@ -1,12 +1,10 @@
 package com.dodal.meet.service;
 
 
-import antlr.Token;
 import com.dodal.meet.controller.request.user.UserProfileRequest;
 import com.dodal.meet.controller.request.user.UserSignUpRequest;
 import com.dodal.meet.controller.request.user.UserSignInRequest;
 import com.dodal.meet.controller.request.user.UserUpdateRequest;
-import com.dodal.meet.controller.response.category.CategoryResponse;
 import com.dodal.meet.controller.response.category.TagResponse;
 import com.dodal.meet.controller.response.category.UserCategoryResponse;
 import com.dodal.meet.controller.response.user.*;
@@ -25,7 +23,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -35,7 +32,6 @@ import java.util.Set;
 @RequiredArgsConstructor
 @Slf4j
 public class UserService {
-    private final CategoryEntityRepository categoryEntityRepository;
     private final TagEntityRepository tagEntityRepository;
     private final UserTagEntityRepository userTagEntityRepository;
     private final UserEntityRepository userEntityRepository;
@@ -90,7 +86,7 @@ public class UserService {
     }
 
     @Transactional
-    public UserSignUpResponse signUp(UserSignUpRequest request, final MultipartFile profile) {
+    public UserSignUpResponse signUp(final UserSignUpRequest request, final MultipartFile profile) {
 
         validNickname(request.getNickname());
 
@@ -103,6 +99,7 @@ public class UserService {
             throw new DodalApplicationException(ErrorCode.INVALID_SIGNUP_REQUEST);
         }
 
+        // JWT 토큰 발행 (액세스 토큰 / 리프레시 토큰)
         final String accessToken = JwtTokenUtils.generateAccessToken(socialId, socialType, jwtKey);
         final String refreshToken = JwtTokenUtils.generateRefreshToken(socialId, socialType, jwtKey);
 
@@ -133,12 +130,10 @@ public class UserService {
 
         userTagEntityRepository.saveAll(userTagEntities);
 
-        return UserSignUpResponse.builder()
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .build();
-    }
+        UserInfoResponse userInfoResponse = entityToUserInfo(newUserEntity, tokenEntity, userTagEntities);
 
+        return UserSignUpResponse.convertUserInfoToUserSignUp(userInfoResponse, accessToken);
+    }
 
 
     @Transactional(readOnly = true)
@@ -149,7 +144,7 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public UserInfoResponse getUser(Authentication authentication) {
+    public UserInfoResponse getUser(final Authentication authentication) {
         User user = (User) authentication.getPrincipal();
         final String socialId = user.getSocialId();
         final SocialType socialType = user.getSocialType();
@@ -159,33 +154,7 @@ public class UserService {
                 .orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_JWT_TOKEN));
         List<UserTagEntity> userTagList = userTagEntityRepository.findAllByUserEntity(userEntity);
 
-        List<String> userTagValueList = new ArrayList<>();
-        userTagList.forEach(entity -> userTagValueList.add(entity.getTagValue()));
-
-        List<TagEntity> tagList = tagEntityRepository.findAllByUserTagValue(userTagValueList);
-
-        Set<CategoryEntity> categorySet = new HashSet<>();
-        tagList.forEach(e -> categorySet.add(e.getCategoryEntity()));
-
-        List<CategoryEntity> categoryList = new ArrayList<>(categorySet);
-
-        return UserInfoResponse.builder()
-                .userId(userEntity.getId())
-                .socialId(userEntity.getSocialId())
-                .socialType(userEntity.getSocialType())
-                .role(userEntity.getRole())
-                .email(userEntity.getEmail())
-                .nickname(userEntity.getNickname())
-                .profileUrl(userEntity.getProfileUrl())
-                .content(userEntity.getContent())
-                .alarmYn(userEntity.getAlarmYn())
-                .accuseCnt(userEntity.getAccuseCnt())
-                .categoryList(UserCategoryResponse.fromEntityList(categoryList))
-                .tagList(TagResponse.userEntitesToList(userTagList))
-                .fcmToken(tokenEntity.getFcmToken())
-                .refreshToken(tokenEntity.getRefreshToken())
-                .registerAt(userEntity.getRegisterAt())
-                .build();
+        return entityToUserInfo(userEntity, tokenEntity, userTagList);
     }
 
     @Transactional
@@ -289,5 +258,33 @@ public class UserService {
         }
     }
 
+    private UserInfoResponse entityToUserInfo(UserEntity userEntity, TokenEntity tokenEntity, List<UserTagEntity> userTagEntities) {
+        List<String> userTagValueList = new ArrayList<>();
+        userTagEntities.forEach(entity -> userTagValueList.add(entity.getTagValue()));
+
+        List<TagEntity> tagList = tagEntityRepository.findAllByUserTagValue(userTagValueList);
+
+        Set<CategoryEntity> categorySet = new HashSet<>();
+        tagList.forEach(e -> categorySet.add(e.getCategoryEntity()));
+
+        List<CategoryEntity> categoryList = new ArrayList<>(categorySet);
+        return UserInfoResponse.builder()
+                .userId(userEntity.getId())
+                .socialId(userEntity.getSocialId())
+                .socialType(userEntity.getSocialType())
+                .role(userEntity.getRole())
+                .email(userEntity.getEmail())
+                .nickname(userEntity.getNickname())
+                .profileUrl(userEntity.getProfileUrl())
+                .content(userEntity.getContent())
+                .alarmYn(userEntity.getAlarmYn())
+                .accuseCnt(userEntity.getAccuseCnt())
+                .categoryList(UserCategoryResponse.fromEntityList(categoryList))
+                .tagList(TagResponse.userEntitesToList(userTagEntities))
+                .fcmToken(tokenEntity.getFcmToken())
+                .refreshToken(tokenEntity.getRefreshToken())
+                .registerAt(userEntity.getRegisterAt())
+                .build();
+    }
 
 }

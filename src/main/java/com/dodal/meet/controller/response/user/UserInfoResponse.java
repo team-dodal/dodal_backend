@@ -1,6 +1,5 @@
 package com.dodal.meet.controller.response.user;
 
-import com.dodal.meet.controller.response.category.CategoryResponse;
 import com.dodal.meet.controller.response.category.TagResponse;
 import com.dodal.meet.controller.response.category.UserCategoryResponse;
 import com.dodal.meet.model.SocialType;
@@ -8,9 +7,7 @@ import com.dodal.meet.model.UserRole;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.ToString;
+import lombok.*;
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -19,6 +16,8 @@ import java.util.List;
 @Getter
 @Schema(description = "유저 정보 응답")
 @JsonNaming(value = PropertyNamingStrategy.SnakeCaseStrategy.class)
+@NoArgsConstructor
+@AllArgsConstructor
 @ToString
 public class UserInfoResponse {
 

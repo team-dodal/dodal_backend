@@ -106,7 +106,7 @@ public class UserController {
                     @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = ResponseFail.class)))
             })
     @PatchMapping(value = "/me", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ResponseSuccess<?>> updateUser(
+    public ResponseEntity<ResponseSuccess<UserInfoResponse>> updateUser(
                                                                 @Pattern(regexp = "^[가-힣a-zA-Z0-9\\s]{1,16}$", message = "nickname은 한글, 영어, 숫자로만 이루어진 1자리 이상 16자리 이하의 값이어야 합니다.")
                                                                 @Schema(name =  "nickname", example = "노래하는 어피치")
                                                                 @RequestParam(name = "nickname", required = false) String nickname,
