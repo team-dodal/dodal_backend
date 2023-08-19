@@ -2,6 +2,8 @@ package com.dodal.meet.controller.response.challengeroom;
 
 import com.dodal.meet.controller.request.challengeroom.ChallengeRoomCondition;
 import com.dodal.meet.controller.request.challengeroom.ChallengeRoomSearchCategoryRequest;
+import com.dodal.meet.controller.response.feed.FeedResponse;
+import com.dodal.meet.controller.response.feed.QFeedResponse;
 import com.dodal.meet.controller.response.user.QUserCertPerWeek;
 import com.dodal.meet.controller.response.user.UserCertPerWeek;
 import com.dodal.meet.exception.DodalApplicationException;
@@ -247,6 +249,25 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
 
         return new PageImpl<>(content, pageable, content.size());
 
+    }
+
+    @Override
+    public List<FeedResponse> getFeeds() {
+        return queryFactory
+                .select(new QFeedResponse(
+                        room.id, feed.id, room.certCnt, roomTag.categoryName, user.id, user.nickname, challengeUser.continueCertCnt,
+                        feed.certImgUrl, feed.certContent, feed.likeCnt, feed.accuseCnt, feed.registeredDate, feed.registeredAt
+                )).from(room)
+                .innerJoin(room.challengeTagEntity, roomTag)
+                .innerJoin(feed)
+                .on(feed.roomId.eq(room.id))
+                .innerJoin(user)
+                .on(feed.userId.eq(user.id))
+                .innerJoin(challengeUser)
+                .on(room.id.eq(challengeUser.challengeRoomEntity.id).and(challengeUser.userId.eq(user.id)))
+                .where(feed.certCode.eq(FeedUtils.CONFIRM))
+                .orderBy(feed.registeredAt.desc())
+                .fetch();
     }
 
     private OrderSpecifier<?> orderByBookmarkCnt(final String searchCode) {

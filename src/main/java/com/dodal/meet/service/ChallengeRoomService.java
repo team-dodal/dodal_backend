@@ -155,7 +155,7 @@ public class ChallengeRoomService {
         ChallengeUserEntity challengeUserEntity = ChallengeUserEntity.builder()
                 .challengeRoomEntity(challengeRoom)
                 .roomRole(RoomRole.USER)
-                .certCnt(0)
+                .continueCertCnt(0)
                 .userId(userEntity.getId())
                 .nickname(userEntity.getNickname())
                 .build();
