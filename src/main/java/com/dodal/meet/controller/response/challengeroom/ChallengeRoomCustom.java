@@ -16,5 +16,7 @@ public interface ChallengeRoomCustom {
 
     List<ChallengeNotiResponse> getChallengeRoomNoti(Integer roomId);
 
-    List<FeedResponse> getFeeds();
+    List<FeedResponse> getFeeds(UserEntity userEntity);
+
+    FeedResponse getFeedOne(UserEntity userEntity, Long feedId);
 }

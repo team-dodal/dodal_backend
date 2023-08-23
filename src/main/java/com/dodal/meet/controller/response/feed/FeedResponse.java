@@ -53,6 +53,9 @@ public class FeedResponse {
     @Schema(description = "신고 횟수", example = "1")
     private int accuseCnt;
 
+    @Schema(description = "유저 좋아요 클릭 여부", example = "Y")
+    private String likeYN;
+
     @Schema(description = "등록일", example = "20230819")
     private String registeredDate;
 
@@ -60,7 +63,7 @@ public class FeedResponse {
     private Timestamp registeredAt;
 
     @QueryProjection
-    public FeedResponse(Integer roomId, Long feedId, int certCnt, String categoryName, Long userId, String nickname, int userContinueCertCnt, String certImgUrl, String certContent, int likeCnt, int accuseCnt, String registeredDate, Timestamp registeredAt) {
+    public FeedResponse(Integer roomId, Long feedId, int certCnt, String categoryName, Long userId, String nickname, int userContinueCertCnt, String certImgUrl, String certContent, int likeCnt, int accuseCnt, String likeYN, String registeredDate, Timestamp registeredAt) {
         this.roomId = roomId;
         this.feedId = feedId;
         this.certCnt = certCnt;
@@ -72,6 +75,7 @@ public class FeedResponse {
         this.certContent = certContent;
         this.likeCnt = likeCnt;
         this.accuseCnt = accuseCnt;
+        this.likeYN = likeYN;
         this.registeredDate = registeredDate;
         this.registeredAt = registeredAt;
     }

@@ -37,7 +37,36 @@ public class FeedController {
                     @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = ResponseFail.class)))
             })
     @GetMapping("/feeds")
-    public ResponseEntity<ResponseSuccess<List<FeedResponse>>> getFeeds() {
-        return ResponseEntity.ok().body(ResponseSuccess.success(feedService.getFeeds()));
+    public ResponseEntity<ResponseSuccess<List<FeedResponse>>> getFeeds(final Authentication authentication) {
+        User user = (User) authentication.getPrincipal();
+        return ResponseEntity.ok().body(ResponseSuccess.success(feedService.getFeeds(user)));
+    }
+
+    @Operation(summary = "피드 좋아요 요청 API"
+            , description = "인증에 성공한 도전 인증 피드 리스트들을 보여준다.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "성공", useReturnTypeSchema = true),
+                    @ApiResponse(responseCode = "400", description = "실패 - NOT_FOUND_FEED", content = @Content(schema = @Schema(implementation = ResponseFail.class))),
+                    @ApiResponse(responseCode = "401", description = "INVALID_TOKEN", content = @Content(schema = @Schema(implementation = ResponseFail.class))),
+                    @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = ResponseFail.class)))
+            })
+    @PostMapping("/like/{feed_id}")
+    public ResponseEntity<ResponseSuccess<FeedResponse>> postFeedLike(@PathVariable(name = "feed_id") final Long feedId, final Authentication authentication) {
+        User user = (User) authentication.getPrincipal();
+        return ResponseEntity.ok().body(ResponseSuccess.success(feedService.postFeedLike(feedId, user)));
+    }
+
+    @Operation(summary = "피드 좋아요 취소 요청 API"
+            , description = "인증에 성공한 도전 인증 피드 리스트들을 보여준다.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "성공", useReturnTypeSchema = true),
+                    @ApiResponse(responseCode = "400", description = "실패 - NOT_FOUND_FEED", content = @Content(schema = @Schema(implementation = ResponseFail.class))),
+                    @ApiResponse(responseCode = "401", description = "INVALID_TOKEN", content = @Content(schema = @Schema(implementation = ResponseFail.class))),
+                    @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = ResponseFail.class)))
+            })
+    @DeleteMapping("/like/{feed_id}")
+    public ResponseEntity<ResponseSuccess<FeedResponse>> deleteFeedLike(@PathVariable(name = "feed_id") final Long feedId, final Authentication authentication) {
+        User user = (User) authentication.getPrincipal();
+        return ResponseEntity.ok().body(ResponseSuccess.success(feedService.deleteFeedLike(feedId, user)));
     }
 }

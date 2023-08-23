@@ -1,13 +1,14 @@
 package com.dodal.meet.model.entity;
 
 import com.dodal.meet.utils.DateUtils;
-import com.dodal.meet.utils.FeedUtils;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.*;
 import javax.persistence.*;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "challenge_feed")
@@ -44,6 +45,9 @@ public class ChallengeFeedEntity {
 
     private String challengeTagId;
 
+    @Builder.Default
+    @OneToMany(mappedBy = "challengeFeedEntity", fetch = FetchType.LAZY, orphanRemoval = true)
+    private List<FeedLikeEntity> feedLikeEntityList = new ArrayList<>();
     @PrePersist
     void prePersist() {
         this.certCode="1";
@@ -56,4 +60,9 @@ public class ChallengeFeedEntity {
     public void updateCertCode(String code) {
         this.certCode = code;
     }
+
+    public void updateLikeCntByNum(int num) {
+        this.likeCnt += num;
+    }
+
 }
