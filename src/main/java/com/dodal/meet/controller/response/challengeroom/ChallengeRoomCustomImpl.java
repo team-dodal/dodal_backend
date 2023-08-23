@@ -2,6 +2,8 @@ package com.dodal.meet.controller.response.challengeroom;
 
 import com.dodal.meet.controller.request.challengeroom.ChallengeRoomCondition;
 import com.dodal.meet.controller.request.challengeroom.ChallengeRoomSearchCategoryRequest;
+import com.dodal.meet.controller.response.feed.FeedResponse;
+import com.dodal.meet.controller.response.feed.QFeedResponse;
 import com.dodal.meet.controller.response.user.QUserCertPerWeek;
 import com.dodal.meet.controller.response.user.UserCertPerWeek;
 import com.dodal.meet.exception.DodalApplicationException;
@@ -249,6 +251,53 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
 
     }
 
+    @Override
+    public List<FeedResponse> getFeeds(final UserEntity userEntity) {
+        return queryFactory
+                .select(new QFeedResponse(
+                        room.id, feed.id, room.certCnt, roomTag.categoryName, user.id, user.nickname, challengeUser.continueCertCnt,
+                        feed.certImgUrl, feed.certContent, feed.likeCnt, feed.accuseCnt,
+                        new CaseBuilder().when(feedLike.isNotNull()).then("Y").otherwise("N").as("likeYN"),
+                        feed.registeredDate, feed.registeredAt
+                )).from(room)
+                .innerJoin(room.challengeTagEntity, roomTag)
+                .innerJoin(feed)
+                .on(feed.roomId.eq(room.id))
+                .innerJoin(user)
+                .on(feed.userId.eq(user.id))
+                .innerJoin(challengeUser)
+                .on(room.id.eq(challengeUser.challengeRoomEntity.id).and(challengeUser.userId.eq(user.id)))
+                .leftJoin(feed.feedLikeEntityList, feedLike)
+                .on(feedLike.likeUserId.eq(userEntity.getId()))
+                .where(feed.certCode.eq(FeedUtils.CONFIRM))
+                .orderBy(feed.registeredAt.desc())
+                .limit(100)
+                .fetch();
+
+    }
+
+    @Override
+    public FeedResponse getFeedOne(final UserEntity userEntity, final Long feedId) {
+        return queryFactory
+                .select(new QFeedResponse(
+                        room.id, feed.id, room.certCnt, roomTag.categoryName, user.id, user.nickname, challengeUser.continueCertCnt,
+                        feed.certImgUrl, feed.certContent, feed.likeCnt, feed.accuseCnt,
+                        new CaseBuilder().when(feedLike.isNotNull()).then("Y").otherwise("N").as("likeYN"),
+                        feed.registeredDate, feed.registeredAt
+                )).from(room)
+                .innerJoin(room.challengeTagEntity, roomTag)
+                .innerJoin(feed)
+                .on(feed.roomId.eq(room.id))
+                .innerJoin(user)
+                .on(feed.userId.eq(user.id))
+                .innerJoin(challengeUser)
+                .on(room.id.eq(challengeUser.challengeRoomEntity.id).and(challengeUser.userId.eq(user.id)))
+                .leftJoin(feed.feedLikeEntityList, feedLike)
+                .on(feedLike.likeUserId.eq(userEntity.getId()))
+                .where(feed.certCode.eq(FeedUtils.CONFIRM).and(feed.id.eq(feedId)))
+                .fetchOne();
+    }
+
     private OrderSpecifier<?> orderByBookmarkCnt(final String searchCode) {
         return searchCode.equals(RoomSearchType.POPULARITY.getCode()) ? room.bookmarkCnt.desc() : OrderByNull.getDefault();
     }
@@ -283,6 +332,7 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
         return isEmpty(certCntList) ? null : room.certCnt.in(certCntList);
     }
 
+
     QUserEntity user = QUserEntity.userEntity;
     QChallengeRoomEntity room = QChallengeRoomEntity.challengeRoomEntity;
     QChallengeUserEntity challengeUser = QChallengeUserEntity.challengeUserEntity;
@@ -291,4 +341,5 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
     QUserTagEntity userTag = QUserTagEntity.userTagEntity;
     QChallengeFeedEntity feed = QChallengeFeedEntity.challengeFeedEntity;
     QChallengeNotiEntity noti = QChallengeNotiEntity.challengeNotiEntity;
+    QFeedLikeEntity feedLike = QFeedLikeEntity.feedLikeEntity;
 }

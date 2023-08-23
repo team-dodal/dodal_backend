@@ -2,11 +2,9 @@ package com.dodal.meet.model.entity;
 
 
 import com.dodal.meet.model.RoomRole;
-import com.dodal.meet.model.User;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.*;
-import org.springframework.security.core.Authentication;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
@@ -33,7 +31,7 @@ public class ChallengeUserEntity {
     @Enumerated(EnumType.STRING)
     private RoomRole roomRole;
 
-    private int certCnt;
+    private int continueCertCnt;
 
     private Long userId;
 
@@ -43,7 +41,7 @@ public class ChallengeUserEntity {
 
     @PrePersist
     void prePersist() {
-        this.certCnt = 0;
+        this.continueCertCnt = 0;
         this.registeredAt = Timestamp.from(Instant.now());
     }
 
@@ -63,5 +61,9 @@ public class ChallengeUserEntity {
                 .nickname(userEntity.getNickname())
                 .challengeRoomEntity(null)
                 .build();
+    }
+
+    public void updateContinueCertCnt(int num) {
+        this.continueCertCnt += num;
     }
 }

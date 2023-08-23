@@ -9,5 +9,5 @@ import java.util.List;
 @Repository
 public interface ChallengeFeedEntityRepository extends JpaRepository<ChallengeFeedEntity, Long> {
 
-    List<ChallengeFeedEntity> findAllByUserIdAndRegisteredDate(Long userId, String registeredDate);
+    List<ChallengeFeedEntity> findAllByUserIdAndRoomIdAndRegisteredDate(Long userId, Integer roomId, String registeredDate);
 }

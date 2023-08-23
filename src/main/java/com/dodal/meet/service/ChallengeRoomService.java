@@ -155,7 +155,7 @@ public class ChallengeRoomService {
         ChallengeUserEntity challengeUserEntity = ChallengeUserEntity.builder()
                 .challengeRoomEntity(challengeRoom)
                 .roomRole(RoomRole.USER)
-                .certCnt(0)
+                .continueCertCnt(0)
                 .userId(userEntity.getId())
                 .nickname(userEntity.getNickname())
                 .build();
@@ -184,7 +184,7 @@ public class ChallengeRoomService {
         UserEntity userEntity = getUserEntityByAuthentication(authentication);
         ChallengeUserEntity challengeUser = challengeUserEntityRepository.findByUserIdAndChallengeRoomEntity(userEntity.getId(), challengeRoom).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM_USER));
         String today = DateUtils.parsingTimestamp(Timestamp.from(Instant.now()));
-        List<ChallengeFeedEntity> userTodayFeedList = challengeFeedEntityRepository.findAllByUserIdAndRegisteredDate(userEntity.getId(), today);
+        List<ChallengeFeedEntity> userTodayFeedList = challengeFeedEntityRepository.findAllByUserIdAndRoomIdAndRegisteredDate(userEntity.getId(), roomId, today);
         if (!isEmpty(userTodayFeedList)) {
             for (ChallengeFeedEntity entity : userTodayFeedList) {
                 if (entity.getCertCode().equals(FeedUtils.REQUEST) || entity.getCertCode().equals(FeedUtils.CONFIRM)) {

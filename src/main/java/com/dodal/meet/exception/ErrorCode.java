@@ -33,11 +33,11 @@ public enum ErrorCode {
     INVALID_DAY_CODE(HttpStatus.BAD_REQUEST, "요일 코드가 올바르지 않습니다."),
 
     FEED_ALREADY_REQUEST(HttpStatus.BAD_REQUEST, "피드 인증 요청 중이거나 인증 완료 상태입니다."),
-
+    INVALID_FEED_LIKE_REQUEST(HttpStatus.BAD_REQUEST, "요청한 사용자는 좋아요를 누른 상태입니다."),
     INVALID_DATE_FORMAT(HttpStatus.BAD_REQUEST, "요청한 날짜 형식이 올바르지 않습니다"),
 
     NOT_FOUND_FEED(HttpStatus.BAD_REQUEST, "요청한 피드 정보가 존재하지 않습니다."),
-
+    NOT_FOUND_FEED_LIKE(HttpStatus.BAD_REQUEST, "요청한 피드 좋아요 정보가 존재하지 않습니다."),
     INVALID_YN_REQUEST(HttpStatus.BAD_REQUEST, "YN 필드 값은 Y 또는 N 이어야 합니다."),
     // 401 - UNAUTHORIZED
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다."),
