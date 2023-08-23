@@ -51,8 +51,8 @@ public class ChallengeListService {
     public void updateFeedStatus(final Integer roomId, final Long feedId, final String confirmYN, final Authentication authentication) {
         final UserEntity userEntity = getUserEntity(authentication);
         final ChallengeRoomEntity roomEntity = challengeRoomEntityRepository.findById(roomId).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM));
-        final ChallengeUserEntity challengeUserEntity = challengeUserEntityRepository.findByUserIdAndChallengeRoomEntity(userEntity.getId(), roomEntity).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM_USER));
-        if (!challengeUserEntity.getRoomRole().equals(RoomRole.HOST)) {
+        final ChallengeUserEntity challengeHostEntity = challengeUserEntityRepository.findByUserIdAndChallengeRoomEntity(userEntity.getId(), roomEntity).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM_USER));
+        if (!challengeHostEntity.getRoomRole().equals(RoomRole.HOST)) {
             throw new DodalApplicationException(ErrorCode.UNAUTHORIZED_ROOM_HOST);
         }
         ChallengeFeedEntity feedEntity = challengeFeedEntityRepository.findById(feedId).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_FEED));
@@ -60,6 +60,8 @@ public class ChallengeListService {
         StringUtils.equalsAny(confirmYN, DtoUtils.Y, DtoUtils.N);
         if(StringUtils.equals(confirmYN, DtoUtils.Y)){
             feedEntity.updateCertCode(FeedUtils.CONFIRM);
+            final ChallengeUserEntity challengeUserEntity = challengeUserEntityRepository.findByUserIdAndChallengeRoomEntity(feedEntity.getUserId(), roomEntity).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM_USER));
+            challengeUserEntity.updateContinueCertCnt(DtoUtils.ONE);
             fcmPushService.sendFcmPushUser(feedEntity.getUserId(), MessageUtils.makeFcmPushRequest(MessageType.CONFIRM, roomEntity.getTitle()));
         } else if (StringUtils.equals(confirmYN, DtoUtils.N)) {
             feedEntity.updateCertCode(FeedUtils.REJECT);

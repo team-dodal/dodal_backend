@@ -38,7 +38,7 @@ public class FeedResponse {
 
     // challengeUserEntity
     @Schema(description = "유저 연속 인증 횟수", example = "10")
-    private int userContinueCertCnt;
+    private int continueCertCnt;
 
     // feedEntity
     @Schema(description = "인증 이미지 URL")
@@ -63,14 +63,14 @@ public class FeedResponse {
     private Timestamp registeredAt;
 
     @QueryProjection
-    public FeedResponse(Integer roomId, Long feedId, int certCnt, String categoryName, Long userId, String nickname, int userContinueCertCnt, String certImgUrl, String certContent, int likeCnt, int accuseCnt, String likeYN, String registeredDate, Timestamp registeredAt) {
+    public FeedResponse(Integer roomId, Long feedId, int certCnt, String categoryName, Long userId, String nickname, int continueCertCnt, String certImgUrl, String certContent, int likeCnt, int accuseCnt, String likeYN, String registeredDate, Timestamp registeredAt) {
         this.roomId = roomId;
         this.feedId = feedId;
         this.certCnt = certCnt;
         this.categoryName = categoryName;
         this.userId = userId;
         this.nickname = nickname;
-        this.userContinueCertCnt = userContinueCertCnt;
+        this.continueCertCnt = continueCertCnt;
         this.certImgUrl = certImgUrl;
         this.certContent = certContent;
         this.likeCnt = likeCnt;

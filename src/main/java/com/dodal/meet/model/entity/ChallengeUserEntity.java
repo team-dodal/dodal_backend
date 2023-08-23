@@ -62,4 +62,8 @@ public class ChallengeUserEntity {
                 .challengeRoomEntity(null)
                 .build();
     }
+
+    public void updateContinueCertCnt(int num) {
+        this.continueCertCnt += num;
+    }
 }
