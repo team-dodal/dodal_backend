@@ -275,11 +275,38 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
                 .on(feedLike.likeUserId.eq(userEntity.getId()))
                 .where(feed.certCode.eq(FeedUtils.CONFIRM))
                 .orderBy(feed.registeredAt.desc())
-                .limit(100)
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
                 .fetch();
 
         return new PageImpl<>(content, pageable, content.size());
+    }
 
+    @Override
+    public Page<FeedResponse> getRoomFeeds(final UserEntity userEntity, final Integer roomId, final Pageable pageable) {
+        List<FeedResponse> content = queryFactory
+                .select(new QFeedResponse(
+                        room.id, feed.id, room.certCnt, roomTag.categoryName, user.id, user.nickname, challengeUser.continueCertCnt,
+                        feed.certImgUrl, feed.certContent, feed.likeCnt, feed.accuseCnt,
+                        new CaseBuilder().when(feedLike.isNotNull()).then("Y").otherwise("N").as("likeYN"),
+                        feed.registeredDate, feed.registeredAt
+                )).from(room)
+                .innerJoin(room.challengeTagEntity, roomTag)
+                .innerJoin(feed)
+                .on(feed.roomId.eq(room.id))
+                .innerJoin(user)
+                .on(feed.userId.eq(user.id))
+                .innerJoin(challengeUser)
+                .on(room.id.eq(challengeUser.challengeRoomEntity.id).and(challengeUser.userId.eq(user.id)))
+                .leftJoin(feed.feedLikeEntityList, feedLike)
+                .on(feedLike.likeUserId.eq(userEntity.getId()))
+                .where(feed.certCode.eq(FeedUtils.CONFIRM).and(room.id.eq(roomId)))
+                .orderBy(feed.registeredAt.desc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        return new PageImpl<>(content, pageable, content.size());
     }
 
     @Override

@@ -18,5 +18,7 @@ public interface ChallengeRoomCustom {
 
     Page<FeedResponse> getFeeds(UserEntity userEntity, Pageable pageable);
 
+    Page<FeedResponse> getRoomFeeds(UserEntity userEntity, Integer roomId, Pageable pageable);
+
     FeedResponse getFeedOne(UserEntity userEntity, Long feedId);
 }

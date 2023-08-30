@@ -21,8 +21,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
-import java.util.List;
-
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -32,6 +30,14 @@ public class FeedService {
     private final ChallengeRoomEntityRepository challengeRoomEntityRepository;
     private final FeedLikeEntityRepository feedLikeEntityRepository;
     private final ChallengeFeedEntityRepository challengeFeedEntityRepository;
+
+    @Transactional(readOnly = true)
+    public Page<FeedResponse> getRoomFeeds(final User user, final Integer roomId, final Pageable pageable) {
+        challengeRoomEntityRepository.findById(roomId).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM));
+
+        final UserEntity userEntity = userEntityRepository.findBySocialIdAndSocialType(user.getSocialId(), user.getSocialType()).orElseThrow(() -> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
+        return challengeRoomEntityRepository.getRoomFeeds(userEntity, roomId, pageable);
+    }
 
     @Transactional(readOnly = true)
     public Page<FeedResponse> getFeeds(final User user, final Pageable pageable) {
