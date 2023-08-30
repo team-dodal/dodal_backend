@@ -123,6 +123,10 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
 
         response.setJoinYN(commonUserCnt != 0 ? "Y" : "N");
 
+        if (response.getThumbnailImgUrl().indexOf("1x1") != -1) {
+            String changeThumbnailImgUrl = response.getThumbnailImgUrl().replace("1x1", "2x1");
+            response.setThumbnailImgUrl(changeThumbnailImgUrl);
+        }
 
         String date = DateUtils.parsingTimestamp(Timestamp.from(Instant.now()));
 
