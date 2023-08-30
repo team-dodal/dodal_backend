@@ -15,6 +15,8 @@ import com.dodal.meet.repository.UserEntityRepository;
 import com.dodal.meet.utils.DtoUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
@@ -32,9 +34,9 @@ public class FeedService {
     private final ChallengeFeedEntityRepository challengeFeedEntityRepository;
 
     @Transactional(readOnly = true)
-    public List<FeedResponse> getFeeds(final User user) {
+    public Page<FeedResponse> getFeeds(final User user, final Pageable pageable) {
         final UserEntity userEntity = userEntityRepository.findBySocialIdAndSocialType(user.getSocialId(), user.getSocialType()).orElseThrow(() -> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
-        return challengeRoomEntityRepository.getFeeds(userEntity);
+        return challengeRoomEntityRepository.getFeeds(userEntity, pageable);
     }
 
     @Transactional

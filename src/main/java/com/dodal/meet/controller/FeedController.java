@@ -13,6 +13,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -37,9 +40,12 @@ public class FeedController {
                     @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = ResponseFail.class)))
             })
     @GetMapping("/feeds")
-    public ResponseEntity<ResponseSuccess<List<FeedResponse>>> getFeeds(final Authentication authentication) {
-        User user = (User) authentication.getPrincipal();
-        return ResponseEntity.ok().body(ResponseSuccess.success(feedService.getFeeds(user)));
+    public ResponseEntity<ResponseSuccess<Page<FeedResponse>>> getFeeds(@Schema(description = "요청 페이지 번호", example = "0") @RequestParam(name = "page") Integer page ,
+                                                                        @Schema(description = "요청 페이지 사이즈", example = "3") @RequestParam(name = "page_size") Integer pageSize,
+                                                                        Authentication authentication) {
+        final Pageable pageable = PageRequest.of(page, pageSize);
+        final User user = (User) authentication.getPrincipal();
+        return ResponseEntity.ok().body(ResponseSuccess.success(feedService.getFeeds(user, pageable)));
     }
 
     @Operation(summary = "피드 좋아요 요청 API"

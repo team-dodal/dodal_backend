@@ -252,8 +252,8 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
     }
 
     @Override
-    public List<FeedResponse> getFeeds(final UserEntity userEntity) {
-        return queryFactory
+    public Page<FeedResponse> getFeeds(final UserEntity userEntity, final Pageable pageable) {
+        List<FeedResponse> content = queryFactory
                 .select(new QFeedResponse(
                         room.id, feed.id, room.certCnt, roomTag.categoryName, user.id, user.nickname, challengeUser.continueCertCnt,
                         feed.certImgUrl, feed.certContent, feed.likeCnt, feed.accuseCnt,
@@ -273,6 +273,8 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
                 .orderBy(feed.registeredAt.desc())
                 .limit(100)
                 .fetch();
+
+        return new PageImpl<>(content, pageable, content.size());
 
     }
 
