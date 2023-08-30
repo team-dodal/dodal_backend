@@ -5,6 +5,7 @@ import com.dodal.meet.controller.request.user.UserProfileRequest;
 import com.dodal.meet.controller.request.user.UserSignUpRequest;
 import com.dodal.meet.controller.request.user.UserSignInRequest;
 import com.dodal.meet.controller.request.user.UserUpdateRequest;
+import com.dodal.meet.controller.response.category.CategoryResponse;
 import com.dodal.meet.controller.response.category.TagResponse;
 import com.dodal.meet.controller.response.category.UserCategoryResponse;
 import com.dodal.meet.controller.response.user.*;
@@ -54,6 +55,17 @@ public class UserService {
             TokenEntity tokenEntity = tokenEntityRepository.findByUserEntity(user).orElseThrow(()-> new DodalApplicationException(ErrorCode.INVALID_TOKEN));
             tokenEntity.updateRefreshToken(refreshToken);
             tokenEntityRepository.save(tokenEntity);
+
+            List<String> userTagValueList = new ArrayList<>();
+            userTagEntity.forEach(entity -> userTagValueList.add(entity.getTagValue()));
+
+            List<TagEntity> tagList = tagEntityRepository.findAllByUserTagValue(userTagValueList);
+
+            Set<CategoryEntity> categorySet = new HashSet<>();
+            tagList.forEach(e -> categorySet.add(e.getCategoryEntity()));
+
+            List<CategoryEntity> categoryList = new ArrayList<>(categorySet);
+
             return UserSignInResponse.builder()
                     .isSigned("true")
                     .userId(user.getId())
@@ -64,7 +76,8 @@ public class UserService {
                     .nickname(user.getNickname())
                     .profileUrl(user.getProfileUrl())
                     .content(user.getContent())
-                    .tagList(TagResponse.userEntitesToList(userTagEntity))
+                    .categoryList(UserCategoryResponse.fromEntityList(categoryList))
+                    .tagList(TagResponse.tagEntitiesToList(tagList))
                     .alarmYn(user.getAlarmYn())
                     .accuseCnt(user.getAccuseCnt())
                     .fcmToken(user.getTokenEntity().getFcmToken())

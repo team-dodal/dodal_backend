@@ -1,7 +1,9 @@
 package com.dodal.meet.controller.response.user;
 
 
+import com.dodal.meet.controller.response.category.CategoryResponse;
 import com.dodal.meet.controller.response.category.TagResponse;
+import com.dodal.meet.controller.response.category.UserCategoryResponse;
 import com.dodal.meet.model.SocialType;
 import com.dodal.meet.model.UserRole;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
@@ -46,6 +48,8 @@ public class UserSignInResponse {
     @Schema(description = "유저 한 줄 소개", example = "안녕하세요")
     private String content;
 
+    @Schema(description = "카테고리 정보")
+    private List<UserCategoryResponse> categoryList;
     @Schema(description = "관심 있는 태그 정보")
     private List<TagResponse> tagList;
 
