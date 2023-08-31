@@ -139,7 +139,7 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
                 .on(room.id.eq(feed.roomId))
                 .where(room.id.eq(roomId).and(feed.certImgUrl.isNotNull()).and(feed.certCode.eq(FeedUtils.CONFIRM)))
                 .orderBy(feed.registeredAt.desc())
-                .limit(6)
+                .limit(9)
                 .fetch();
         response.setFeedUrlList(feedUrlList);
 
