@@ -4,6 +4,9 @@ import com.dodal.meet.controller.request.challengeroom.*;
 import com.dodal.meet.controller.response.ResponseFail;
 import com.dodal.meet.controller.response.ResponseSuccess;
 import com.dodal.meet.controller.response.challengeroom.*;
+import com.dodal.meet.exception.DodalApplicationException;
+import com.dodal.meet.exception.ErrorCode;
+import com.dodal.meet.model.User;
 import com.dodal.meet.service.ChallengeRoomService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -316,5 +319,22 @@ public class ChallengeRoomController {
     public ResponseEntity<ResponseSuccess<Void>> deleteNoti(@PathVariable(name = "room_id") Integer roomId, @PathVariable(name = "noti_id") Integer notiId, Authentication authentication) {
         challengeRoomService.deleteNoti(roomId, notiId, authentication);
         return ResponseEntity.noContent().build();
+    }
+
+    @Operation(summary = "랭킹 조회 API"
+            , description = "도전방에 랭킹 정보를 조회한다. code : 0 (전체), 1(월간), 2(주간)",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "성공", useReturnTypeSchema = true),
+                    @ApiResponse(responseCode = "400", description = "INVALID_CODE", content = @Content(schema = @Schema(implementation = ResponseFail.class))),
+                    @ApiResponse(responseCode = "401", description = "INVALID_TOKEN", content = @Content(schema = @Schema(implementation = ResponseFail.class))),
+                    @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = ResponseFail.class)))
+            })
+    @GetMapping("/challenge/room/{room_id}/rank")
+    public ResponseEntity<ResponseSuccess<List<ChallengeRoomRankResponse>>> getRank(@PathVariable(name = "room_id") Integer roomId, @RequestParam(name = "code") String code, Authentication authentication) {
+        if (!code.equals("0") && !code.equals("1") && !code.equals("2")) {
+            throw new DodalApplicationException(ErrorCode.INVALID_RANK_CODE);
+        }
+        User user = (User) authentication.getPrincipal();
+        return ResponseEntity.ok().body(ResponseSuccess.success(challengeRoomService.getRank(roomId, code, user)));
     }
 }
