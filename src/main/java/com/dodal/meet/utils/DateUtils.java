@@ -81,6 +81,18 @@ public class DateUtils {
         return monday.format(formatter);
     }
 
+    public static String getToday() {
+        LocalDate today = LocalDate.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+        return today.format(formatter);
+    }
+
+    public static String getMonth() {
+        LocalDate today = LocalDate.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMM");
+        return today.format(formatter);
+    }
+
     public static void validDateYM(String dateYM) {
         try {
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMM");

@@ -23,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 
 import static org.springframework.util.ObjectUtils.*;
 
@@ -361,5 +362,23 @@ public class ChallengeRoomService {
                 .tagName(tagEntity.getName())
                 .tagValue(tagEntity.getTagValue())
                 .build();
+    }
+
+    public List<ChallengeRoomRankResponse> getRank(Integer roomId, String code, User user) {
+        userEntityRepository.findBySocialIdAndSocialType(user.getSocialId(), user.getSocialType()).orElseThrow(() -> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
+        challengeRoomEntityRepository.findById(roomId).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM));
+
+        // 전체 조회
+        if (code.equals("0")) {
+            return challengeRoomEntityRepository.getRankAll(roomId);
+        } else if (code.equals("1")) {
+            String month = DateUtils.getMonth();
+            return challengeRoomEntityRepository.getRankMonth(roomId, month);
+        } else {
+            Map<Integer, String> weekInfo = DateUtils.getWeekInfo();
+            String startDay = weekInfo.get(DateUtils.MON);
+            String endDay = weekInfo.get(DateUtils.SUN);
+            return challengeRoomEntityRepository.getRankWeek(roomId, startDay, endDay);
+        }
     }
 }
