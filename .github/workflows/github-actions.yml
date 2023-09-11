@@ -18,7 +18,6 @@ jobs:
         with:
           java-version: '11'
           distribution: 'temurin'
-
       - name: make application-dev.yml
         run: |
           cd ./src/main/resources
