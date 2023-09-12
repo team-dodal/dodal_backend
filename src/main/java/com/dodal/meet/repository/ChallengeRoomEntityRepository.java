@@ -26,37 +26,37 @@ public interface ChallengeRoomEntityRepository extends JpaRepository<ChallengeRo
     List<ChallengeUserRoleResponse> getChallengeUser(UserEntity userEntity);
 
     @Query(
-            "SELECT new com.dodal.meet.controller.response.challengeroom.ChallengeRoomRankResponse(u.nickname, ue.profileUrl, count(*)) " +
+            "SELECT new com.dodal.meet.controller.response.challengeroom.ChallengeRoomRankResponse(u.userId, u.nickname, ue.profileUrl, count(*)) " +
             "FROM ChallengeRoomEntity r " +
                 "INNER JOIN ChallengeUserEntity u ON r.id = u.challengeRoomEntity.id " +
                 "INNER JOIN ChallengeFeedEntity f ON (f.roomId = r.id and u.userId = f.userId) " +
                 "INNER JOIN UserEntity ue ON u.userId = ue.id " +
             "WHERE r.id = :roomId AND f.certCode = '2' " +
-            "GROUP BY u.nickname, ue.profileUrl " +
+            "GROUP BY u.userId, u.nickname, ue.profileUrl " +
             "ORDER BY count(*) DESC"
     )
     List<ChallengeRoomRankResponse> getRankAll(@Param("roomId") Integer roomId);
 
     @Query(
-            "SELECT new com.dodal.meet.controller.response.challengeroom.ChallengeRoomRankResponse(u.nickname, ue.profileUrl, count(*)) " +
+            "SELECT new com.dodal.meet.controller.response.challengeroom.ChallengeRoomRankResponse(u.userId, u.nickname, ue.profileUrl, count(*)) " +
             "FROM ChallengeRoomEntity r " +
                 "INNER JOIN ChallengeUserEntity u ON r.id = u.challengeRoomEntity.id " +
                 "INNER JOIN ChallengeFeedEntity f ON (f.roomId = r.id AND u.userId = f.userId) " +
                 "INNER JOIN UserEntity ue ON u.userId = ue.id " +
             "WHERE r.id = :roomId AND f.certCode = '2' AND f.registeredDate BETWEEN :startDay AND :endDay " +
-            "GROUP BY u.nickname, ue.profileUrl " +
+            "GROUP BY u.userId, u.nickname, ue.profileUrl " +
             "ORDER BY count(*) DESC"
     )
     List<ChallengeRoomRankResponse> getRankWeek(@Param("roomId") Integer roomId, @Param("startDay") String startDay, @Param("endDay") String endDay);
 
     @Query(
-            "SELECT new com.dodal.meet.controller.response.challengeroom.ChallengeRoomRankResponse(u.nickname, ue.profileUrl, count(*)) " +
+            "SELECT new com.dodal.meet.controller.response.challengeroom.ChallengeRoomRankResponse(u.userId, u.nickname, ue.profileUrl, count(*)) " +
             "FROM ChallengeRoomEntity r " +
                 "INNER JOIN ChallengeUserEntity u ON r.id = u.challengeRoomEntity.id " +
                 "INNER JOIN ChallengeFeedEntity f ON (f.roomId = r.id AND u.userId = f.userId) " +
                 "INNER JOIN UserEntity ue ON u.userId = ue.id " +
             "WHERE r.id = :roomId AND f.certCode = '2' AND substring(f.registeredDate, 1, 6) = :month " +
-            "GROUP BY u.nickname, ue.profileUrl " +
+            "GROUP BY u.userId, u.nickname, ue.profileUrl " +
             "ORDER BY count(*) DESC"
     )
     List<ChallengeRoomRankResponse> getRankMonth(@Param("roomId") Integer roomId, @Param("month") String month);

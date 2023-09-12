@@ -15,6 +15,9 @@ import lombok.*;
 @AllArgsConstructor
 public class ChallengeRoomRankResponse {
 
+    @Schema(description = "유저 아이디", example = "1")
+    private Long userId;
+
     @Schema(description = "닉네임", example = "노래하는 어피치")
     private String nickname;
 
