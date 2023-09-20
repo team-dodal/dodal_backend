@@ -19,6 +19,9 @@ public class FeedResponse {
     @Schema(description = "도전방 시퀀스", example = "1")
     private Integer roomId;
 
+    @Schema(description = "도전방 제목", example = "도달 도전방입니다.")
+    private String title;
+
     @Schema(description = "피드 시퀀스", example = "3")
     private Long feedId;
 
@@ -63,8 +66,9 @@ public class FeedResponse {
     private Timestamp registeredAt;
 
     @QueryProjection
-    public FeedResponse(Integer roomId, Long feedId, int certCnt, String categoryName, Long userId, String nickname, int continueCertCnt, String certImgUrl, String certContent, int likeCnt, int accuseCnt, String likeYN, String registeredDate, Timestamp registeredAt) {
+    public FeedResponse(Integer roomId, String title, Long feedId, int certCnt, String categoryName, Long userId, String nickname, int continueCertCnt, String certImgUrl, String certContent, int likeCnt, int accuseCnt, String likeYN, String registeredDate, Timestamp registeredAt) {
         this.roomId = roomId;
+        this.title = title;
         this.feedId = feedId;
         this.certCnt = certCnt;
         this.categoryName = categoryName;
