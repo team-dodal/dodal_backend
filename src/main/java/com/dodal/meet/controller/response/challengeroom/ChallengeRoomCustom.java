@@ -12,6 +12,9 @@ import java.util.List;
 public interface ChallengeRoomCustom {
     Page<ChallengeRoomSearchResponse> getChallengeRooms(ChallengeRoomCondition challengeRoomCondition, Pageable pageable, UserEntity userEntity);
     Page<ChallengeRoomSearchResponse> getChallengeRoomsByCategory(ChallengeRoomSearchCategoryRequest request, Pageable pageable, UserEntity userEntity);
+
+    List<ChallengeRoomSearchResponse> getChallengeRoomsByWord(UserEntity userEntity, String word);
+
     ChallengeRoomDetailResponse getChallengeRoomDetail(Integer roomId, UserEntity userEntity);
 
     List<ChallengeNotiResponse> getChallengeRoomNoti(Integer roomId);

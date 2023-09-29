@@ -40,6 +40,9 @@ public enum ErrorCode {
     NOT_FOUND_FEED(HttpStatus.BAD_REQUEST, "요청한 피드 정보가 존재하지 않습니다."),
     NOT_FOUND_FEED_LIKE(HttpStatus.BAD_REQUEST, "요청한 피드 좋아요 정보가 존재하지 않습니다."),
     INVALID_YN_REQUEST(HttpStatus.BAD_REQUEST, "YN 필드 값은 Y 또는 N 이어야 합니다."),
+
+    NOT_FOUND_WORD(HttpStatus.BAD_REQUEST, "검색어가 비어 있습니다."),
+
     // 401 - UNAUTHORIZED
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다."),
     EXPIRED_TOKEN(HttpStatus.UNAUTHORIZED, "기간이 만료된 토큰 입니다."),

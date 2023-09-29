@@ -1,6 +1,7 @@
 package com.dodal.meet.service;
 
 import com.dodal.meet.controller.request.challengeroom.*;
+import com.dodal.meet.controller.response.ResponseSuccess;
 import com.dodal.meet.controller.response.challengeroom.*;
 import com.dodal.meet.exception.DodalApplicationException;
 import com.dodal.meet.exception.ErrorCode;
@@ -14,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,8 +24,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.springframework.util.ObjectUtils.*;
 
@@ -31,6 +35,7 @@ import static org.springframework.util.ObjectUtils.*;
 @RequiredArgsConstructor
 @Slf4j
 public class ChallengeRoomService {
+    private final ChallengeWordEntityRepository challengeWordEntityRepository;
     private final ChallengeNotiEntityRepository challengeNotiEntityRepository;
     private final ChallengeFeedEntityRepository challengeFeedEntityRepository;
     private final CategoryEntityRepository categoryEntityRepository;
@@ -364,6 +369,7 @@ public class ChallengeRoomService {
                 .build();
     }
 
+    @Transactional(readOnly = true)
     public List<ChallengeRoomRankResponse> getRank(Integer roomId, String code, User user) {
         userEntityRepository.findBySocialIdAndSocialType(user.getSocialId(), user.getSocialType()).orElseThrow(() -> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
         challengeRoomEntityRepository.findById(roomId).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM));
@@ -380,5 +386,32 @@ public class ChallengeRoomService {
             String endDay = weekInfo.get(DateUtils.SUN);
             return challengeRoomEntityRepository.getRankWeek(roomId, startDay, endDay);
         }
+    }
+
+
+    @Transactional
+    public List<ChallengeRoomSearchResponse> getChallengeRoomsByWord(User user, String searchWord) {
+        UserEntity userEntity = userEntityRepository.findBySocialIdAndSocialType(user.getSocialId(), user.getSocialType()).orElseThrow(()-> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
+        ChallengeWordEntity wordEntity = ChallengeWordEntity.builder()
+                .word(searchWord)
+                .userId(userEntity.getId())
+                .build();
+        challengeWordEntityRepository.save(wordEntity);
+        return challengeRoomEntityRepository.getChallengeRoomsByWord(userEntity, searchWord);
+    }
+
+    @Transactional(readOnly = true)
+    public List<String> getChallengeWordsByUserId(User user) {
+        UserEntity userEntity = userEntityRepository.findBySocialIdAndSocialType(user.getSocialId(), user.getSocialType()).orElseThrow(()-> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
+        List<String> words = challengeWordEntityRepository.findWordsByUserIdAndOrderedDesc(userEntity.getId());
+        return words.stream()
+                .limit(5)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void deleteChallengeWordsByUserId(User user) {
+        UserEntity userEntity = userEntityRepository.findBySocialIdAndSocialType(user.getSocialId(), user.getSocialType()).orElseThrow(()-> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
+        challengeWordEntityRepository.deleteAllByUserId(userEntity.getId());
     }
 }

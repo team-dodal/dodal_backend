@@ -95,6 +95,35 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
     }
 
     @Override
+    public List<ChallengeRoomSearchResponse> getChallengeRoomsByWord(UserEntity userEntity, String word) {
+        List<Integer> userRoomList = queryFactory.select(challengeUser.challengeRoomEntity.id).from(challengeUser).where(challengeUser.userId.eq(userEntity.getId())).fetch();
+
+        List<ChallengeRoomSearchResponse> content = queryFactory
+                .select(new QChallengeRoomSearchResponse(
+                        room.id, room.hostId, room.hostNickname, room.hostProfileUrl, room.title, room.certCnt, room.thumbnailImgUrl, room.recruitCnt,
+                        room.userCnt, room.bookmarkCnt, new CaseBuilder().when(bookmark.userEntity.isNotNull()).then("Y").otherwise("N").as("bookmarkYN"),
+                        room.registeredAt, roomTag.categoryName, roomTag.categoryValue, roomTag.tagName, roomTag.tagValue
+                )).from(room)
+                .innerJoin(roomTag)
+                .on(roomTag.challengeRoomEntity.eq(room))
+                .leftJoin(bookmark)
+                .on(bookmark.userEntity.eq(userEntity).and(bookmark.challengeRoomEntity.eq(room)))
+                .where(room.title.contains(word))
+                .fetch();
+
+        Set<Integer> userRoomSet = new HashSet<>(userRoomList);
+        content.forEach(row -> {
+            if (userRoomSet.contains(row.getChallengeRoomId())) {
+                row.setJoinYN("Y");
+            }
+        });
+
+        return content;
+    }
+
+
+
+    @Override
     public ChallengeRoomDetailResponse getChallengeRoomDetail(final Integer roomId, final UserEntity userEntity) {
         // challengeUser (방장 / 일반 사용자)
         // 조회하려는 유저가 가입한 사용자일 수도 있고, 가입하지 않은 사용자일 수 있다.

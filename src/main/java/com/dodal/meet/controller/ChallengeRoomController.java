@@ -24,6 +24,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.util.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -336,5 +337,51 @@ public class ChallengeRoomController {
         }
         User user = (User) authentication.getPrincipal();
         return ResponseEntity.ok().body(ResponseSuccess.success(challengeRoomService.getRank(roomId, code, user)));
+    }
+
+    @Operation(summary = "도전방 검색 API"
+            , description = "검색 단어에 맞는 도전방을 조회한다.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "성공", useReturnTypeSchema = true),
+                    @ApiResponse(responseCode = "400", description = "INVALID_REQUEST", content = @Content(schema = @Schema(implementation = ResponseFail.class))),
+                    @ApiResponse(responseCode = "401", description = "INVALID_TOKEN", content = @Content(schema = @Schema(implementation = ResponseFail.class))),
+                    @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = ResponseFail.class)))
+            })
+    @GetMapping("/challenge/room/search")
+    public ResponseEntity<ResponseSuccess<List<ChallengeRoomSearchResponse>>> getSearch(@RequestParam(name = "word") String word, Authentication authentication) {
+        if (!StringUtils.hasText(word)) {
+            throw new DodalApplicationException(ErrorCode.NOT_FOUND_WORD);
+        }
+        final String searchWord = word.trim();
+        final User user = (User) authentication.getPrincipal();
+        return ResponseEntity.ok().body(ResponseSuccess.success(challengeRoomService.getChallengeRoomsByWord(user, searchWord)));
+    }
+
+    @Operation(summary = "도전방 최근 검색 API"
+            , description = "유저가 검색한 최근 검색어를 조회한다.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "성공", useReturnTypeSchema = true),
+                    @ApiResponse(responseCode = "400", description = "INVALID_REQUEST", content = @Content(schema = @Schema(implementation = ResponseFail.class))),
+                    @ApiResponse(responseCode = "401", description = "INVALID_TOKEN", content = @Content(schema = @Schema(implementation = ResponseFail.class))),
+                    @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = ResponseFail.class)))
+            })
+    @GetMapping("/challenge/room/search/words")
+    public ResponseEntity<ResponseSuccess<List<String>>> getWordsByUserId(Authentication authentication) {
+        final User user = (User) authentication.getPrincipal();
+        return ResponseEntity.ok().body(ResponseSuccess.success(challengeRoomService.getChallengeWordsByUserId(user)));
+    }
+
+    @Operation(summary = "도전방 검색기록 삭제 API"
+            , description = "유저가 검색한 검색어를 모두 삭제한다.",
+            responses = {
+                    @ApiResponse(responseCode = "204", description = "성공", useReturnTypeSchema = true),
+                    @ApiResponse(responseCode = "401", description = "INVALID_TOKEN", content = @Content(schema = @Schema(implementation = ResponseFail.class))),
+                    @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = ResponseFail.class)))
+            })
+    @DeleteMapping("/challenge/room/search/words")
+    public ResponseEntity<ResponseSuccess<Void>> deleteWordsByUserId(Authentication authentication) {
+        final User user = (User) authentication.getPrincipal();
+        challengeRoomService.deleteChallengeWordsByUserId(user);
+        return ResponseEntity.noContent().build();
     }
 }
