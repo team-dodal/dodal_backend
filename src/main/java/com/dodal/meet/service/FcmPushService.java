@@ -68,7 +68,8 @@ public class FcmPushService {
             firebaseMessaging.send(message);
         } catch (Exception e) {
             log.error("FCM PUSH ERROR : {}", e.getMessage());
-            throw new DodalApplicationException(ErrorCode.FCM_PUSH_ERROR);
+            // 2023.09.29 : FCM 정보가 잘못되어도 연관된 다른 비즈니스 로직은 수행할 수 있도록 throw로 예외를 던지지 않는다.
+            // throw new DodalApplicationException(ErrorCode.FCM_PUSH_ERROR);
         }
     }
 
