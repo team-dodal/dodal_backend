@@ -51,6 +51,8 @@ public class ChallengeRoomService {
     private final ImageService imageService;
     private final FcmPushService fcmPushService;
 
+    private final AlarmService alarmService;
+
 
     @Transactional
     public ChallengeCreateResponse createChallengeRoom(final ChallengeRoomCreateRequest challengeRoomCreateRequest, final Authentication authentication) {
@@ -210,6 +212,7 @@ public class ChallengeRoomService {
                 .build();
         challengeFeedEntityRepository.save(entity);
 
+        alarmService.saveAlarmHist(MessageUtils.makeAlarmHistResponse(MessageType.REQUEST, challengeRoom.getTitle(), challengeRoom.getHostId(), roomId));
         fcmPushService.sendFcmPushUser(challengeRoom.getHostId(), MessageUtils.makeFcmPushRequest(MessageType.REQUEST, challengeRoom.getTitle()));
     }
 

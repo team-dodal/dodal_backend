@@ -1,5 +1,6 @@
 package com.dodal.meet.service;
 
+import com.dodal.meet.controller.response.alarm.AlarmHistResponse;
 import com.dodal.meet.controller.response.challengemanage.ChallengeCertImgManage;
 import com.dodal.meet.controller.response.challengemanage.ChallengeHostRoleResponse;
 import com.dodal.meet.controller.response.challengemanage.ChallengeUserRoleResponse;
@@ -35,6 +36,8 @@ public class ChallengeListService {
     private final ChallengeUserEntityRepository challengeUserEntityRepository;
     private final FcmPushService fcmPushService;
 
+    private final AlarmService alarmService;
+
     @Transactional
     public List<ChallengeUserRoleResponse> getUserRoleChallengeRooms(final Authentication authentication) {
         UserEntity userEntity = getUserEntity(authentication);
@@ -62,9 +65,13 @@ public class ChallengeListService {
             feedEntity.updateCertCode(FeedUtils.CONFIRM);
             final ChallengeUserEntity challengeUserEntity = challengeUserEntityRepository.findByUserIdAndChallengeRoomEntity(feedEntity.getUserId(), roomEntity).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM_USER));
             challengeUserEntity.updateContinueCertCnt(DtoUtils.ONE);
+            // Feed를 올린 사용자에게 알림 이력 및 FCM 푸시 알림
+            alarmService.saveAlarmHist(MessageUtils.makeAlarmHistResponse(MessageType.CONFIRM, roomEntity.getTitle(), feedEntity.getUserId(), roomId));
             fcmPushService.sendFcmPushUser(feedEntity.getUserId(), MessageUtils.makeFcmPushRequest(MessageType.CONFIRM, roomEntity.getTitle()));
         } else if (StringUtils.equals(confirmYN, DtoUtils.N)) {
             feedEntity.updateCertCode(FeedUtils.REJECT);
+            // Feed를 올린 사용자에게 알림 이력 및 FCM 푸시 알림
+            alarmService.saveAlarmHist(MessageUtils.makeAlarmHistResponse(MessageType.REJECT, roomEntity.getTitle(), feedEntity.getUserId(), roomId));
             fcmPushService.sendFcmPushUser(feedEntity.getUserId(), MessageUtils.makeFcmPushRequest(MessageType.REJECT, roomEntity.getTitle()));
         } else {
             throw new DodalApplicationException(ErrorCode.INVALID_YN_REQUEST);

@@ -49,10 +49,12 @@ public class FcmPushService {
     public void sendFcmPushUser(final Long receiveUserId, final FcmPushRequest fcmPushRequest) {
         UserEntity userEntity = userEntityRepository.findById(receiveUserId).orElseThrow(() -> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
         final String fcmToken = userEntity.getTokenEntity().getFcmToken();
-        if (!hasText(fcmToken)) {
-            throw new DodalApplicationException(ErrorCode.NOT_FOUND_FCM_TOKEN_INFO);
+        if (hasText(fcmToken)) {
+            sendFcmPush(fcmPushRequest.getTitle(), fcmPushRequest.getBody(), userEntity.getTokenEntity().getFcmToken());
+        } else {
+            // 2023.09.29 : FCM 정보가 잘못되어도 연관된 다른 비즈니스 로직은 수행할 수 있도록 throw로 예외를 던지지 않는다.
+//            throw new DodalApplicationException(ErrorCode.NOT_FOUND_FCM_TOKEN_INFO);
         }
-        sendFcmPush(fcmPushRequest.getTitle(), fcmPushRequest.getBody(), userEntity.getTokenEntity().getFcmToken());
     }
 
     private void sendFcmPush(final String title, final String body, final String fcmToken) {
