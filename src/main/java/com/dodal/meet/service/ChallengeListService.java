@@ -3,6 +3,7 @@ package com.dodal.meet.service;
 import com.dodal.meet.controller.response.alarm.AlarmHistResponse;
 import com.dodal.meet.controller.response.challengemanage.ChallengeCertImgManage;
 import com.dodal.meet.controller.response.challengemanage.ChallengeHostRoleResponse;
+import com.dodal.meet.controller.response.challengemanage.ChallengeUserInfoResponse;
 import com.dodal.meet.controller.response.challengemanage.ChallengeUserRoleResponse;
 import com.dodal.meet.exception.DodalApplicationException;
 import com.dodal.meet.exception.ErrorCode;
@@ -110,5 +111,16 @@ public class ChallengeListService {
         return userEntityRepository.findBySocialIdAndSocialType(user.getSocialId(), user.getSocialType()).orElseThrow(() -> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
     }
 
+    @Transactional(readOnly = true)
+    public List<ChallengeUserInfoResponse> getUserList(Integer roomId, User user) {
+        UserEntity userEntity = userEntityRepository.findBySocialIdAndSocialType(user.getSocialId(), user.getSocialType()).orElseThrow(() -> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
+        final ChallengeRoomEntity roomEntity = challengeRoomEntityRepository.findById(roomId).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM));
+        final ChallengeUserEntity challengeHostEntity = challengeUserEntityRepository.findByUserIdAndChallengeRoomEntity(userEntity.getId(), roomEntity).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM_USER));
+        if (!challengeHostEntity.getRoomRole().equals(RoomRole.HOST)) {
+            throw new DodalApplicationException(ErrorCode.UNAUTHORIZED_ROOM_HOST);
+        }
 
+        Map<Integer, String> weekInfo = DateUtils.getWeekInfo();
+        return challengeRoomEntityRepository.getUserList(roomId, weekInfo.get(DateUtils.MON), weekInfo.get(DateUtils.SUN));
+    }
 }

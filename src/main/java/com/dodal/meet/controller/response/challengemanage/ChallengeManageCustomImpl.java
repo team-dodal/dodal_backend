@@ -99,6 +99,52 @@ public class ChallengeManageCustomImpl implements ChallengeManageCustom {
         return content;
     }
 
+    @Override
+    public List<ChallengeUserInfoResponse> getUserList(Integer roomId, String startDate, String endDate) {
+
+        List<ChallengeUserInfoResponse> list = queryFactory
+                .select(new QChallengeUserInfoResponse(
+                        room.id, user.id, user.nickname, user.profileUrl
+                )).from(room)
+                .innerJoin(challengeUser)
+                .on(room.id.eq(challengeUser.challengeRoomEntity.id))
+                .innerJoin(user)
+                .on(challengeUser.userId.eq(user.id))
+                .where(room.id.eq(roomId).and(challengeUser.roomRole.ne(RoomRole.HOST)))
+                .fetch();
+
+        for (ChallengeUserInfoResponse dto : list) {
+            Integer certSuccessCnt = queryFactory.select(feed.count().intValue()).from(feed)
+                    .where(feed.roomId.eq(dto.getChallengeRoomId())
+                            .and(feed.userId.eq(dto.getUserId()))
+                            .and(feed.certCode.eq(FeedUtils.CONFIRM))
+                            .and(feed.registeredDate.between(startDate, endDate))).fetchOne();
+            dto.setCertSuccessCnt(certSuccessCnt);
+
+            Integer certFailCnt = queryFactory.select(feed.count().intValue()).from(feed)
+                    .where(feed.roomId.eq(dto.getChallengeRoomId())
+                            .and(feed.userId.eq(dto.getUserId()))
+                            .and(feed.certCode.eq(FeedUtils.REJECT))
+                            .and(feed.registeredDate.between(startDate, endDate))).fetchOne();
+            dto.setCertFailCnt(certFailCnt);
+
+            List<UserWeekCertInfo> infoList = queryFactory.select(new QUserWeekCertInfo(
+                            feed.id, feed.certImgUrl, feed.certCode, feed.registeredDate
+                    ))
+                    .from(feed)
+                    .where(feed.roomId.eq(dto.getChallengeRoomId())
+                            .and(feed.userId.eq(dto.getUserId()))
+                            .and(feed.registeredDate.between(startDate, endDate)))
+                    .orderBy(feed.registeredDate.asc())
+                    .fetch();
+
+            infoList.forEach(info -> info.setDayCode(DateUtils.convertWeekCode(info.getDayCode())));
+            dto.setUserWeekCertInfoList(infoList);
+        }
+
+        return list;
+    }
+
     QUserEntity user = QUserEntity.userEntity;
     QChallengeRoomEntity room = QChallengeRoomEntity.challengeRoomEntity;
     QChallengeUserEntity challengeUser = QChallengeUserEntity.challengeUserEntity;

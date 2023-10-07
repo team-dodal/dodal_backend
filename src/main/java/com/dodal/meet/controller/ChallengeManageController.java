@@ -5,8 +5,11 @@ import com.dodal.meet.controller.response.ResponseFail;
 import com.dodal.meet.controller.response.ResponseSuccess;
 import com.dodal.meet.controller.response.challengemanage.ChallengeCertImgManage;
 import com.dodal.meet.controller.response.challengemanage.ChallengeHostRoleResponse;
+import com.dodal.meet.controller.response.challengemanage.ChallengeUserInfoResponse;
 import com.dodal.meet.controller.response.challengemanage.ChallengeUserRoleResponse;
+import com.dodal.meet.model.User;
 import com.dodal.meet.service.ChallengeListService;
+import com.dodal.meet.utils.FeedUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -82,5 +85,19 @@ public class ChallengeManageController {
     public ResponseEntity<ResponseSuccess<Void>> updateFeedStatus(@PathVariable(name = "room_id") Integer roomId, @PathVariable(name = "feed_id") Long feedId, @RequestParam(name = "confirm_yn") String confirmYN, Authentication authentication) {
         challengeListService.updateFeedStatus(roomId, feedId, confirmYN, authentication);
         return ResponseEntity.ok().body(ResponseSuccess.success());
+    }
+
+    @Operation(summary = "도전방 멤버 관리 API"
+            , description = "유저가 방장으로 관리중인 도전방에서 사용자 정보를 반환한다. day_code : 0 (월), 1(화) , ... , 6(일) , cert_code : 0(거절), 1 (요청중), 2(승인)  ",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "성공", useReturnTypeSchema = true),
+                    @ApiResponse(responseCode = "400", description = "NOT_FOUND_ROOM", content = @Content(schema = @Schema(implementation = ResponseFail.class))),
+                    @ApiResponse(responseCode = "401", description = "INVALID_TOKEN, UNAUTHORIZED_ROOM_HOST", content = @Content(schema = @Schema(implementation = ResponseFail.class))),
+                    @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = ResponseFail.class)))
+            })
+    @GetMapping("/manage/{room_id}/users")
+    public ResponseEntity<ResponseSuccess<List<ChallengeUserInfoResponse>>> getUserList(@PathVariable(name = "room_id") Integer roomId, Authentication authentication) {
+        User user = (User) authentication.getPrincipal();
+        return ResponseEntity.ok().body(ResponseSuccess.success(challengeListService.getUserList(roomId, user)));
     }
 }

@@ -11,4 +11,5 @@ public interface ChallengeManageCustom {
 
     List<ChallengeCertImgManage> getCertImgList(final Integer roomId, final String dateYM);
 
+    List<ChallengeUserInfoResponse> getUserList(Integer roomId, String startDate, String endDate);
 }

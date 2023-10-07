@@ -123,4 +123,11 @@ public class DateUtils {
                         .append(registerDate.substring(4,6)).append(".")
                         .append(registerDate.substring(6, 8)).toString();
     }
+
+    public static String convertWeekCode(String registerDate) {
+        Map<Integer, String> weekInfo = getWeekInfo();
+        String monday = weekInfo.get(DateUtils.MON);
+        int code = Integer.parseInt(registerDate) - Integer.parseInt(monday);
+        return String.valueOf(code);
+    }
 }
