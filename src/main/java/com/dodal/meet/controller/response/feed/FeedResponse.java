@@ -13,6 +13,7 @@ import java.sql.Timestamp;
 @Schema(description = "피드 리스트 응답")
 @JsonNaming(value = PropertyNamingStrategy.SnakeCaseStrategy.class)
 @ToString
+@AllArgsConstructor
 public class FeedResponse {
 
     // roomEntity
@@ -58,6 +59,9 @@ public class FeedResponse {
 
     @Schema(description = "유저 좋아요 클릭 여부", example = "Y")
     private String likeYN;
+
+    @Schema(description = "가입 여부", example = "Y")
+    private String joinYN = "N";
 
     @Schema(description = "등록일", example = "20230819")
     private String registeredDate;

@@ -286,6 +286,13 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
 
     @Override
     public Page<FeedResponse> getFeeds(final UserEntity userEntity, final Pageable pageable) {
+        QChallengeUserEntity curUser = QChallengeUserEntity.challengeUserEntity;
+        List<Integer> roomList = queryFactory.
+                select(curUser.challengeRoomEntity.id).distinct().
+                from(curUser).
+                where(curUser.userId.eq(userEntity.getId())).fetch();
+
+
         List<FeedResponse> content = queryFactory
                 .select(new QFeedResponse(
                         room.id, room.title, feed.id, room.certCnt, roomTag.categoryName, user.id, user.nickname, challengeUser.continueCertCnt,
@@ -307,6 +314,12 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
+
+        content.forEach(x -> {
+            if (roomList.contains(x.getRoomId())) {
+                x.setJoinYN("Y");
+            }
+        });
 
         return new PageImpl<>(content, pageable, content.size());
     }
