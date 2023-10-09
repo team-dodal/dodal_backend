@@ -67,7 +67,7 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
 
         List<ChallengeRoomSearchResponse> content = queryFactory
                 .select(new QChallengeRoomSearchResponse(
-                        room.id, room.hostId, room.hostNickname, room.hostProfileUrl, room.title, room.certCnt, room.thumbnailImgUrl, room.recruitCnt,
+                        room.id, room.hostId, room.hostNickname, room.hostProfileUrl, room.title, room.content, room.certCnt, room.thumbnailImgUrl, room.recruitCnt,
                         room.userCnt, room.bookmarkCnt, new CaseBuilder().when(bookmark.userEntity.isNotNull()).then("Y").otherwise("N").as("bookmarkYN"),
                         room.registeredAt, roomTag.categoryName, roomTag.categoryValue, roomTag.tagName, roomTag.tagValue
                 )).from(room)
@@ -100,7 +100,7 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
 
         List<ChallengeRoomSearchResponse> content = queryFactory
                 .select(new QChallengeRoomSearchResponse(
-                        room.id, room.hostId, room.hostNickname, room.hostProfileUrl, room.title, room.certCnt, room.thumbnailImgUrl, room.recruitCnt,
+                        room.id, room.hostId, room.hostNickname, room.hostProfileUrl, room.title, room.content, room.certCnt, room.thumbnailImgUrl, room.recruitCnt,
                         room.userCnt, room.bookmarkCnt, new CaseBuilder().when(bookmark.userEntity.isNotNull()).then("Y").otherwise("N").as("bookmarkYN"),
                         room.registeredAt, roomTag.categoryName, roomTag.categoryValue, roomTag.tagName, roomTag.tagValue
                 )).from(room)
@@ -235,7 +235,7 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
 
         List<ChallengeRoomSearchResponse> content = queryFactory
                 .select(new QChallengeRoomSearchResponse(
-                        room.id, room.hostId, room.hostNickname, room.hostProfileUrl, room.title, room.certCnt, room.thumbnailImgUrl, room.recruitCnt,
+                        room.id, room.hostId, room.hostNickname, room.hostProfileUrl, room.title, room.content, room.certCnt, room.thumbnailImgUrl, room.recruitCnt,
                         room.userCnt, room.bookmarkCnt, new CaseBuilder().when(bookmark.userEntity.isNotNull()).then("Y").otherwise("N").as("bookmarkYN"),
                         room.registeredAt, roomTag.categoryName, roomTag.categoryValue, roomTag.tagName, roomTag.tagValue
                 )).from(room)
@@ -260,7 +260,7 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
          */
         JPAQuery<ChallengeRoomSearchResponse> query = queryFactory
                 .select(new QChallengeRoomSearchResponse(
-                        room.id, room.hostId, room.hostNickname, room.hostProfileUrl, room.title, room.certCnt, room.thumbnailImgUrl, room.recruitCnt,
+                        room.id, room.hostId, room.hostNickname, room.hostProfileUrl, room.title, room.content, room.certCnt, room.thumbnailImgUrl, room.recruitCnt,
                         room.userCnt, room.bookmarkCnt, new CaseBuilder().when(bookmark.userEntity.isNotNull()).then("Y").otherwise("N").as("bookmarkYN"),
                         room.registeredAt, roomTag.categoryName, roomTag.categoryValue, roomTag.tagName, roomTag.tagValue
                 )).from(room)

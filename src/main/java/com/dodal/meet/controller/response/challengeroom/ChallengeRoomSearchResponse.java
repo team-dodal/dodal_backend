@@ -31,6 +31,9 @@ public class ChallengeRoomSearchResponse {
     @Schema(description = "도전방 제목", example = "[주 2회] 헬스 인증")
     private String title;
 
+    @Schema(description = "도전방 소개글", example = "도전방 소개 글입니다.")
+    private String content;
+
     @Schema(description = "인증 횟수", example = "2")
     private int certCnt;
 
@@ -69,7 +72,7 @@ public class ChallengeRoomSearchResponse {
 
 
     @QueryProjection
-    public ChallengeRoomSearchResponse(Integer challengeRoomId, Long hostId, String hostNickname, String hostProfileUrl, String title, int certCnt,
+    public ChallengeRoomSearchResponse(Integer challengeRoomId, Long hostId, String hostNickname, String hostProfileUrl, String title, String content, int certCnt,
                                        String thumbnailImgUrl, int recruitCnt, int userCnt, int bookmarkCnt, String bookmarkYN, Timestamp registeredAt,
                                        String categoryName, String categoryValue, String tagName, String tagValue) {
         this.challengeRoomId = challengeRoomId;
@@ -77,6 +80,7 @@ public class ChallengeRoomSearchResponse {
         this.hostNickname = hostNickname;
         this.hostProfileUrl = hostProfileUrl;
         this.title = title;
+        this.content = content;
         this.certCnt = certCnt;
         this.thumbnailImgUrl = thumbnailImgUrl;
         this.recruitCnt = recruitCnt;
