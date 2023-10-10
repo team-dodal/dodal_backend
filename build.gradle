@@ -78,6 +78,10 @@ dependencies {
     implementation "com.querydsl:querydsl-apt:${queryDslVersion}"
 
     implementation 'com.h2database:h2'
+
+    // s3 pre-signed url
+    implementation group: 'com.amazonaws', name: 'aws-java-sdk', version: '1.12.565'
+
 }
 
 tasks.named('test') {
