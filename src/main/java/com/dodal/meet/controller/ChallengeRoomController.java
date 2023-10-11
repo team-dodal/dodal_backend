@@ -28,6 +28,8 @@ import org.springframework.util.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 import java.net.URI;
@@ -200,19 +202,15 @@ public class ChallengeRoomController {
     }
 
     @Operation(summary = "도전방 수정 API"
-            , description = "도전방을 생성한다.",
+            , description = "도전방을 수정한다. 도전방 생성 필드값 검증과 동일",
             responses = {
                     @ApiResponse(responseCode = "200", description = "성공", useReturnTypeSchema = true),
                     @ApiResponse(responseCode = "400", description = "실패 - INVALID_REQUEST_FIELD", content = @Content(schema = @Schema(implementation = ResponseFail.class))),
                     @ApiResponse(responseCode = "401", description = "실패 - INVALID_TOKEN", content = @Content(schema = @Schema(implementation = ResponseFail.class))),
                     @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = ResponseFail.class)))
             })
-    @PatchMapping(value = "/challenge/room/{room_id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ResponseSuccess<ChallengeUpdateResponse>> updateChallengeRoom(
-            @PathVariable(name = "room_id") Integer roomId,
-            ChallengeRoomUpdateRequest request,
-            final Authentication authentication
-    ) {
+    @PatchMapping(value = "/challenge/room/{room_id}")
+    public ResponseEntity<ResponseSuccess<ChallengeRoomDetailResponse>> updateChallengeRoom(@PathVariable(name = "room_id") Integer roomId, @RequestBody @Valid ChallengeRoomUpdateRequest request, final Authentication authentication) {
         return ResponseEntity.ok().body(ResponseSuccess.success(challengeRoomService.updateChallengeRoom(roomId, request, authentication)));
     }
 

@@ -267,42 +267,46 @@ public class ChallengeRoomService {
     }
 
     @Transactional
-    public ChallengeUpdateResponse updateChallengeRoom(final Integer roomId, final ChallengeRoomUpdateRequest challengeRoomUpdateRequest, final Authentication authentication) {
+    public ChallengeRoomDetailResponse updateChallengeRoom(final Integer roomId, final ChallengeRoomUpdateRequest challengeRoomUpdateRequest, final Authentication authentication) {
         final User user = UserUtils.getUserInfo(authentication);
         final UserEntity entity = userEntityRepository.findBySocialIdAndSocialType(user.getSocialId(), user.getSocialType()).orElseThrow(() -> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
         ChallengeRoomEntity challengeRoomEntity = challengeRoomEntityRepository.findById(roomId).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM));
+        TagEntity tagEntity = tagEntityRepository.findByTagValue(challengeRoomUpdateRequest.getTagValue()).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_TAG));
+
         final ChallengeUserEntity challengeUserEntity = challengeUserEntityRepository.findByUserIdAndChallengeRoomEntity(entity.getId(), challengeRoomEntity).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM_USER));
         if (!challengeUserEntity.getRoomRole().equals(RoomRole.HOST)) {
             throw new DodalApplicationException(ErrorCode.UNAUTHORIZED_ROOM_HOST);
         }
 
         // 이미지 수정은 값이 있을 경우 기존 이미지를 S3에서 제거한다.
-        final MultipartFile thumbnailImg = challengeRoomUpdateRequest.getThumbnailImg();
-        final MultipartFile certCorrectImg = challengeRoomUpdateRequest.getCertCorrectImg();
-        final MultipartFile certWrongImg = challengeRoomUpdateRequest.getCertWrongImg();
-        final String beforeThumbnailImgUrl = challengeRoomEntity.getThumbnailImgUrl();
+        final String thumbnailImgUrl = challengeRoomUpdateRequest.getThumbnailImgUrl();
+        final String certCorrectImgUrl = challengeRoomUpdateRequest.getCertCorrectImgUrl();
+        final String certWrongImgUrl = challengeRoomUpdateRequest.getCertWrongImgUrl();
 
+        compareBeforeAndAfterImgUrl(challengeRoomEntity.getThumbnailImgUrl(), thumbnailImgUrl);
+        compareBeforeAndAfterImgUrl(challengeRoomEntity.getCertCorrectImgUrl(), certCorrectImgUrl);
+        compareBeforeAndAfterImgUrl(challengeRoomEntity.getCertWrongImgUrl(), certWrongImgUrl);
 
-        if (!isEmpty(thumbnailImg)) {
-            // 썸네일 이미지의 경우 디폴트 이미지 (서버 관리 이미지) 로직 비교
-            if (StringUtils.hasText(beforeThumbnailImgUrl) && beforeThumbnailImgUrl.indexOf("s3") != -1) {
-                imageService.deleteImg(challengeRoomEntity.getThumbnailImgUrl());
-            }
+        challengeRoomEntity.updateChallengeRoom(challengeRoomUpdateRequest);
+
+        if (challengeRoomUpdateRequest.getTagValue() != challengeRoomEntity.getChallengeTagEntity().getTagValue()) {
+            ChallengeTagEntity challengeTagEntity = getChallengeTagEntity(challengeRoomEntity, tagEntity);
+            challengeRoomEntity.addChallengeTagEntity(challengeTagEntity);
         }
 
-        if (!isEmpty(certCorrectImg)) {
-            if (StringUtils.hasText(challengeRoomEntity.getCertCorrectImgUrl())) {
-                imageService.deleteImg(challengeRoomEntity.getCertCorrectImgUrl());
-            }
-        }
+        challengeRoomEntityRepository.save(challengeRoomEntity);
 
-        if (!isEmpty(certWrongImg)) {
-            if (StringUtils.hasText(challengeRoomEntity.getCertWrongImgUrl())) {
-                imageService.deleteImg(challengeRoomEntity.getCertWrongImgUrl());
-            }
-        }
+        return getChallengeRoomDetail(roomId, authentication);
+    }
 
-        return null;
+    private void compareBeforeAndAfterImgUrl(final String before, final String after) {
+        if (before != after && StringUtils.hasText(before) && before.indexOf("s3") != -1) {
+            removeBeforeImg(before);
+        }
+    }
+
+    private void removeBeforeImg(String before) {
+        imageService.deleteImg(before);
     }
 
 

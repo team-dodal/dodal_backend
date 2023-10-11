@@ -112,21 +112,20 @@ public class ChallengeRoomEntity {
         this.certWrongImgUrl = certWrongImgUrl;
     }
 
-    public void updateThumbnailImgUrl(String thumbnailImgUrl) {
-        this.thumbnailImgUrl = thumbnailImgUrl;
-    }
-
-    public void updateCertCorrectImgUrl(String certCorrectImgUrl) {
-        this.certCorrectImgUrl = certCorrectImgUrl;
-    }
-
-    public void updateCertWrongImgUrl(String certWrongImgUrl) {
-        this.certWrongImgUrl = certWrongImgUrl;
-    }
-
     public void updateUserInfo(UserEntity userEntity) {
         this.hostId = userEntity.getId();
         this.hostProfileUrl = userEntity.getProfileUrl();
         this.hostNickname = userEntity.getNickname();
+    }
+
+    public void updateChallengeRoom(ChallengeRoomUpdateRequest request) {
+        this.title = request.getTitle();
+        this.content = request.getContent();
+        this.recruitCnt = request.getRecruitCnt();
+        this.certCnt = request.getCertCnt();
+        this.certContent = request.getCertContent();
+        this.thumbnailImgUrl = request.getThumbnailImgUrl();
+        this.certCorrectImgUrl = request.getCertCorrectImgUrl();
+        this.certWrongImgUrl = request.getCertWrongImgUrl();
     }
 }
