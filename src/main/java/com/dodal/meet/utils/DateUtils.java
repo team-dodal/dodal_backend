@@ -87,6 +87,16 @@ public class DateUtils {
         return today.format(formatter);
     }
 
+    public static String getYesterday() {
+        LocalDate yesterday = LocalDate.now().minusDays(1);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+        return yesterday.format(formatter);
+    }
+
+    public static void main(String[] args) {
+        System.out.println(getYesterday());
+    }
+
     public static String getMonth() {
         LocalDate today = LocalDate.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMM");

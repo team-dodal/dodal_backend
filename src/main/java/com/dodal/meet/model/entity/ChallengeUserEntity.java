@@ -33,6 +33,10 @@ public class ChallengeUserEntity {
 
     private int continueCertCnt;
 
+    private int maxContinueCertCnt;
+
+    private int totalCertCnt;
+
     private Long userId;
 
     private String nickname;
@@ -63,7 +67,11 @@ public class ChallengeUserEntity {
                 .build();
     }
 
-    public void updateContinueCertCnt(int num) {
+    public void updateCertCnts(int num) {
         this.continueCertCnt += num;
+        this.totalCertCnt += num;
+        if (this.continueCertCnt > this.maxContinueCertCnt) {
+            this.maxContinueCertCnt = this.continueCertCnt;
+        }
     }
 }

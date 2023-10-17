@@ -1,6 +1,5 @@
 package com.dodal.meet.service;
 
-import com.dodal.meet.controller.response.alarm.AlarmHistResponse;
 import com.dodal.meet.controller.response.challengemanage.ChallengeCertImgManage;
 import com.dodal.meet.controller.response.challengemanage.ChallengeHostRoleResponse;
 import com.dodal.meet.controller.response.challengemanage.ChallengeUserInfoResponse;
@@ -17,7 +16,6 @@ import com.dodal.meet.repository.*;
 import com.dodal.meet.utils.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -65,7 +63,10 @@ public class ChallengeListService {
         if(StringUtils.equals(confirmYN, DtoUtils.Y)){
             feedEntity.updateCertCode(FeedUtils.CONFIRM);
             final ChallengeUserEntity challengeUserEntity = challengeUserEntityRepository.findByUserIdAndChallengeRoomEntity(feedEntity.getUserId(), roomEntity).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM_USER));
-            challengeUserEntity.updateContinueCertCnt(DtoUtils.ONE);
+
+            // 도전방 유저 정보 업데이트 - (전체 인증 횟수, 연속 인증 횟수, 최대 연속 인증 횟수)
+            challengeUserEntity.updateCertCnts(DtoUtils.ONE);
+
             // Feed를 올린 사용자에게 알림 이력 및 FCM 푸시 알림
             alarmService.saveAlarmHist(MessageUtils.makeAlarmHistResponse(MessageType.CONFIRM, roomEntity.getTitle(), feedEntity.getUserId(), roomId));
             fcmPushService.sendFcmPushUser(feedEntity.getUserId(), MessageUtils.makeFcmPushRequest(MessageType.CONFIRM, roomEntity.getTitle()));

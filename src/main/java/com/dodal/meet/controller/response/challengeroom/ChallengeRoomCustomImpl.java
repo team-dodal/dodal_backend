@@ -20,6 +20,7 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -371,6 +372,28 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
                 .on(feedLike.likeUserId.eq(userEntity.getId()))
                 .where(feed.certCode.eq(FeedUtils.CONFIRM).and(feed.id.eq(feedId)))
                 .fetchOne();
+    }
+
+    @Override
+    public void updateChallengeUserCertCnt() {
+        String yesterday = DateUtils.getToday();
+        List<Integer> challengeUserIdList = queryFactory
+                .select(challengeUser.id)
+                .from(feed)
+                .innerJoin(challengeUser)
+                .on(feed.roomId.eq(challengeUser.challengeRoomEntity.id).and(feed.userId.eq(challengeUser.userId)))
+                .where(feed.registeredDate.eq(yesterday).and(feed.certCode.in(FeedUtils.CONFIRM, FeedUtils.REQUEST))).fetch();
+
+        if (challengeUserIdList != null) {
+            queryFactory
+                    .update(challengeUser)
+                    .set(challengeUser.continueCertCnt, 0)
+                    .where(challengeUser.id.notIn(challengeUserIdList)).execute();
+        } else {
+            queryFactory
+                    .update(challengeUser)
+                    .set(challengeUser.continueCertCnt, 0).execute();
+        }
     }
 
     private OrderSpecifier<?> orderByBookmarkCnt(final String searchCode) {

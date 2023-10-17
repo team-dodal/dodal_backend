@@ -1,7 +1,6 @@
 package com.dodal.meet.service;
 
 import com.dodal.meet.controller.request.challengeroom.*;
-import com.dodal.meet.controller.response.ResponseSuccess;
 import com.dodal.meet.controller.response.challengeroom.*;
 import com.dodal.meet.exception.DodalApplicationException;
 import com.dodal.meet.exception.ErrorCode;
@@ -15,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,7 +22,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -420,5 +417,10 @@ public class ChallengeRoomService {
     public void deleteChallengeWordsByUserId(User user) {
         UserEntity userEntity = userEntityRepository.findBySocialIdAndSocialType(user.getSocialId(), user.getSocialType()).orElseThrow(()-> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
         challengeWordEntityRepository.deleteAllByUserId(userEntity.getId());
+    }
+
+    @Transactional
+    public void updateChallengeUserCertCnt() {
+        challengeRoomEntityRepository.updateChallengeUserCertCnt();
     }
 }

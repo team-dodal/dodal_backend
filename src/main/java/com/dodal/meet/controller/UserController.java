@@ -200,4 +200,19 @@ public class UserController {
         userService.deleteUser(authentication);
         return ResponseEntity.noContent().build();
     }
+
+    /*
+    @Operation(summary = "월별 API"
+            , description = "마이페이지 정보를 반환한다.",
+            responses = {
+                    @ApiResponse(responseCode = "204", description = "성공", useReturnTypeSchema = true),
+                    @ApiResponse(responseCode = "401", description = "실패 - INVALID_TOKEN", content = @Content(schema = @Schema(implementation = ResponseFail.class))),
+                    @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = ResponseFail.class)))
+            })
+    @DeleteMapping("/me/challenge-room")
+    public ResponseEntity<ResponseSuccess<Void>> deleteUser(Authentication authentication) {
+        userService.deleteUser(authentication);
+        return ResponseEntity.noContent().build();
+    }
+     */
 }
