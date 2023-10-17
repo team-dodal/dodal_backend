@@ -46,6 +46,8 @@ public class ChallengeUserEntity {
     @PrePersist
     void prePersist() {
         this.continueCertCnt = 0;
+        this.maxContinueCertCnt = 0;
+        this.totalCertCnt = 0;
         this.registeredAt = Timestamp.from(Instant.now());
     }
 

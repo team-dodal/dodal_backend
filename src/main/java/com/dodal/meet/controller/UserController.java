@@ -5,6 +5,7 @@ import com.dodal.meet.controller.response.ResponseFail;
 import com.dodal.meet.controller.response.ResponseSuccess;
 import com.dodal.meet.controller.response.user.*;
 import com.dodal.meet.model.SocialType;
+import com.dodal.meet.model.User;
 import com.dodal.meet.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -199,6 +200,20 @@ public class UserController {
     public ResponseEntity<ResponseSuccess<Void>> deleteUser(Authentication authentication) {
         userService.deleteUser(authentication);
         return ResponseEntity.noContent().build();
+    }
+
+
+    @Operation(summary = "마이페이지 조회 API"
+            , description = "요청한 유저 마이페이지 정보를 반환한다.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "성공", useReturnTypeSchema = true),
+                    @ApiResponse(responseCode = "401", description = "실패 - INVALID_TOKEN", content = @Content(schema = @Schema(implementation = ResponseFail.class))),
+                    @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = ResponseFail.class)))
+            })
+    @GetMapping("/my-page")
+    public ResponseEntity<ResponseSuccess<MyPageResponse>> getMyPage(Authentication authentication) {
+        User user = (User) authentication.getPrincipal();
+        return ResponseEntity.ok().body(ResponseSuccess.success(userService.getMyPage(user)));
     }
 
     /*

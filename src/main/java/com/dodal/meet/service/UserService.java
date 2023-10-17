@@ -33,6 +33,7 @@ import java.util.Set;
 @RequiredArgsConstructor
 @Slf4j
 public class UserService {
+    private final ChallengeUserEntityRepository challengeUserEntityRepository;
     private final TagEntityRepository tagEntityRepository;
     private final UserTagEntityRepository userTagEntityRepository;
     private final UserEntityRepository userEntityRepository;
@@ -300,4 +301,43 @@ public class UserService {
                 .build();
     }
 
+    @Transactional(readOnly = true)
+    public MyPageResponse getMyPage(User user) {
+        final String socialId = user.getSocialId();
+        final SocialType socialType = user.getSocialType();
+        UserEntity userEntity = userEntityRepository.findBySocialIdAndSocialType(socialId, socialType)
+                .orElseThrow(() -> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
+        List<UserTagEntity> userTagList = userTagEntityRepository.findAllByUserEntity(userEntity);
+
+        List<String> userTagValueList = new ArrayList<>();
+        userTagList.forEach(entity -> userTagValueList.add(entity.getTagValue()));
+
+        List<TagEntity> tagList = tagEntityRepository.findAllByUserTagValue(userTagValueList);
+
+        Set<CategoryEntity> categorySet = new HashSet<>();
+        tagList.forEach(e -> categorySet.add(e.getCategoryEntity()));
+        List<CategoryEntity> categoryList = new ArrayList<>(categorySet);
+
+        List<ChallengeUserEntity> challengeUserInfo = challengeUserEntityRepository.findAllByUserId(userEntity.getId());
+
+        List<ChallengeRoomResponse> challengeRoomList = new ArrayList<>();
+
+        challengeUserInfo.forEach(dto -> challengeRoomList.add(ChallengeRoomResponse.builder()
+                .roomId(dto.getChallengeRoomEntity().getId())
+                .title(dto.getChallengeRoomEntity().getTitle())
+                .build()));
+
+        UserRoomCertInfo userRoomCertInfo = challengeUserEntityRepository.findMaxCertInfoByUserId(userEntity.getId());
+        return MyPageResponse.builder()
+                .userId(userEntity.getId())
+                .nickname(userEntity.getNickname())
+                .profileUrl(userEntity.getProfileUrl())
+                .content(userEntity.getContent())
+                .categoryList(UserCategoryResponse.fromEntityList(categoryList))
+                .tagList(TagResponse.userEntitesToList(userTagList))
+                .challengeRoomList(challengeRoomList)
+                .maxContinueCertCnt(userRoomCertInfo.getMaxContinueCertCnt())
+                .totalCertCnt(userRoomCertInfo.getTotalCertCnt())
+                .build();
+    }
 }
