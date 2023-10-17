@@ -21,18 +21,14 @@ public class MyPageCalenderInfo {
     @Schema(description = "인증 이미지 url", example = "https://dodal-bucket.s3.ap-northeast-2.amazonaws.com")
     private String certImageUrl;
 
-    @Schema(description = "인증 상태", example = "1")
-    private String certCode;
-
     @Schema(description = "일자", example = "17")
     private String day;
 
 
     @QueryProjection
-    public MyPageCalenderInfo(Long feedId, String certImageUrl, String certCode, String day) {
+    public MyPageCalenderInfo(Long feedId, String certImageUrl, String day) {
         this.feedId = feedId;
         this.certImageUrl = certImageUrl;
-        this.certCode = certCode;
         this.day = day;
     }
 }

@@ -376,13 +376,13 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
     @Override
     public MyPageCalenderResponse getMyPageCalendarInfo(Integer roomId, String dateYM, Long userId) {
         List<MyPageCalenderInfo> infoList = queryFactory
-                .select(new QMyPageCalenderInfo(feed.id, feed.certImgUrl, feed.certCode, feed.registeredDate.substring(4, 6)))
+                .select(new QMyPageCalenderInfo(feed.id, feed.certImgUrl, feed.registeredDate.substring(4, 6)))
                 .from(feed)
                 .where(feed.roomId.eq(roomId)
                         .and(feed.userId.eq(userId))
                         .and(feed.certCode.eq(FeedUtils.CONFIRM))
                         .and(feed.registeredDate.substring(0, 6).eq(dateYM)))
-                .orderBy(feed.registeredDate.desc())
+                .orderBy(feed.registeredDate.asc())
                 .fetch();
         return MyPageCalenderResponse.builder().userId(userId).myPageCalenderInfoList(infoList).build();
     }
