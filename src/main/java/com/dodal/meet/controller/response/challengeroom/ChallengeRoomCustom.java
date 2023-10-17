@@ -3,6 +3,7 @@ package com.dodal.meet.controller.response.challengeroom;
 import com.dodal.meet.controller.request.challengeroom.ChallengeRoomCondition;
 import com.dodal.meet.controller.request.challengeroom.ChallengeRoomSearchCategoryRequest;
 import com.dodal.meet.controller.response.feed.FeedResponse;
+import com.dodal.meet.controller.response.user.MyPageCalenderResponse;
 import com.dodal.meet.model.entity.UserEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,5 +26,6 @@ public interface ChallengeRoomCustom {
 
     FeedResponse getFeedOne(UserEntity userEntity, Long feedId);
 
+    MyPageCalenderResponse getMyPageCalendarInfo(Integer roomId, String dateYM, Long userId);
     void updateChallengeUserCertCnt();
 }

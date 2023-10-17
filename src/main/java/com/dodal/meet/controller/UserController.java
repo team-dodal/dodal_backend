@@ -7,6 +7,7 @@ import com.dodal.meet.controller.response.user.*;
 import com.dodal.meet.model.SocialType;
 import com.dodal.meet.model.User;
 import com.dodal.meet.service.UserService;
+import com.dodal.meet.utils.DateUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -216,18 +217,17 @@ public class UserController {
         return ResponseEntity.ok().body(ResponseSuccess.success(userService.getMyPage(user)));
     }
 
-    /*
-    @Operation(summary = "월별 API"
-            , description = "마이페이지 정보를 반환한다.",
+    @Operation(summary = "마이페이지 도전방 월별 인증 정보 조회 API"
+            , description = "마이페이지 도전방에서 월별 인증 성공한 정보를 반환한다.",
             responses = {
                     @ApiResponse(responseCode = "204", description = "성공", useReturnTypeSchema = true),
                     @ApiResponse(responseCode = "401", description = "실패 - INVALID_TOKEN", content = @Content(schema = @Schema(implementation = ResponseFail.class))),
                     @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = ResponseFail.class)))
             })
-    @DeleteMapping("/me/challenge-room")
-    public ResponseEntity<ResponseSuccess<Void>> deleteUser(Authentication authentication) {
-        userService.deleteUser(authentication);
-        return ResponseEntity.noContent().build();
+    @GetMapping("/my-page/challenge-room/{room_id}")
+    public ResponseEntity<ResponseSuccess<MyPageCalenderResponse>> getMyPageByChallengeRoom(@PathVariable(name = "room_id") Integer roomId, @RequestParam(name = "date_ym") String dateYM, Authentication authentication) {
+        DateUtils.validDateYM(dateYM);
+        User user = (User) authentication.getPrincipal();
+        return ResponseEntity.ok().body(ResponseSuccess.success(userService.getMyPageCalendarInfo(roomId, dateYM, user)));
     }
-     */
 }

@@ -4,8 +4,7 @@ import com.dodal.meet.controller.request.challengeroom.ChallengeRoomCondition;
 import com.dodal.meet.controller.request.challengeroom.ChallengeRoomSearchCategoryRequest;
 import com.dodal.meet.controller.response.feed.FeedResponse;
 import com.dodal.meet.controller.response.feed.QFeedResponse;
-import com.dodal.meet.controller.response.user.QUserCertPerWeek;
-import com.dodal.meet.controller.response.user.UserCertPerWeek;
+import com.dodal.meet.controller.response.user.*;
 import com.dodal.meet.exception.DodalApplicationException;
 import com.dodal.meet.exception.ErrorCode;
 import com.dodal.meet.model.RoomRole;
@@ -372,6 +371,20 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
                 .on(feedLike.likeUserId.eq(userEntity.getId()))
                 .where(feed.certCode.eq(FeedUtils.CONFIRM).and(feed.id.eq(feedId)))
                 .fetchOne();
+    }
+
+    @Override
+    public MyPageCalenderResponse getMyPageCalendarInfo(Integer roomId, String dateYM, Long userId) {
+        List<MyPageCalenderInfo> infoList = queryFactory
+                .select(new QMyPageCalenderInfo(feed.id, feed.certImgUrl, feed.certCode, feed.registeredDate.substring(4, 6)))
+                .from(feed)
+                .where(feed.roomId.eq(roomId)
+                        .and(feed.userId.eq(userId))
+                        .and(feed.certCode.eq(FeedUtils.CONFIRM))
+                        .and(feed.registeredDate.substring(0, 6).eq(dateYM)))
+                .orderBy(feed.registeredDate.desc())
+                .fetch();
+        return MyPageCalenderResponse.builder().userId(userId).myPageCalenderInfoList(infoList).build();
     }
 
     @Override

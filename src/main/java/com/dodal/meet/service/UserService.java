@@ -5,7 +5,6 @@ import com.dodal.meet.controller.request.user.UserProfileRequest;
 import com.dodal.meet.controller.request.user.UserSignUpRequest;
 import com.dodal.meet.controller.request.user.UserSignInRequest;
 import com.dodal.meet.controller.request.user.UserUpdateRequest;
-import com.dodal.meet.controller.response.category.CategoryResponse;
 import com.dodal.meet.controller.response.category.TagResponse;
 import com.dodal.meet.controller.response.category.UserCategoryResponse;
 import com.dodal.meet.controller.response.user.*;
@@ -33,6 +32,7 @@ import java.util.Set;
 @RequiredArgsConstructor
 @Slf4j
 public class UserService {
+    private final ChallengeRoomEntityRepository challengeRoomEntityRepository;
     private final ChallengeUserEntityRepository challengeUserEntityRepository;
     private final TagEntityRepository tagEntityRepository;
     private final UserTagEntityRepository userTagEntityRepository;
@@ -339,5 +339,16 @@ public class UserService {
                 .maxContinueCertCnt(userRoomCertInfo.getMaxContinueCertCnt())
                 .totalCertCnt(userRoomCertInfo.getTotalCertCnt())
                 .build();
+    }
+
+    @Transactional(readOnly = true)
+    public MyPageCalenderResponse getMyPageCalendarInfo(Integer roomId, String dateYM, User user) {
+        final String socialId = user.getSocialId();
+        final SocialType socialType = user.getSocialType();
+        UserEntity userEntity = userEntityRepository.findBySocialIdAndSocialType(socialId, socialType)
+                .orElseThrow(() -> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
+        challengeRoomEntityRepository.findById(roomId).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM));
+
+        return challengeRoomEntityRepository.getMyPageCalendarInfo(roomId, dateYM, userEntity.getId());
     }
 }
