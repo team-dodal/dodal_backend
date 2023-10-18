@@ -124,4 +124,21 @@ public class ChallengeListService {
         Map<Integer, String> weekInfo = DateUtils.getWeekInfo();
         return challengeRoomEntityRepository.getUserList(roomId, weekInfo.get(DateUtils.MON), weekInfo.get(DateUtils.SUN));
     }
+
+    @Transactional
+    public void deleteChallengeUser(User user, Integer roomId, Long userId) {
+        UserEntity userEntity = userEntityRepository.findBySocialIdAndSocialType(user.getSocialId(), user.getSocialType()).orElseThrow(() -> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
+        if (userEntity.getId() == userId) {
+            throw new DodalApplicationException(ErrorCode.INVALID_USER_KICK_OUT);
+        }
+        final ChallengeRoomEntity roomEntity = challengeRoomEntityRepository.findById(roomId).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM));
+        final ChallengeUserEntity challengeHostEntity = challengeUserEntityRepository.findByUserIdAndChallengeRoomEntity(userEntity.getId(), roomEntity).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM_USER));
+        if (!challengeHostEntity.getRoomRole().equals(RoomRole.HOST)) {
+            throw new DodalApplicationException(ErrorCode.UNAUTHORIZED_ROOM_HOST);
+        }
+
+        fcmPushService.sendFcmPushUser(userId, MessageUtils.makeFcmPushRequest(MessageType.KICK_OUT, roomEntity.getTitle()));
+
+        challengeUserEntityRepository.deleteByUserId(userId);
+    }
 }

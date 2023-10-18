@@ -43,6 +43,8 @@ public enum ErrorCode {
 
     NOT_FOUND_WORD(HttpStatus.BAD_REQUEST, "검색어가 비어 있습니다."),
 
+    INVALID_USER_KICK_OUT(HttpStatus.BAD_REQUEST, "방장이 자기 자신을 강퇴할 수 없습니다."),
+
     // 401 - UNAUTHORIZED
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다."),
     EXPIRED_TOKEN(HttpStatus.UNAUTHORIZED, "기간이 만료된 토큰 입니다."),

@@ -24,4 +24,6 @@ public interface ChallengeUserEntityRepository extends JpaRepository<ChallengeUs
             "WHERE u.userId = :userId"
     )
     UserRoomCertInfo findMaxCertInfoByUserId(@Param("userId") Long userId);
+
+    void deleteByUserId(Long userId);
 }

@@ -100,4 +100,20 @@ public class ChallengeManageController {
         User user = (User) authentication.getPrincipal();
         return ResponseEntity.ok().body(ResponseSuccess.success(challengeListService.getUserList(roomId, user)));
     }
+
+
+    @Operation(summary = "도전방 멤버 관리 API"
+            , description = "유저가 방장으로 관리중인 도전방에서 사용자 정보를 반환한다. day_code : 0 (월), 1(화) , ... , 6(일) , cert_code : 0(거절), 1 (요청중), 2(승인)  ",
+            responses = {
+                    @ApiResponse(responseCode = "204", description = "성공", useReturnTypeSchema = true),
+                    @ApiResponse(responseCode = "400", description = "NOT_FOUND_ROOM", content = @Content(schema = @Schema(implementation = ResponseFail.class))),
+                    @ApiResponse(responseCode = "401", description = "INVALID_TOKEN, UNAUTHORIZED_ROOM_HOST", content = @Content(schema = @Schema(implementation = ResponseFail.class))),
+                    @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = ResponseFail.class)))
+            })
+    @DeleteMapping("/manage/{room_id}/users/{user_id}")
+    public ResponseEntity<ResponseSuccess<Void>> deleteChallengeUser(@PathVariable(name = "room_id") Integer roomId, @PathVariable(name = "user_id") Long userId, Authentication authentication) {
+        User user = (User) authentication.getPrincipal();
+        challengeListService.deleteChallengeUser(user, roomId, userId);
+        return ResponseEntity.noContent().build();
+    }
 }
