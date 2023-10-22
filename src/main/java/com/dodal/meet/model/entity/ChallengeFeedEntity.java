@@ -32,6 +32,8 @@ public class ChallengeFeedEntity {
 
     private int likeCnt;
 
+    private int commentCnt;
+
     private String certCode;
 
     private int accuseCnt;
@@ -53,6 +55,7 @@ public class ChallengeFeedEntity {
         this.certCode="1";
         this.likeCnt = 0;
         this.accuseCnt = 0;
+        this.commentCnt = 1;
         this.registeredAt = Timestamp.from(Instant.now());
         this.registeredDate = DateUtils.parsingTimestamp(this.registeredAt);
     }

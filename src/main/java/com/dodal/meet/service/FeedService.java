@@ -1,17 +1,16 @@
 package com.dodal.meet.service;
 
 
+import com.dodal.meet.controller.request.feed.CommentCreateRequest;
 import com.dodal.meet.controller.response.feed.FeedResponse;
 import com.dodal.meet.exception.DodalApplicationException;
 import com.dodal.meet.exception.ErrorCode;
 import com.dodal.meet.model.User;
 import com.dodal.meet.model.entity.ChallengeFeedEntity;
+import com.dodal.meet.model.entity.CommentEntity;
 import com.dodal.meet.model.entity.FeedLikeEntity;
 import com.dodal.meet.model.entity.UserEntity;
-import com.dodal.meet.repository.ChallengeFeedEntityRepository;
-import com.dodal.meet.repository.ChallengeRoomEntityRepository;
-import com.dodal.meet.repository.FeedLikeEntityRepository;
-import com.dodal.meet.repository.UserEntityRepository;
+import com.dodal.meet.repository.*;
 import com.dodal.meet.utils.DtoUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +24,7 @@ import org.springframework.util.ObjectUtils;
 @RequiredArgsConstructor
 @Slf4j
 public class FeedService {
+    private final CommentEntityRepository commentEntityRepository;
     private final UserEntityRepository userEntityRepository;
 
     private final ChallengeRoomEntityRepository challengeRoomEntityRepository;
@@ -73,5 +73,25 @@ public class FeedService {
         feedEntity.updateLikeCntByNum(DtoUtils.MINUS_ONE);
 
         return challengeRoomEntityRepository.getFeedOne(userEntity, feedId);
+    }
+
+    @Transactional
+    public Object postFeedComment(Long feedId, User user, CommentCreateRequest commentCreateRequest) {
+        ChallengeFeedEntity feedEntity = challengeFeedEntityRepository.findById(feedId).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_FEED));
+        final UserEntity userEntity = userEntityRepository.findBySocialIdAndSocialType(user.getSocialId(), user.getSocialType()).orElseThrow(() -> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
+
+        CommentEntity newComment = CommentEntity.toEntity(commentCreateRequest, feedEntity, userEntity.getId());
+
+        CommentEntity commentEntity;
+        // 대댓글인 경우
+        if (commentCreateRequest.getParentId() != null) {
+            commentEntity = commentEntityRepository.findById(commentCreateRequest.getParentId()).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_COMMENT));
+            commentEntity.addChildComment(newComment);
+        }
+        // 신규 댓글인 경우
+        else {
+            commentEntityRepository.save(newComment);
+        }
+        return null;
     }
 }

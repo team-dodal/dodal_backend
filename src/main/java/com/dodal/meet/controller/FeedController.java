@@ -1,6 +1,7 @@
 package com.dodal.meet.controller;
 
 
+import com.dodal.meet.controller.request.feed.CommentCreateRequest;
 import com.dodal.meet.controller.response.ResponseFail;
 import com.dodal.meet.controller.response.ResponseSuccess;
 import com.dodal.meet.controller.response.feed.FeedResponse;
@@ -91,5 +92,19 @@ public class FeedController {
     public ResponseEntity<ResponseSuccess<FeedResponse>> deleteFeedLike(@PathVariable(name = "feed_id") final Long feedId, final Authentication authentication) {
         User user = (User) authentication.getPrincipal();
         return ResponseEntity.ok().body(ResponseSuccess.success(feedService.deleteFeedLike(feedId, user)));
+    }
+
+    @Operation(summary = "댓글 요청 API"
+            , description = "피드에 댓글 생성을 한다.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "성공", useReturnTypeSchema = true),
+                    @ApiResponse(responseCode = "400", description = "실패 - NOT_FOUND_FEED", content = @Content(schema = @Schema(implementation = ResponseFail.class))),
+                    @ApiResponse(responseCode = "401", description = "INVALID_TOKEN", content = @Content(schema = @Schema(implementation = ResponseFail.class))),
+                    @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = ResponseFail.class)))
+            })
+    @PostMapping("/comment/{feed_id}")
+    public ResponseEntity<ResponseSuccess<?>> postFeedComment(@PathVariable(name = "feed_id") final Long feedId, @RequestBody final CommentCreateRequest commentCreateRequest, final Authentication authentication) {
+        User user = (User) authentication.getPrincipal();
+        return ResponseEntity.ok().body(ResponseSuccess.success(feedService.postFeedComment(feedId, user, commentCreateRequest)));
     }
 }
