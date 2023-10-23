@@ -33,9 +33,11 @@ public enum ErrorCode {
     INVALID_RANK_CODE(HttpStatus.BAD_REQUEST, "요청한 랭크 코드 정보가 올바르지 않습니다."),
     INVALID_YN_REQUEST(HttpStatus.BAD_REQUEST, "YN 필드 값은 Y 또는 N 이어야 합니다."),
 
-    NOT_FOUND_WORD(HttpStatus.BAD_REQUEST, "검색어가 비어 있습니다."),
-
     INVALID_USER_KICK_OUT(HttpStatus.BAD_REQUEST, "방장이 자기 자신을 강퇴할 수 없습니다."),
+    INVALID_USER_ACCUSE(HttpStatus.BAD_REQUEST, "자기 자신을 신고할 수 없습니다."),
+
+    INVALID_ACCUSE_REQUEST(HttpStatus.BAD_REQUEST, "신고 요청 정보가 잘못 되었습니다. 기타에는 내용이 필수이며, 나머지는 내용이 없어야 합니다."),
+    ALREADY_ACCUSE_SUCCEED(HttpStatus.BAD_REQUEST, "이미 신고한 사용자입니다."),
 
     // 401 - UNAUTHORIZED
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다."),
@@ -59,10 +61,14 @@ public enum ErrorCode {
     NOT_FOUND_FCM_TOKEN(HttpStatus.NOT_FOUND, "FCM 토큰 정보가 없습니다."),
     NOT_FOUND_ROOM_HOST_USER(HttpStatus.NOT_FOUND, "도전방 방장 정보가 없습니다"),
     NOT_FOUND_TAG(HttpStatus.NOT_FOUND, "태그 정보가 서버에 존재하지 않습니다."),
+    NOT_FOUND_ACCUSE_CODE(HttpStatus.NOT_FOUND, "존재하지 않는 신고 코드입니다."),
+    NOT_FOUND_WORD(HttpStatus.NOT_FOUND, "검색어가 비어 있습니다."),
 
     // 500 - INTERNAL SERVER ERROR
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 오류가 발생했습니다."),
-    FCM_PUSH_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "FCM PUSH 알림 발송 중 오류가 발생했습니다.")
+    FCM_PUSH_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "FCM PUSH 알림 발송 중 오류가 발생했습니다."),
+
+    COMMON_CODE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버에 등록된 공통코드 정보를 찾을 수 없습니다.")
     ;
 
 

@@ -135,3 +135,20 @@ SELECT
 FROM DUAL
 WHERE NOT EXISTS (SELECT 1 FROM tag where category_id = (SELECT category_id from category where category_value = '005'))
 ;
+
+DELETE FROM common_code;
+
+INSERT INTO common_code (category, category_name, code, code_name, status)
+SELECT
+    category, category_name, code, code_name, status
+FROM
+    (
+        SELECT 'ACCUSE' as category, '신고 카테고리' as category_name, '001' as code, '상업적/홍보성' as code_name, 'ACTIVE' as status FROM DUAL UNION ALL
+        SELECT 'ACCUSE' as category, '신고 카테고리' as category_name, '002' as code, '저작권침해' as code_name, 'ACTIVE' as status FROM DUAL UNION ALL
+        SELECT 'ACCUSE' as category, '신고 카테고리' as category_name, '003' as code, '음란성/선정성' as code_name, 'ACTIVE' as status FROM DUAL UNION ALL
+        SELECT 'ACCUSE' as category, '신고 카테고리' as category_name, '004' as code, '욕설/인신공격' as code_name, 'ACTIVE' as status FROM DUAL UNION ALL
+        SELECT 'ACCUSE' as category, '신고 카테고리' as category_name, '005' as code, '불법정보' as code_name, 'ACTIVE' as status FROM DUAL UNION ALL
+        SELECT 'ACCUSE' as category, '신고 카테고리' as category_name, '006' as code, '개인정보노출' as code_name, 'ACTIVE' as status FROM DUAL UNION ALL
+        SELECT 'ACCUSE' as category, '신고 카테고리' as category_name, '007' as code, '기타' as code_name, 'ACTIVE' as status FROM DUAL
+    ) A
+;

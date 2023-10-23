@@ -90,4 +90,8 @@ public class UserEntity {
     public void updateNickname(String nickname) {this.nickname = nickname;}
 
     public void updateContent(String content) {this.content = content;}
+
+    public void updateAccuseCnt(int num) {
+        this.accuseCnt += num;
+    }
 }

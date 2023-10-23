@@ -1,6 +1,7 @@
 package com.dodal.meet.controller;
 
 import com.dodal.meet.controller.request.user.*;
+import com.dodal.meet.controller.response.CommonCodeResponse;
 import com.dodal.meet.controller.response.ResponseFail;
 import com.dodal.meet.controller.response.ResponseSuccess;
 import com.dodal.meet.controller.response.user.*;
@@ -229,5 +230,32 @@ public class UserController {
         DateUtils.validDateYM(dateYM);
         User user = (User) authentication.getPrincipal();
         return ResponseEntity.ok().body(ResponseSuccess.success(userService.getMyPageCalendarInfo(roomId, dateYM, user)));
+    }
+
+
+    @Operation(summary = "유저 신고 공통 코드 조회 API"
+            , description = "유저 신고 코드 정보를 조회한다.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "성공", useReturnTypeSchema = true),
+                    @ApiResponse(responseCode = "401", description = "실패 - INVALID_TOKEN", content = @Content(schema = @Schema(implementation = ResponseFail.class))),
+                    @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = ResponseFail.class)))
+            })
+    @GetMapping("/accuse/info")
+    public ResponseEntity<ResponseSuccess<CommonCodeResponse>> getAccuseCode() {
+        return ResponseEntity.ok().body(ResponseSuccess.success(userService.getAccuseCode()));
+    }
+
+    @Operation(summary = "유저 신고 API"
+            , description = "유저 신고 요청한다.",
+            responses = {
+                    @ApiResponse(responseCode = "201", description = "성공", useReturnTypeSchema = true),
+                    @ApiResponse(responseCode = "401", description = "실패 - INVALID_TOKEN", content = @Content(schema = @Schema(implementation = ResponseFail.class))),
+                    @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = ResponseFail.class)))
+            })
+    @PostMapping("/accuse/{user_id}")
+    public ResponseEntity<ResponseSuccess<Void>> postAccuseUser(@PathVariable(name = "user_id") Long userId, @Valid @RequestBody UserAccuseRequest request, Authentication authentication) {
+        User user = (User) authentication.getPrincipal();
+        userService.postAccuseUser(userId, request, user);
+        return ResponseEntity.created(URI.create("/accuse/"+ userId)).body(ResponseSuccess.success());
     }
 }

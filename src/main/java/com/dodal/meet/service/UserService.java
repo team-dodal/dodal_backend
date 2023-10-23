@@ -1,10 +1,8 @@
 package com.dodal.meet.service;
 
 
-import com.dodal.meet.controller.request.user.UserProfileRequest;
-import com.dodal.meet.controller.request.user.UserSignUpRequest;
-import com.dodal.meet.controller.request.user.UserSignInRequest;
-import com.dodal.meet.controller.request.user.UserUpdateRequest;
+import com.dodal.meet.controller.request.user.*;
+import com.dodal.meet.controller.response.CommonCodeResponse;
 import com.dodal.meet.controller.response.category.TagResponse;
 import com.dodal.meet.controller.response.category.UserCategoryResponse;
 import com.dodal.meet.controller.response.user.*;
@@ -14,6 +12,7 @@ import com.dodal.meet.model.SocialType;
 import com.dodal.meet.model.User;
 import com.dodal.meet.model.entity.*;
 import com.dodal.meet.repository.*;
+import com.dodal.meet.utils.DtoUtils;
 import com.dodal.meet.utils.JwtTokenUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,17 +20,22 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class UserService {
+    private final CommonCodeEntityRepository commonCodeEntityRepository;
+    private final AccuseEntityRepository accuseEntityRepository;
     private final ChallengeRoomEntityRepository challengeRoomEntityRepository;
     private final ChallengeUserEntityRepository challengeUserEntityRepository;
     private final TagEntityRepository tagEntityRepository;
@@ -350,5 +354,48 @@ public class UserService {
         challengeRoomEntityRepository.findById(roomId).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM));
 
         return challengeRoomEntityRepository.getMyPageCalendarInfo(roomId, dateYM, userEntity.getId());
+    }
+
+    @Transactional
+    public void postAccuseUser(Long targetUserId, UserAccuseRequest request, User sourceUser) {
+        List<CommonCodeEntity> codeEntityList = commonCodeEntityRepository.findAllByCategory("ACCUSE");
+        if (CollectionUtils.isEmpty(codeEntityList)) {
+            throw new DodalApplicationException(ErrorCode.COMMON_CODE_ERROR);
+        }
+
+        List<String> codeList = codeEntityList.stream().map(e -> e.getCode()).collect(Collectors.toList());
+
+        if (!codeList.contains(request.getAccuseCode())) {
+            throw new DodalApplicationException(ErrorCode.NOT_FOUND_ACCUSE_CODE);
+        }
+
+        UserEntity userEntity = userEntityRepository.findBySocialIdAndSocialType(sourceUser.getSocialId(), sourceUser.getSocialType())
+                .orElseThrow(() -> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
+        userEntityRepository.findById(targetUserId).orElseThrow(() -> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
+
+        AccuseEntity beforeAccuseEntity = accuseEntityRepository.findBySourceUserIdAndTargetUserId(sourceUser.getId(), targetUserId);
+        if (!ObjectUtils.isEmpty(beforeAccuseEntity)) {
+            throw new DodalApplicationException(ErrorCode.ALREADY_ACCUSE_SUCCEED);
+        }
+
+        if (userEntity.getId() == targetUserId) {
+            throw new DodalApplicationException(ErrorCode.INVALID_USER_ACCUSE);
+        }
+
+        if ( (request.getAccuseCode().equals("007") && !StringUtils.hasText(request.getContent())) ||
+            !request.getAccuseCode().equals("007") && StringUtils.hasText(request.getContent())
+        ) {
+            throw new DodalApplicationException(ErrorCode.INVALID_ACCUSE_REQUEST);
+        }
+
+        AccuseEntity accuseEntity = AccuseEntity.userAccuseRequestToEntity(request, targetUserId, userEntity);
+        accuseEntityRepository.save(accuseEntity);
+        userEntity.updateAccuseCnt(DtoUtils.ONE);
+    }
+
+    @Transactional(readOnly = true)
+    public CommonCodeResponse getAccuseCode() {
+        List<CommonCodeEntity> codeList = commonCodeEntityRepository.findAllByCategory("ACCUSE");
+        return CommonCodeResponse.commonCodeEntityToDto(codeList);
     }
 }
