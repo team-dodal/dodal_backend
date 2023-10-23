@@ -2,6 +2,7 @@ package com.dodal.meet.service;
 
 
 import com.dodal.meet.controller.request.feed.CommentCreateRequest;
+import com.dodal.meet.controller.request.feed.CommentUpdateRequest;
 import com.dodal.meet.controller.response.feed.CommentResponse;
 import com.dodal.meet.controller.response.feed.FeedResponse;
 import com.dodal.meet.exception.DodalApplicationException;
@@ -104,5 +105,18 @@ public class FeedService {
     @Transactional(readOnly = true)
     public List<CommentResponse> getFeedComments(Long feedId) {
         return challengeFeedEntityRepository.getFeedComments(feedId);
+    }
+
+    @Transactional
+    public List<CommentResponse> updateFeedComment(Long feedId, User user, CommentUpdateRequest commentUpdateRequest) {
+        challengeFeedEntityRepository.findById(feedId).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_FEED));
+        final UserEntity userEntity = userEntityRepository.findBySocialIdAndSocialType(user.getSocialId(), user.getSocialType()).orElseThrow(() -> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
+        CommentEntity commentEntity = commentEntityRepository.findById(commentUpdateRequest.getCommentId()).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_COMMENT));
+        if (commentEntity.getUserId() != userEntity.getId()) {
+            throw new DodalApplicationException(ErrorCode.UNAUTHORIZED_COMMENT);
+        }
+        commentEntity.updateContent(commentUpdateRequest.getContent());
+
+        return getFeedComments(feedId);
     }
 }

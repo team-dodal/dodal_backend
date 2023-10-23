@@ -41,6 +41,7 @@ public enum ErrorCode {
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다."),
     EXPIRED_TOKEN(HttpStatus.UNAUTHORIZED, "기간이 만료된 토큰 입니다."),
 
+    UNAUTHORIZED_COMMENT(HttpStatus.UNAUTHORIZED, "댓글에 대한 권한이 없습니다."),
     UNAUTHORIZED_ROOM_HOST(HttpStatus.UNAUTHORIZED, "해당 사용자는 방장 권한이 없습니다"),
 
     // 404 - NOT FOUND

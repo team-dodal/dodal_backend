@@ -2,6 +2,8 @@ package com.dodal.meet.controller;
 
 
 import com.dodal.meet.controller.request.feed.CommentCreateRequest;
+import com.dodal.meet.controller.request.feed.CommentDeleteRequest;
+import com.dodal.meet.controller.request.feed.CommentUpdateRequest;
 import com.dodal.meet.controller.response.ResponseFail;
 import com.dodal.meet.controller.response.ResponseSuccess;
 import com.dodal.meet.controller.response.feed.CommentResponse;
@@ -105,7 +107,7 @@ public class FeedController {
                     @ApiResponse(responseCode = "401", description = "INVALID_TOKEN", content = @Content(schema = @Schema(implementation = ResponseFail.class))),
                     @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = ResponseFail.class)))
             })
-    @GetMapping("/comment/{feed_id}")
+    @GetMapping("/comments/{feed_id}")
     public ResponseEntity<ResponseSuccess<List<CommentResponse>>> getFeedComments(@PathVariable(name = "feed_id") final Long feedId, final Authentication authentication) {
         return ResponseEntity.ok().body(ResponseSuccess.success(feedService.getFeedComments(feedId)));
     }
@@ -118,11 +120,39 @@ public class FeedController {
                     @ApiResponse(responseCode = "401", description = "INVALID_TOKEN", content = @Content(schema = @Schema(implementation = ResponseFail.class))),
                     @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = ResponseFail.class)))
             })
-    @PostMapping("/comment/{feed_id}")
+    @PostMapping("/comments/{feed_id}")
     public ResponseEntity<ResponseSuccess<List<CommentResponse>>> postFeedComment(@PathVariable(name = "feed_id") final Long feedId, @RequestBody final CommentCreateRequest commentCreateRequest, final Authentication authentication) {
         User user = (User) authentication.getPrincipal();
         return ResponseEntity.ok().body(ResponseSuccess.success(feedService.postFeedComment(feedId, user, commentCreateRequest)));
     }
 
+    @Operation(summary = "댓글 수정 API"
+            , description = "피드에 댓글 내용을 수정한다.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "성공", useReturnTypeSchema = true),
+                    @ApiResponse(responseCode = "400", description = "실패 - NOT_FOUND_FEED", content = @Content(schema = @Schema(implementation = ResponseFail.class))),
+                    @ApiResponse(responseCode = "401", description = "INVALID_TOKEN", content = @Content(schema = @Schema(implementation = ResponseFail.class))),
+                    @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = ResponseFail.class)))
+            })
+    @PatchMapping("/comments/{feed_id}")
+    public ResponseEntity<ResponseSuccess<List<CommentResponse>>> updateFeedComment(@PathVariable(name = "feed_id") final Long feedId, @RequestBody final CommentUpdateRequest commentUpdateRequest, final Authentication authentication) {
+        User user = (User) authentication.getPrincipal();
+        return ResponseEntity.ok().body(ResponseSuccess.success(feedService.updateFeedComment(feedId, user, commentUpdateRequest)));
+    }
+
+    @Operation(summary = "댓글 삭제 API"
+            , description = "피드에 댓글 내용을 삭제된 메시지입니다로 변경한다. (실제로는 수정)",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "성공", useReturnTypeSchema = true),
+                    @ApiResponse(responseCode = "400", description = "실패 - NOT_FOUND_FEED", content = @Content(schema = @Schema(implementation = ResponseFail.class))),
+                    @ApiResponse(responseCode = "401", description = "INVALID_TOKEN", content = @Content(schema = @Schema(implementation = ResponseFail.class))),
+                    @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = ResponseFail.class)))
+            })
+    @DeleteMapping("/comments/{feed_id}")
+    public ResponseEntity<ResponseSuccess<List<CommentResponse>>> deleteFeedComment(@PathVariable(name = "feed_id") final Long feedId, @RequestBody final CommentDeleteRequest commentDeleteRequest, final Authentication authentication) {
+        User user = (User) authentication.getPrincipal();
+        CommentUpdateRequest commentUpdateRequest = CommentUpdateRequest.builder().commentId(commentDeleteRequest.getCommentId()).content("삭제된 메시지입니다.").build();
+        return ResponseEntity.ok().body(ResponseSuccess.success(feedService.updateFeedComment(feedId, user, commentUpdateRequest)));
+    }
 
 }

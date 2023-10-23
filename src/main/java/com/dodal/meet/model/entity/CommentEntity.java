@@ -81,4 +81,8 @@ public class CommentEntity {
                 .content(commentCreateRequest.getContent())
                 .build();
     }
+
+    public void updateContent(String content) {
+        this.content = content;
+    }
 }
