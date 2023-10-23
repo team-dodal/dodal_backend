@@ -68,4 +68,7 @@ public class ChallengeFeedEntity {
         this.likeCnt += num;
     }
 
+    public void updateCommentCntByNum(int num) {
+        this.commentCnt += num;
+    }
 }

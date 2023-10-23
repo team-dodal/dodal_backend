@@ -1,5 +1,7 @@
 package com.dodal.meet.controller.request.feed;
 
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import javax.validation.constraints.Pattern;
@@ -10,6 +12,7 @@ import javax.validation.constraints.Pattern;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @ToString
+@JsonNaming(value = PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class CommentCreateRequest {
 
     @Schema(description = "댓글 부모 ID (null 또는 숫자)", example = "1")

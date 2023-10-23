@@ -2,6 +2,7 @@ package com.dodal.meet.service;
 
 
 import com.dodal.meet.controller.request.feed.CommentCreateRequest;
+import com.dodal.meet.controller.response.feed.CommentResponse;
 import com.dodal.meet.controller.response.feed.FeedResponse;
 import com.dodal.meet.exception.DodalApplicationException;
 import com.dodal.meet.exception.ErrorCode;
@@ -19,6 +20,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -76,11 +79,11 @@ public class FeedService {
     }
 
     @Transactional
-    public Object postFeedComment(Long feedId, User user, CommentCreateRequest commentCreateRequest) {
+    public List<CommentResponse> postFeedComment(Long feedId, User user, CommentCreateRequest commentCreateRequest) {
         ChallengeFeedEntity feedEntity = challengeFeedEntityRepository.findById(feedId).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_FEED));
         final UserEntity userEntity = userEntityRepository.findBySocialIdAndSocialType(user.getSocialId(), user.getSocialType()).orElseThrow(() -> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
 
-        CommentEntity newComment = CommentEntity.toEntity(commentCreateRequest, feedEntity, userEntity.getId());
+        CommentEntity newComment = CommentEntity.toEntity(commentCreateRequest, feedEntity, userEntity);
 
         CommentEntity commentEntity;
         // 대댓글인 경우
@@ -92,6 +95,14 @@ public class FeedService {
         else {
             commentEntityRepository.save(newComment);
         }
-        return null;
+
+        // FeedEntity Comment 갯수 1개 업데이트
+        feedEntity.updateCommentCntByNum(DtoUtils.ONE);
+        return getFeedComments(feedId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<CommentResponse> getFeedComments(Long feedId) {
+        return challengeFeedEntityRepository.getFeedComments(feedId);
     }
 }

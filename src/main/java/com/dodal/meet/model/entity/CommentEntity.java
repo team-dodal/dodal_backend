@@ -4,6 +4,7 @@ import com.dodal.meet.controller.request.feed.CommentCreateRequest;
 import com.dodal.meet.utils.DateUtils;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
@@ -34,6 +35,10 @@ public class CommentEntity {
     private ChallengeFeedEntity challengeFeedEntity;
 
     private Long userId;
+
+    private String nickname;
+
+    private String profileUrl;
 
     private String content;
 
@@ -67,10 +72,12 @@ public class CommentEntity {
         this.parent = parent;
     }
 
-    public static CommentEntity toEntity(CommentCreateRequest commentCreateRequest, ChallengeFeedEntity challengeFeedEntity, Long userId) {
+    public static CommentEntity toEntity(CommentCreateRequest commentCreateRequest, ChallengeFeedEntity challengeFeedEntity, UserEntity userEntity) {
         return CommentEntity.builder()
                 .challengeFeedEntity(challengeFeedEntity)
-                .userId(userId)
+                .userId(userEntity.getId())
+                .profileUrl(userEntity.getProfileUrl())
+                .nickname(userEntity.getNickname())
                 .content(commentCreateRequest.getContent())
                 .build();
     }
