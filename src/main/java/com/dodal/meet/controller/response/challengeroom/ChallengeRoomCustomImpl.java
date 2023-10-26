@@ -13,13 +13,11 @@ import com.dodal.meet.model.entity.*;
 import com.dodal.meet.utils.DateUtils;
 import com.dodal.meet.utils.FeedUtils;
 import com.dodal.meet.utils.OrderByNull;
-import com.querydsl.core.Tuple;
 import com.querydsl.core.types.ConstantImpl;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
-import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -63,7 +61,7 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
     @Override
     public Page<ChallengeRoomSearchResponse> getChallengeRoomsByCategory(ChallengeRoomSearchCategoryRequest request, Pageable pageable, UserEntity userEntity) {
 
-        List<Integer> userRoomList = queryFactory.select(challengeUser.challengeRoomEntity.id).from(challengeUser).where(challengeUser.userId.eq(userEntity.getId())).fetch();
+        List<Integer> userRoomList = queryFactory.select(challengeUser.challengeRoomEntity.id).from(challengeUser).where(challengeUser.userEntity.id.eq(userEntity.getId())).fetch();
 
         List<ChallengeRoomSearchResponse> content = queryFactory
                 .select(new QChallengeRoomSearchResponse(
@@ -96,7 +94,7 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
 
     @Override
     public List<ChallengeRoomSearchResponse> getChallengeRoomsByWord(UserEntity userEntity, String word) {
-        List<Integer> userRoomList = queryFactory.select(challengeUser.challengeRoomEntity.id).from(challengeUser).where(challengeUser.userId.eq(userEntity.getId())).fetch();
+        List<Integer> userRoomList = queryFactory.select(challengeUser.challengeRoomEntity.id).from(challengeUser).where(challengeUser.userEntity.id.eq(userEntity.getId())).fetch();
 
         List<ChallengeRoomSearchResponse> content = queryFactory
                 .select(new QChallengeRoomSearchResponse(
@@ -132,7 +130,7 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
         Long commonUserCnt = queryFactory.
                 select(commonUser.count()).
                 from(commonUser).
-                where(commonUser.challengeRoomEntity.id.eq(roomId).and(commonUser.userId.eq(userEntity.getId()))).fetchOne();
+                where(commonUser.challengeRoomEntity.id.eq(roomId).and(commonUser.userEntity.id.eq(userEntity.getId()))).fetchOne();
 
 
         ChallengeRoomDetailResponse response = queryFactory
@@ -290,7 +288,7 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
         List<Integer> roomList = queryFactory.
                 select(curUser.challengeRoomEntity.id).distinct().
                 from(curUser).
-                where(curUser.userId.eq(userEntity.getId())).fetch();
+                where(curUser.userEntity.id.eq(userEntity.getId())).fetch();
 
 
         List<FeedResponse> content = queryFactory
@@ -306,7 +304,7 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
                 .innerJoin(user)
                 .on(feed.userId.eq(user.id))
                 .innerJoin(challengeUser)
-                .on(room.id.eq(challengeUser.challengeRoomEntity.id).and(challengeUser.userId.eq(user.id)))
+                .on(room.id.eq(challengeUser.challengeRoomEntity.id).and(challengeUser.userEntity.id.eq(user.id)))
                 .leftJoin(feed.feedLikeEntityList, feedLike)
                 .on(feedLike.likeUserId.eq(userEntity.getId()))
                 .where(feed.certCode.eq(FeedUtils.CONFIRM))
@@ -339,7 +337,7 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
                 .innerJoin(user)
                 .on(feed.userId.eq(user.id))
                 .innerJoin(challengeUser)
-                .on(room.id.eq(challengeUser.challengeRoomEntity.id).and(challengeUser.userId.eq(user.id)))
+                .on(room.id.eq(challengeUser.challengeRoomEntity.id).and(challengeUser.userEntity.id.eq(user.id)))
                 .leftJoin(feed.feedLikeEntityList, feedLike)
                 .on(feedLike.likeUserId.eq(userEntity.getId()))
                 .where(feed.certCode.eq(FeedUtils.CONFIRM).and(room.id.eq(roomId)))
@@ -366,7 +364,7 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
                 .innerJoin(user)
                 .on(feed.userId.eq(user.id))
                 .innerJoin(challengeUser)
-                .on(room.id.eq(challengeUser.challengeRoomEntity.id).and(challengeUser.userId.eq(user.id)))
+                .on(room.id.eq(challengeUser.challengeRoomEntity.id).and(challengeUser.userEntity.id.eq(user.id)))
                 .leftJoin(feed.feedLikeEntityList, feedLike)
                 .on(feedLike.likeUserId.eq(userEntity.getId()))
                 .where(feed.certCode.eq(FeedUtils.CONFIRM).and(feed.id.eq(feedId)))
@@ -394,7 +392,7 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
                 .select(challengeUser.id)
                 .from(feed)
                 .innerJoin(challengeUser)
-                .on(feed.roomId.eq(challengeUser.challengeRoomEntity.id).and(feed.userId.eq(challengeUser.userId)))
+                .on(feed.roomId.eq(challengeUser.challengeRoomEntity.id).and(feed.userId.eq(challengeUser.userEntity.id)))
                 .where(feed.registeredDate.eq(yesterday).and(feed.certCode.in(FeedUtils.CONFIRM, FeedUtils.REQUEST))).fetch();
 
         if (challengeUserIdList != null) {

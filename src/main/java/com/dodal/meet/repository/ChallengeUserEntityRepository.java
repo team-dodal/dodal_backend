@@ -14,16 +14,32 @@ import java.util.Optional;
 @Repository
 public interface ChallengeUserEntityRepository extends JpaRepository<ChallengeUserEntity, Integer> {
 
-    Optional<ChallengeUserEntity> findByUserIdAndChallengeRoomEntity(Long userId, ChallengeRoomEntity challengeRoomEntity);
+    @Query(
+            "SELECT u " +
+            "FROM ChallengeUserEntity u " +
+            "WHERE u.userEntity.id = :userId AND u.challengeRoomEntity = :challengeRoomEntity"
+    )
+    Optional<ChallengeUserEntity> findByUserIdAndChallengeRoomEntity(@Param("userId") Long userId, @Param("challengeRoomEntity") ChallengeRoomEntity challengeRoomEntity);
 
-    List<ChallengeUserEntity> findAllByUserId(Long userId);
+
+    @Query(
+            "SELECT u " +
+            "FROM ChallengeUserEntity u " +
+            "WHERE u.userEntity.id = :userId"
+    )
+    List<ChallengeUserEntity> findAllByUserId(@Param("userId") Long userId);
 
     @Query(
             "SELECT new com.dodal.meet.controller.response.user.UserRoomCertInfo(max(u.maxContinueCertCnt), cast(sum(u.totalCertCnt) as int )) " +
             "FROM ChallengeUserEntity u " +
-            "WHERE u.userId = :userId"
+            "WHERE u.userEntity.id = :userId"
     )
     UserRoomCertInfo findMaxCertInfoByUserId(@Param("userId") Long userId);
 
-    void deleteByUserId(Long userId);
+    @Query(
+            "DELETE " +
+            "FROM ChallengeUserEntity u " +
+            "WHERE u.userEntity.id = :userId"
+    )
+    void deleteByUserId(@Param("userId") Long userId);
 }

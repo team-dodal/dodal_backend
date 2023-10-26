@@ -5,6 +5,8 @@ import com.dodal.meet.model.RoomRole;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
@@ -37,9 +39,10 @@ public class ChallengeUserEntity {
 
     private int totalCertCnt;
 
-    private Long userId;
-
-    private String nickname;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    private UserEntity userEntity;
 
     private Timestamp registeredAt;
 
@@ -63,8 +66,7 @@ public class ChallengeUserEntity {
     public static ChallengeUserEntity getHostEntity(UserEntity userEntity) {
         return ChallengeUserEntity.builder()
                 .roomRole(RoomRole.HOST)
-                .userId(userEntity.getId())
-                .nickname(userEntity.getNickname())
+                .userEntity(userEntity)
                 .challengeRoomEntity(null)
                 .build();
     }

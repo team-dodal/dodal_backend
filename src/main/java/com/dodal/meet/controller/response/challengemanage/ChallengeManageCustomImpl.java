@@ -51,7 +51,7 @@ public class ChallengeManageCustomImpl implements ChallengeManageCustom {
                 .on(bookmark.challengeRoomEntity.eq(room).and(bookmark.userEntity.eq(userEntity)))
                 .leftJoin(feed)
                 .on(room.id.eq(feed.roomId).and(feed.registeredDate.eq(today)))
-                .where(challengeUser.roomRole.eq(RoomRole.USER).and(challengeUser.userId.eq(userEntity.getId())))
+                .where(challengeUser.roomRole.eq(RoomRole.USER).and(challengeUser.userEntity.id.eq(userEntity.getId())))
                 .orderBy(feed.certCode.asc())
                 .fetch();
 
@@ -78,7 +78,7 @@ public class ChallengeManageCustomImpl implements ChallengeManageCustom {
                 .innerJoin(room.challengeTagEntity, roomTag)
                 .leftJoin(bookmark)
                 .on(bookmark.challengeRoomEntity.eq(room).and(bookmark.userEntity.eq(userEntity)))
-                .where(challengeUser.userId.eq(userEntity.getId()).and(challengeUser.roomRole.eq(RoomRole.HOST)))
+                .where(challengeUser.userEntity.id.eq(userEntity.getId()).and(challengeUser.roomRole.eq(RoomRole.HOST)))
                 .orderBy(certRequestCnt.desc())
                 .fetch();
         return content;
@@ -109,7 +109,7 @@ public class ChallengeManageCustomImpl implements ChallengeManageCustom {
                 .innerJoin(challengeUser)
                 .on(room.id.eq(challengeUser.challengeRoomEntity.id))
                 .innerJoin(user)
-                .on(challengeUser.userId.eq(user.id))
+                .on(challengeUser.userEntity.id.eq(user.id))
                 .where(room.id.eq(roomId).and(challengeUser.roomRole.ne(RoomRole.HOST)))
                 .fetch();
 
@@ -151,7 +151,4 @@ public class ChallengeManageCustomImpl implements ChallengeManageCustom {
     QChallengeTagEntity roomTag = QChallengeTagEntity.challengeTagEntity;
     QChallengeBookmarkEntity bookmark = QChallengeBookmarkEntity.challengeBookmarkEntity;
     QChallengeFeedEntity feed = QChallengeFeedEntity.challengeFeedEntity;
-    QChallengeNotiEntity noti = QChallengeNotiEntity.challengeNotiEntity;
-
-
 }

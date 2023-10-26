@@ -161,8 +161,7 @@ public class ChallengeRoomService {
                 .challengeRoomEntity(challengeRoom)
                 .roomRole(RoomRole.USER)
                 .continueCertCnt(0)
-                .userId(userEntity.getId())
-                .nickname(userEntity.getNickname())
+                .userEntity(userEntity)
                 .build();
         challengeUserEntityRepository.save(challengeUserEntity);
         challengeRoom.updateUserCnt(1);
@@ -200,7 +199,7 @@ public class ChallengeRoomService {
         String certImgUrl = imageService.uploadMultipartFile(certificationImg);
         ChallengeFeedEntity entity = ChallengeFeedEntity
                 .builder()
-                .userId(challengeUser.getUserId())
+                .userId(challengeUser.getUserEntity().getId())
                 .certImgUrl(certImgUrl)
                 .certContent(content)
                 .roomId(challengeRoom.getId())
