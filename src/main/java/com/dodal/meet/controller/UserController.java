@@ -192,9 +192,10 @@ public class UserController {
     }
 
     @Operation(summary = "유저 회원 탈퇴 API"
-            , description = "탈퇴 성공시 result_code SUCCESS를 반환한다.",
+            , description = "탈퇴 성공시 result_code SUCCESS를 반환한다. 운영 중인 도전이 있는 경우 ROOM_DELETE_REQUIRED 400 에러를 반환한다.",
             responses = {
                     @ApiResponse(responseCode = "204", description = "성공", useReturnTypeSchema = true),
+                    @ApiResponse(responseCode = "400", description = "실패 - ROOM_DELETE_REQUIRED", content = @Content(schema = @Schema(implementation = ResponseFail.class))),
                     @ApiResponse(responseCode = "401", description = "실패 - INVALID_TOKEN", content = @Content(schema = @Schema(implementation = ResponseFail.class))),
                     @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = ResponseFail.class)))
             })

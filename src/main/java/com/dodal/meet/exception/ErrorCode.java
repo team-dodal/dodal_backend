@@ -39,6 +39,7 @@ public enum ErrorCode {
     INVALID_ACCUSE_REQUEST(HttpStatus.BAD_REQUEST, "신고 요청 정보가 잘못 되었습니다. 기타에는 내용이 필수이며, 나머지는 내용이 없어야 합니다."),
     ALREADY_ACCUSE_SUCCEED(HttpStatus.BAD_REQUEST, "이미 신고한 사용자입니다."),
 
+    ROOM_DELETE_REQUIRED(HttpStatus.BAD_REQUEST, "운영 중인 도전방이 있습니다."),
     // 401 - UNAUTHORIZED
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다."),
     EXPIRED_TOKEN(HttpStatus.UNAUTHORIZED, "기간이 만료된 토큰 입니다."),

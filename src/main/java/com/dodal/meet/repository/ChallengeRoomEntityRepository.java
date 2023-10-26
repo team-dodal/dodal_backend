@@ -19,6 +19,9 @@ import java.util.List;
 
 @Repository
 public interface ChallengeRoomEntityRepository extends JpaRepository<ChallengeRoomEntity, Integer>, ChallengeRoomCustom, ChallengeManageCustom {
+
+    List<ChallengeRoomEntity> findAllByHostId(Long hostId);
+
     @Override
     Page<ChallengeRoomSearchResponse> getChallengeRooms(ChallengeRoomCondition challengeRoomCondition, Pageable pageable, UserEntity userEntity);
 

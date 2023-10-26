@@ -257,6 +257,12 @@ public class UserService {
     @Transactional
     public void deleteUser(Authentication authentication) {
         UserEntity userEntity = userToUserEntity(authentication);
+
+        List<ChallengeRoomEntity> hostRoomList = challengeRoomEntityRepository.findAllByHostId(userEntity.getId());
+        if (!CollectionUtils.isEmpty(hostRoomList)) {
+            throw new DodalApplicationException(ErrorCode.ROOM_DELETE_REQUIRED);
+        }
+
         userEntityRepository.delete(userEntity);
     }
 
