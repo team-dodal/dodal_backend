@@ -50,7 +50,7 @@ public class AlarmHistEntity {
                 .roomId(alarmHistResponse.getRoomId())
                 .title(alarmHistResponse.getTitle())
                 .content(alarmHistResponse.getContent())
-                .registeredDate(alarmHistResponse.getRegisteredDate())
+                .registeredAt(alarmHistResponse.getRegisteredAt())
                 .build();
     }
 

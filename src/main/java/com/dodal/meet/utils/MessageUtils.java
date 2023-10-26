@@ -3,6 +3,9 @@ package com.dodal.meet.utils;
 import com.dodal.meet.controller.request.fcm.FcmPushRequest;
 import com.dodal.meet.controller.response.alarm.AlarmHistResponse;
 
+import java.sql.Timestamp;
+import java.time.Instant;
+
 public class MessageUtils {
 
 
@@ -24,7 +27,7 @@ public class MessageUtils {
                 .roomId(roomId)
                 .title(title)
                 .content(messageType.getDescription())
-                .registeredDate(DateUtils.getToday())
+                .registeredAt(Timestamp.from(Instant.now()))
                 .build();
     }
 }

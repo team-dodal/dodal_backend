@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
+import java.sql.Timestamp;
+
 
 @Getter
 @Builder
@@ -28,8 +30,8 @@ public class AlarmHistResponse {
     @Schema(description = "내용", example = "도전방 인증 요청이 왔습니다.")
     private String content;
 
-    @Schema(description = "알림 일자", example = "20231010")
-    private String registeredDate;
+    @Schema(description = "알림 생성 시간", example = "2023-07-15T18:58:51.056899")
+    private Timestamp registeredAt;
 
     public static AlarmHistResponse entityToAlarmHistResponse(AlarmHistEntity alarmHistEntity) {
         return AlarmHistResponse
@@ -38,7 +40,7 @@ public class AlarmHistResponse {
                 .roomId(alarmHistEntity.getRoomId())
                 .title(alarmHistEntity.getTitle())
                 .content(alarmHistEntity.getContent())
-                .registeredDate(alarmHistEntity.getRegisteredDate())
+                .registeredAt(alarmHistEntity.getRegisteredAt())
                 .build();
     }
 
