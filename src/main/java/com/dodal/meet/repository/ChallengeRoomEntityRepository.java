@@ -11,6 +11,7 @@ import com.dodal.meet.model.entity.UserEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -63,4 +64,12 @@ public interface ChallengeRoomEntityRepository extends JpaRepository<ChallengeRo
             "ORDER BY count(*) DESC"
     )
     List<ChallengeRoomRankResponse> getRankMonth(@Param("roomId") Integer roomId, @Param("month") String month);
+
+    @Modifying
+    @Query(
+            "UPDATE ChallengeRoomEntity r " +
+            "SET r.hostNickname = :nickname, r.hostProfileUrl = :profileUrl " +
+            "WHERE r.hostId = :userId"
+    )
+    void updateNicknameAndProfileUrlByUserId(@Param("userId") Long userId, @Param("nickname") String nickname, @Param("profileUrl") String profileUrl);
 }

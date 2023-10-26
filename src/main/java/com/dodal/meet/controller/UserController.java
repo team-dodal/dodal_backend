@@ -108,34 +108,9 @@ public class UserController {
                     @ApiResponse(responseCode = "401", description = "실패 - INVALID_TOKEN", content = @Content(schema = @Schema(implementation = ResponseFail.class))),
                     @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = ResponseFail.class)))
             })
-    @PatchMapping(value = "/me", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ResponseSuccess<UserInfoResponse>> updateUser(
-                                                                @Pattern(regexp = "^[가-힣a-zA-Z0-9\\s]{1,16}$", message = "nickname은 한글, 영어, 숫자로만 이루어진 1자리 이상 16자리 이하의 값이어야 합니다.")
-                                                                @Schema(name =  "nickname", example = "노래하는 어피치")
-                                                                @RequestParam(name = "nickname", required = false) String nickname,
-
-                                                                @Pattern(regexp = "^(.{0}|.{1,40})$", message = "값은 40자리 이하이어야 합니다.")
-                                                                @Schema(name =  "content", example = "안녕하세요")
-                                                                @RequestParam(name = "content", required = false) String content,
-
-                                                                @ArraySchema(schema = @Schema(implementation = String.class, name =  "tag_list", type = "array", example = "[\"001001\", \"002001\", \"003001\"]"))
-                                                                @RequestParam(name = "tag_list", required = false) List<String> tagList,
-
-                                                                @Schema(name = "profile") @Parameter(name = "profile", content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE))
-                                                                @RequestParam(name = "profile", required = false) MultipartFile profile,
-
-                                                                @Schema(name = "profile_url", example = "https://s3.console.aws.amazon.com/s3/object/dodal-bucket?region=ap-northeast-2&prefix=15e4f096-2a33-4634-8ba1-88b351ee0a95..ico")
-                                                                @RequestParam(name = "profile_url", required = false) String profileUrl,
-
-                                                                Authentication authentication
-                                                                ) {
-        final String trimNickname = nickname.trim();
-        UserUpdateRequest userUpdateRequest = UserUpdateRequest.builder()
-                .nickname(trimNickname)
-                .content(content)
-                .tagList(tagList)
-                .build();
-        return ResponseEntity.ok().body(ResponseSuccess.success(userService.updateUser(userUpdateRequest, profile, profileUrl, authentication)));
+    @PatchMapping(value = "/me")
+    public ResponseEntity<ResponseSuccess<UserInfoResponse>> updateUser(@Valid @RequestBody UserUpdateRequest userUpdateRequest,Authentication authentication) {
+        return ResponseEntity.ok().body(ResponseSuccess.success(userService.updateUser(userUpdateRequest, authentication)));
     }
 
     @Operation(summary = "닉네임 중복 확인 API"

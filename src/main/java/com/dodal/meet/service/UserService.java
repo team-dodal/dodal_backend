@@ -176,7 +176,7 @@ public class UserService {
     }
 
     @Transactional
-    public UserInfoResponse updateUser(final UserUpdateRequest userUpdateRequest, final MultipartFile profile, final String profileUrl, Authentication authentication) {
+    public UserInfoResponse updateUser(final UserUpdateRequest userUpdateRequest, Authentication authentication) {
         final UserInfoResponse userInfo = getUser(authentication);
 
         UserEntity userEntity = userEntityRepository.findById(userInfo.getUserId()).orElse(null);
@@ -184,39 +184,18 @@ public class UserService {
         final String requestNickname = userUpdateRequest.getNickname();
         final String requestContent = userUpdateRequest.getContent();
         final List<String> requestTagList = userUpdateRequest.getTagList();
-
-        if (requestNickname != null && userInfo.getNickname() != userUpdateRequest.getNickname()) {
-            userEntity.updateNickname(requestNickname);
-        }
-
-        if (requestContent != null && userInfo.getContent() != userUpdateRequest.getContent()) {
-            userEntity.updateContent(requestContent);
-        }
-
         final String beforeProfileUrl = userEntity.getProfileUrl();
 
-        if (profile != null && profileUrl != null) {
-            // 기존 이미지 요청과 새로운 이미지 요청이 동시에 오는 경우 throw
-            throw new DodalApplicationException(ErrorCode.ILLEGAL_IMAGE_REQUEST);
-        } else if (profile == null && profileUrl == null) {
-            // 기존 이미지(null)로 변경
-            if (beforeProfileUrl != null) {
-                imageService.deleteImg(beforeProfileUrl);
-                userEntity.updateProfileUrl(null);
-            }
-        } else if (profile != null) {
-            // 기존에 등록된 S3 이미지가 있으면 제거
-            if (beforeProfileUrl != null) {
-                imageService.deleteImg(beforeProfileUrl);
-            }
-            String newProfileUrl = imageService.uploadProfileImg(new UserProfileRequest(profile)).getProfileUrl();
-            userEntity.updateProfileUrl(newProfileUrl);
-        } else if (profileUrl != null) {
-            // 기존에 등록된 이미지와 요청온 이미지가 다르면 throw
-            if (beforeProfileUrl != null && !beforeProfileUrl.equals(profileUrl)) {
-                throw new DodalApplicationException(ErrorCode.INVALID_IMAGE_URL);
-            }
+        userEntity.updateNickname(requestNickname);
+        userEntity.updateContent(requestContent);
+        userEntity.updateProfileUrl(userUpdateRequest.getProfileUrl());
+
+        // 직전 이미지가 S3에 등록되어 있으면서, 요청 온 이미지 URL이 다를 경우 직전 이미지 삭제
+        if (beforeProfileUrl != null && beforeProfileUrl != userUpdateRequest.getProfileUrl()) {
+            imageService.deleteImg(beforeProfileUrl);
         }
+
+        challengeRoomEntityRepository.updateNicknameAndProfileUrlByUserId(userEntity.getId(), requestNickname, userUpdateRequest.getProfileUrl());
 
         if (!requestTagList.isEmpty()) {
             List<UserTagEntity> userTagEntity = userTagEntityRepository.findAllByUserEntity(userEntity);
