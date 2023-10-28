@@ -30,7 +30,7 @@ public interface ChallengeUserEntityRepository extends JpaRepository<ChallengeUs
     List<ChallengeUserEntity> findAllByUserId(@Param("userId") Long userId);
 
     @Query(
-            "SELECT new com.dodal.meet.controller.response.user.UserRoomCertInfo(max(u.maxContinueCertCnt), cast(sum(u.totalCertCnt) as int )) " +
+            "SELECT new com.dodal.meet.controller.response.user.UserRoomCertInfo(coalesce(max(u.maxContinueCertCnt), 0) , coalesce(cast(sum(u.totalCertCnt) as int ), 0)) " +
             "FROM ChallengeUserEntity u " +
             "WHERE u.userEntity.id = :userId"
     )
