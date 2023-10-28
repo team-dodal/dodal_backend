@@ -54,6 +54,9 @@ public class FeedResponse {
     @Schema(description = "좋아요 수", example = "5")
     private int likeCnt;
 
+    @Schema(description = "댓글 수", example = "20")
+    private int commentCnt;
+
     @Schema(description = "신고 횟수", example = "1")
     private int accuseCnt;
 
@@ -70,7 +73,7 @@ public class FeedResponse {
     private Timestamp registeredAt;
 
     @QueryProjection
-    public FeedResponse(Integer roomId, String title, Long feedId, int certCnt, String categoryName, Long userId, String nickname, int continueCertCnt, String certImgUrl, String certContent, int likeCnt, int accuseCnt, String likeYN, String registeredDate, Timestamp registeredAt) {
+    public FeedResponse(Integer roomId, String title, Long feedId, int certCnt, String categoryName, Long userId, String nickname, int continueCertCnt, String certImgUrl, String certContent, int likeCnt, int commentCnt, int accuseCnt, String likeYN, String registeredDate, Timestamp registeredAt) {
         this.roomId = roomId;
         this.title = title;
         this.feedId = feedId;
@@ -82,6 +85,7 @@ public class FeedResponse {
         this.certImgUrl = certImgUrl;
         this.certContent = certContent;
         this.likeCnt = likeCnt;
+        this.commentCnt = commentCnt;
         this.accuseCnt = accuseCnt;
         this.likeYN = likeYN;
         this.registeredDate = registeredDate;

@@ -294,7 +294,7 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
         List<FeedResponse> content = queryFactory
                 .select(new QFeedResponse(
                         room.id, room.title, feed.id, room.certCnt, roomTag.categoryName, user.id, user.nickname, challengeUser.continueCertCnt,
-                        feed.certImgUrl, feed.certContent, feed.likeCnt, feed.accuseCnt,
+                        feed.certImgUrl, feed.certContent, feed.likeCnt, feed.commentCnt, feed.accuseCnt,
                         new CaseBuilder().when(feedLike.isNotNull()).then("Y").otherwise("N").as("likeYN"),
                         feed.registeredDate, feed.registeredAt
                 )).from(room)
@@ -327,7 +327,7 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
         List<FeedResponse> content = queryFactory
                 .select(new QFeedResponse(
                         room.id, room.title, feed.id, room.certCnt, roomTag.categoryName, user.id, user.nickname, challengeUser.continueCertCnt,
-                        feed.certImgUrl, feed.certContent, feed.likeCnt, feed.accuseCnt,
+                        feed.certImgUrl, feed.certContent, feed.likeCnt, feed.commentCnt, feed.accuseCnt,
                         new CaseBuilder().when(feedLike.isNotNull()).then("Y").otherwise("N").as("likeYN"),
                         feed.registeredDate, feed.registeredAt
                 )).from(room)
@@ -349,27 +349,6 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
         return new PageImpl<>(content, pageable, content.size());
     }
 
-    @Override
-    public FeedResponse getFeedOne(final UserEntity userEntity, final Long feedId) {
-        return queryFactory
-                .select(new QFeedResponse(
-                        room.id, room.title, feed.id, room.certCnt, roomTag.categoryName, user.id, user.nickname, challengeUser.continueCertCnt,
-                        feed.certImgUrl, feed.certContent, feed.likeCnt, feed.accuseCnt,
-                        new CaseBuilder().when(feedLike.isNotNull()).then("Y").otherwise("N").as("likeYN"),
-                        feed.registeredDate, feed.registeredAt
-                )).from(room)
-                .innerJoin(room.challengeTagEntity, roomTag)
-                .innerJoin(feed)
-                .on(feed.roomId.eq(room.id))
-                .innerJoin(user)
-                .on(feed.userId.eq(user.id))
-                .innerJoin(challengeUser)
-                .on(room.id.eq(challengeUser.challengeRoomEntity.id).and(challengeUser.userEntity.id.eq(user.id)))
-                .leftJoin(feed.feedLikeEntityList, feedLike)
-                .on(feedLike.likeUserId.eq(userEntity.getId()))
-                .where(feed.certCode.eq(FeedUtils.CONFIRM).and(feed.id.eq(feedId)))
-                .fetchOne();
-    }
 
     @Override
     public MyPageCalenderResponse getMyPageCalendarInfo(Integer roomId, String dateYM, Long userId) {

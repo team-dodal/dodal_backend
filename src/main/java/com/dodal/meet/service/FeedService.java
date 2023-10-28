@@ -50,7 +50,7 @@ public class FeedService {
     }
 
     @Transactional
-    public FeedResponse postFeedLike(final Long feedId, final User user) {
+    public void postFeedLike(final Long feedId, final User user) {
         ChallengeFeedEntity feedEntity = challengeFeedEntityRepository.findById(feedId).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_FEED));
         final UserEntity userEntity = userEntityRepository.findBySocialIdAndSocialType(user.getSocialId(), user.getSocialType()).orElseThrow(() -> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
         FeedLikeEntity findFeedLikeEntity = feedLikeEntityRepository.findByFeedInfo(feedId, userEntity.getId()).orElse(null);
@@ -64,19 +64,15 @@ public class FeedService {
 
         feedLikeEntityRepository.save(feedLikeEntity);
         feedEntity.updateLikeCntByNum(DtoUtils.ONE);
-
-        return challengeRoomEntityRepository.getFeedOne(userEntity, feedId);
     }
 
     @Transactional
-    public FeedResponse deleteFeedLike(Long feedId, User user) {
+    public void deleteFeedLike(Long feedId, User user) {
         ChallengeFeedEntity feedEntity = challengeFeedEntityRepository.findById(feedId).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_FEED));
         final UserEntity userEntity = userEntityRepository.findBySocialIdAndSocialType(user.getSocialId(), user.getSocialType()).orElseThrow(() -> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
         FeedLikeEntity findFeedLikeEntity = feedLikeEntityRepository.findByFeedInfo(feedId, userEntity.getId()).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_FEED_LIKE));
         feedLikeEntityRepository.deleteById(findFeedLikeEntity.getId());
         feedEntity.updateLikeCntByNum(DtoUtils.MINUS_ONE);
-
-        return challengeRoomEntityRepository.getFeedOne(userEntity, feedId);
     }
 
     @Transactional
@@ -118,5 +114,12 @@ public class FeedService {
         commentEntity.updateContent(commentUpdateRequest.getContent());
 
         return getFeedComments(feedId);
+    }
+
+    @Transactional(readOnly = true)
+    public FeedResponse getFeed(User user, Long feedId) {
+        challengeFeedEntityRepository.findById(feedId).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_FEED));
+        final UserEntity userEntity = userEntityRepository.findBySocialIdAndSocialType(user.getSocialId(), user.getSocialType()).orElseThrow(() -> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
+        return challengeFeedEntityRepository.getFeed(userEntity, feedId);
     }
 }

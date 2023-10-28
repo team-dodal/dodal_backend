@@ -24,8 +24,6 @@ public interface ChallengeRoomCustom {
 
     Page<FeedResponse> getRoomFeeds(UserEntity userEntity, Integer roomId, Pageable pageable);
 
-    FeedResponse getFeedOne(UserEntity userEntity, Long feedId);
-
     MyPageCalenderResponse getMyPageCalendarInfo(Integer roomId, String dateYM, Long userId);
     void updateChallengeUserCertCnt();
 }
