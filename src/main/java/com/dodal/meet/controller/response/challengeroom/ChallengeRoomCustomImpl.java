@@ -386,6 +386,24 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
         }
     }
 
+    @Override
+    public List<ChallengeRoomBookmarkResponse> getBookmarksByUser(UserEntity userEntity) {
+        List<ChallengeRoomBookmarkResponse> result = queryFactory
+                .select(new QChallengeRoomBookmarkResponse(
+                        room.id, room.hostId, room.hostNickname, room.hostProfileUrl,
+                        room.title, room.content, room.certCnt, room.thumbnailImgUrl,
+                        room.recruitCnt, room.userCnt, roomTag.challengeTagEntity.categoryName, roomTag.challengeTagEntity.categoryValue,
+                        roomTag.challengeTagEntity.tagName, roomTag.challengeTagEntity.tagValue
+                ))
+                .from(bookmark)
+                .innerJoin(bookmark.userEntity, user)
+                .innerJoin(bookmark.challengeRoomEntity, room)
+                .innerJoin(room.challengeTagEntity, roomTag)
+                .orderBy(bookmark.registeredAt.desc())
+                .fetch();
+        return result;
+    }
+
     private OrderSpecifier<?> orderByBookmarkCnt(final String searchCode) {
         return searchCode.equals(RoomSearchType.POPULARITY.getCode()) ? room.bookmarkCnt.desc() : OrderByNull.getDefault();
     }

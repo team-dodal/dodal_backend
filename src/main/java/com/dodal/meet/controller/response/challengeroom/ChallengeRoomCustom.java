@@ -26,4 +26,6 @@ public interface ChallengeRoomCustom {
 
     MyPageCalenderResponse getMyPageCalendarInfo(Integer roomId, String dateYM, Long userId);
     void updateChallengeUserCertCnt();
+
+    List<ChallengeRoomBookmarkResponse> getBookmarksByUser(UserEntity userEntity);
 }

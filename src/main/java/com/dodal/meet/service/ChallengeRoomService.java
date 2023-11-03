@@ -422,4 +422,10 @@ public class ChallengeRoomService {
     public void updateChallengeUserCertCnt() {
         challengeRoomEntityRepository.updateChallengeUserCertCnt();
     }
+
+    @Transactional(readOnly = true)
+    public List<ChallengeRoomBookmarkResponse> getBookmarksByUser(User user) {
+        UserEntity userEntity = userEntityRepository.findBySocialIdAndSocialType(user.getSocialId(), user.getSocialType()).orElseThrow(()-> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
+        return challengeRoomEntityRepository.getBookmarksByUser(userEntity);
+    }
 }

@@ -214,6 +214,19 @@ public class ChallengeRoomController {
         return ResponseEntity.ok().body(ResponseSuccess.success(challengeRoomService.updateChallengeRoom(roomId, request, authentication)));
     }
 
+    @Operation(summary = "북마크 리스트 조회 API"
+            , description = "북마크 등록한 도전방 리스트를 조회한다.",
+            responses = {
+                    @ApiResponse(responseCode = "201", description = "성공", useReturnTypeSchema = true),
+                    @ApiResponse(responseCode = "401", description = "INVALID_TOKEN", content = @Content(schema = @Schema(implementation = ResponseFail.class))),
+                    @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = ResponseFail.class)))
+            })
+    @GetMapping("/challenge/room/bookmarks")
+    public ResponseEntity<ResponseSuccess<List<ChallengeRoomBookmarkResponse>>> getBookmarksByUser(Authentication authentication) {
+        final User user = (User) authentication.getPrincipal();
+        return ResponseEntity.ok().body(ResponseSuccess.success(challengeRoomService.getBookmarksByUser(user)));
+    }
+
     @Operation(summary = "북마크 등록 API"
             , description = "도전방에 북마크를 등록한다.",
             responses = {
