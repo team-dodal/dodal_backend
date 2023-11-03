@@ -138,7 +138,7 @@ public class ChallengeListService {
         }
 
         fcmPushService.sendFcmPushUser(userId, MessageUtils.makeFcmPushRequest(MessageType.KICK_OUT, roomEntity.getTitle()));
-
+        roomEntity.updateUserCnt(DtoUtils.MINUS_ONE);
         challengeUserEntityRepository.deleteByUserId(userId);
     }
 
