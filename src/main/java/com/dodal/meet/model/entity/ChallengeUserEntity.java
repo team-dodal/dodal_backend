@@ -78,4 +78,8 @@ public class ChallengeUserEntity {
             this.maxContinueCertCnt = this.continueCertCnt;
         }
     }
+
+    public void updateRole(RoomRole role) {
+        this.roomRole = role;
+    }
 }

@@ -141,4 +141,22 @@ public class ChallengeListService {
 
         challengeUserEntityRepository.deleteByUserId(userId);
     }
+
+    @Transactional
+    public void changeHost(User user, Integer roomId, Long userId) {
+        UserEntity hostEntity = userEntityRepository.findBySocialIdAndSocialType(user.getSocialId(), user.getSocialType()).orElseThrow(() -> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
+        UserEntity targetEntity = userEntityRepository.findById(userId).orElseThrow(() -> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
+        ChallengeRoomEntity roomEntity = challengeRoomEntityRepository.findById(roomId).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM));
+        ChallengeUserEntity host = challengeUserEntityRepository.findByUserIdAndChallengeRoomEntity(hostEntity.getId(), roomEntity).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM_USER));
+        ChallengeUserEntity target = challengeUserEntityRepository.findByUserIdAndChallengeRoomEntity(targetEntity.getId(), roomEntity).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM_USER));
+        if (!host.getRoomRole().equals(RoomRole.HOST)) {
+            throw new DodalApplicationException(ErrorCode.UNAUTHORIZED_ROOM_HOST);
+        }
+
+        host.updateRole(RoomRole.USER);
+        target.updateRole(RoomRole.HOST);
+
+        roomEntity.updateUserInfo(targetEntity);
+        fcmPushService.sendFcmPushUser(targetEntity.getId(), MessageUtils.makeFcmPushRequest(MessageType.MANDATE, roomEntity.getTitle()));
+    }
 }

@@ -1,6 +1,7 @@
 package com.dodal.meet.controller;
 
 
+import com.dodal.meet.controller.request.challengemanage.ChallengeMandateRequest;
 import com.dodal.meet.controller.response.ResponseFail;
 import com.dodal.meet.controller.response.ResponseSuccess;
 import com.dodal.meet.controller.response.challengemanage.ChallengeCertImgManage;
@@ -21,6 +22,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Map;
 
@@ -115,5 +118,20 @@ public class ChallengeManageController {
         User user = (User) authentication.getPrincipal();
         challengeListService.deleteChallengeUser(user, roomId, userId);
         return ResponseEntity.noContent().build();
+    }
+
+    @Operation(summary = "도전방 방장 위임 API"
+            , description = "도전방 방장을 위임한다. 기존 방장은 일반 유저로 변경된다.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "성공", useReturnTypeSchema = true),
+                    @ApiResponse(responseCode = "400", description = "NOT_FOUND_ROOM", content = @Content(schema = @Schema(implementation = ResponseFail.class))),
+                    @ApiResponse(responseCode = "401", description = "INVALID_TOKEN, UNAUTHORIZED_ROOM_HOST", content = @Content(schema = @Schema(implementation = ResponseFail.class))),
+                    @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = ResponseFail.class)))
+            })
+    @PatchMapping("/manage/{room_id}/mandate")
+    public ResponseEntity<ResponseSuccess<Void>> changeHost(@PathVariable(name = "room_id") Integer roomId, @Valid  @RequestBody ChallengeMandateRequest request, Authentication authentication) {
+        final User user = (User) authentication.getPrincipal();
+        challengeListService.changeHost(user, roomId, request.getUserId());
+        return ResponseEntity.ok().body(ResponseSuccess.success());
     }
 }
