@@ -241,6 +241,7 @@ public class UserService {
         if (!CollectionUtils.isEmpty(hostRoomList)) {
             throw new DodalApplicationException(ErrorCode.ROOM_DELETE_REQUIRED);
         }
+        challengeRoomEntityRepository.updateUserCntByDeleteUser(userEntity.getId());
 
         userEntityRepository.delete(userEntity);
     }

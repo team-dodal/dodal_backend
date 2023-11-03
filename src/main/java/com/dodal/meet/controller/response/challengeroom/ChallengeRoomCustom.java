@@ -28,4 +28,6 @@ public interface ChallengeRoomCustom {
     void updateChallengeUserCertCnt();
 
     List<ChallengeRoomBookmarkResponse> getBookmarksByUser(UserEntity userEntity);
+
+    void updateUserCntByDeleteUser(Long userId);
 }

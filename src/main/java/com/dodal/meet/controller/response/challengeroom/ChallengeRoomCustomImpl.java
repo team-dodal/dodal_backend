@@ -15,9 +15,11 @@ import com.dodal.meet.utils.FeedUtils;
 import com.dodal.meet.utils.OrderByNull;
 import com.querydsl.core.types.ConstantImpl;
 import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.SubQueryExpression;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -402,6 +404,37 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
                 .orderBy(bookmark.registeredAt.desc())
                 .fetch();
         return result;
+    }
+
+    @Override
+    public void updateUserCntByDeleteUser(Long userId) {
+/*        QChallengeRoomEntity subRoom = new QChallengeRoomEntity("subRoom");
+        queryFactory
+                .update(room)
+                .set(room.userCnt, Expressions.numberTemplate(Integer.class, "{0} - 1", room.userCnt))
+                .where(
+                        room.id.in(JPAExpressions
+                                .select(subRoom.id)
+                                .from(subRoom)
+                                .innerJoin(subRoom.challengeUserEntities, challengeUser)
+                                .innerJoin(challengeUser.userEntity, user)
+                                .where(user.id.eq(userId))
+                        )
+                ).execute();*/
+        QChallengeRoomEntity subRoom = new QChallengeRoomEntity("subRoom");
+        List<Integer> list = queryFactory.select(subRoom.id)
+                .from(subRoom)
+                .innerJoin(subRoom.challengeUserEntities, challengeUser)
+                .innerJoin(challengeUser.userEntity, user)
+                .where(user.id.eq(userId)).fetch();
+
+
+
+        queryFactory
+                .update(room)
+                .set(room.userCnt, room.userCnt.subtract(1))
+                .where(room.id.in(list))
+                .execute();
     }
 
     private OrderSpecifier<?> orderByBookmarkCnt(final String searchCode) {
