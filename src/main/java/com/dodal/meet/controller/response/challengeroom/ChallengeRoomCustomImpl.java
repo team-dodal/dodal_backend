@@ -12,6 +12,7 @@ import com.dodal.meet.model.RoomSearchType;
 import com.dodal.meet.model.entity.*;
 import com.dodal.meet.utils.DateUtils;
 import com.dodal.meet.utils.FeedUtils;
+import com.dodal.meet.utils.ImageUtils;
 import com.dodal.meet.utils.OrderByNull;
 import com.querydsl.core.types.ConstantImpl;
 import com.querydsl.core.types.OrderSpecifier;
@@ -128,52 +129,38 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
         // challengeUser (방장 / 일반 사용자)
         // 조회하려는 유저가 가입한 사용자일 수도 있고, 가입하지 않은 사용자일 수 있다.
 
+        // 요청한 유저 가입 여부 확인
         QChallengeUserEntity commonUser = QChallengeUserEntity.challengeUserEntity;
-        Long commonUserCnt = queryFactory.
+        final Long commonUserCnt = queryFactory.
                 select(commonUser.count()).
                 from(commonUser).
                 where(commonUser.challengeRoomEntity.id.eq(roomId).and(commonUser.userEntity.id.eq(userEntity.getId()))).fetchOne();
 
+        ChallengeRoomDetailResponse response;
+        String certCode = FeedUtils.EMPTY;
 
-        ChallengeRoomDetailResponse response = queryFactory
-                .select(new QChallengeRoomDetailResponse(
-                        room.id, room.thumbnailImgUrl, roomTag.tagValue, roomTag.tagName, room.certCnt, room.title,
-                        room.hostId, room.hostNickname, room.hostProfileUrl, room.userCnt, room.recruitCnt, room.content,
-                        room.certContent, room.certCorrectImgUrl, room.certWrongImgUrl, room.bookmarkCnt, new CaseBuilder().when(bookmark.userEntity.isNotNull()).then("Y").otherwise("N").as("bookmarkYN"),
-                        room.accuseCnt, noti.title, noti.content, challengeUser.continueCertCnt, room.registeredAt
-                )).from(room)
-                .innerJoin(room.challengeTagEntity, roomTag)
-                .innerJoin(room.challengeUserEntities, challengeUser)
-                .leftJoin(bookmark)
-                .on(room.eq(bookmark.challengeRoomEntity).and(bookmark.userEntity.id.eq(userEntity.getId())))
-                .leftJoin(room.challengeNotiEntities, noti).limit(1)
-                .where(room.id.eq(roomId).and(challengeUser.roomRole.eq(RoomRole.HOST)))
-                .fetchOne();
-
-        response.setJoinYN(commonUserCnt != 0 ? "Y" : "N");
-
-        if (response.getThumbnailImgUrl().indexOf("1x1") != -1) {
-            String changeThumbnailImgUrl = response.getThumbnailImgUrl().replace("1x1", "2x1");
-            response.setThumbnailImgUrl(changeThumbnailImgUrl);
-        }
-
-        String date = DateUtils.parsingTimestamp(Timestamp.from(Instant.now()));
-
-        // 피드 리스트 추가
-        // TODO : 오늘 ~ N 일전 데이터 Feed 인증
-        List<String> feedUrlList = queryFactory
-                .select(feed.certImgUrl)
-                .from(feed)
-                .innerJoin(room)
-                .on(room.id.eq(feed.roomId))
-                .where(room.id.eq(roomId).and(feed.certImgUrl.isNotNull()).and(feed.certCode.eq(FeedUtils.CONFIRM)))
-                .orderBy(feed.registeredAt.desc())
-                .limit(9)
-                .fetch();
-        response.setFeedUrlList(feedUrlList);
-
-        // 가입한 유저라면 주간 인증 여부 및 인증 이미지 url을 요일별로 반환
+        // 가입한 사용자라면 주간 인증 여부 및 인증 이미지 url을 요일별로 반환
         if (commonUserCnt != 0) {
+
+            String date = DateUtils.parsingTimestamp(Timestamp.from(Instant.now()));
+
+            response = queryFactory
+                    .select(new QChallengeRoomDetailResponse(
+                            room.id, room.thumbnailImgUrl, roomTag.tagValue, roomTag.tagName, room.certCnt, room.title,
+                            room.hostId, room.hostNickname, room.hostProfileUrl, room.userCnt, room.recruitCnt, room.content,
+                            room.certContent, room.certCorrectImgUrl, room.certWrongImgUrl, room.bookmarkCnt, new CaseBuilder().when(bookmark.userEntity.isNotNull()).then("Y").otherwise("N").as("bookmarkYN"),
+                            room.accuseCnt, noti.title, noti.content, challengeUser.continueCertCnt, room.registeredAt
+                    )).from(room)
+                    .innerJoin(room.challengeTagEntity, roomTag)
+                    .innerJoin(room.challengeUserEntities, challengeUser)
+                    .innerJoin(challengeUser.userEntity, user)
+                    .on(user.id.eq(userEntity.getId()))
+                    .leftJoin(bookmark)
+                    .on(room.eq(bookmark.challengeRoomEntity).and(bookmark.userEntity.id.eq(userEntity.getId())))
+                    .leftJoin(room.challengeNotiEntities, noti).limit(1)
+                    .where(room.id.eq(roomId))
+                    .fetchOne();
+
             Map<Integer, String> weekInfo = DateUtils.getWeekInfo();
             List<UserCertPerWeek> userCertPerWeekList = queryFactory
                     .select(new QUserCertPerWeek(feed.registeredDate, feed.certImgUrl))
@@ -187,21 +174,54 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
                     .orderBy(feed.registeredDate.asc())
                     .fetch();
             response.setUserCertPerWeekList(userCertPerWeekList);
+
+            certCode = queryFactory
+                    .select(feed.certCode)
+                    .from(feed)
+                    .innerJoin(room)
+                    .on(room.id.eq(feed.roomId))
+                    .where(room.id.eq(roomId).and(feed.certImgUrl.isNotNull()).and(room.id.eq(roomId))
+                            .and(feed.userId.eq(userEntity.getId())).and(feed.registeredDate.eq(date)))
+                    .orderBy(feed.registeredAt.desc())
+                    .limit(1)
+                    .fetchOne();
+        } else {
+            response = queryFactory
+                    .select(new QChallengeRoomDetailResponse(
+                            room.id, room.thumbnailImgUrl, roomTag.tagValue, roomTag.tagName, room.certCnt, room.title,
+                            room.hostId, room.hostNickname, room.hostProfileUrl, room.userCnt, room.recruitCnt, room.content,
+                            room.certContent, room.certCorrectImgUrl, room.certWrongImgUrl, room.bookmarkCnt, new CaseBuilder().when(bookmark.userEntity.isNotNull()).then("Y").otherwise("N").as("bookmarkYN"),
+                            room.accuseCnt, noti.title, noti.content, Expressions.constant(0), room.registeredAt
+                    )).from(room)
+                    .innerJoin(room.challengeTagEntity, roomTag)
+                    .leftJoin(bookmark)
+                    .on(room.eq(bookmark.challengeRoomEntity).and(bookmark.userEntity.id.eq(userEntity.getId())))
+                    .leftJoin(room.challengeNotiEntities, noti).limit(1)
+                    .where(room.id.eq(roomId))
+                    .fetchOne();
         }
 
-        // 오늘 인증 여부
-        String certCode = queryFactory
-                .select(feed.certCode)
+        response.setJoinYN(commonUserCnt != 0 ? "Y" : "N");
+        // 오늘 인증 여부 update
+        response.setTodayCertCode(certCode);
+
+        // 현재 썸네일 이미지가 서버 내 디폴트 이미지 URL 이면 2x1 비율로 변경한다.
+        if (response.getThumbnailImgUrl().indexOf(ImageUtils.IMG_1X1) != -1) {
+            String changeThumbnailImgUrl = response.getThumbnailImgUrl().replace(ImageUtils.IMG_1X1, ImageUtils.IMG_2X2);
+            response.setThumbnailImgUrl(changeThumbnailImgUrl);
+        }
+
+        // 피드 리스트 추가 - 최근 9개 피드 노출
+        List<String> feedUrlList = queryFactory
+                .select(feed.certImgUrl)
                 .from(feed)
                 .innerJoin(room)
                 .on(room.id.eq(feed.roomId))
-                .where(room.id.eq(roomId).and(feed.certImgUrl.isNotNull()).and(room.id.eq(roomId))
-                        .and(feed.userId.eq(userEntity.getId())).and(feed.registeredDate.eq(date)))
+                .where(room.id.eq(roomId).and(feed.certImgUrl.isNotNull()).and(feed.certCode.eq(FeedUtils.CONFIRM)))
                 .orderBy(feed.registeredAt.desc())
-                .limit(1)
-                .fetchOne();
-
-        response.setTodayCertCode(!StringUtils.hasText(certCode)? FeedUtils.EMPTY : certCode);
+                .limit(9)
+                .fetch();
+        response.setFeedUrlList(feedUrlList);
 
         return response;
     }
