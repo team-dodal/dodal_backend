@@ -92,11 +92,14 @@ public class ChallengeRoomDetailResponse {
     @Schema(description = "유저 주간 인증 정보")
     private List<UserCertPerWeek> userCertPerWeekList;
 
+    @Schema(description = "연속 인증 횟수", example = "10")
+    private int continueCertCnt;
+
     @Schema(description = "도전방 생성 시간")
     private Timestamp registeredAt;
 
     @QueryProjection
-    public ChallengeRoomDetailResponse(Integer roomId, String thumbnailImgUrl, String tagValue, String tagName, int certCnt, String title, Long hostId, String hostNickname, String hostProfileUrl, int userCnt, int recruitCnt, String content, String certContent, String certCorrectImgUrl, String certWrongImgUrl, int bookmarkCnt, String bookmarkYN, int accuseCnt, String noticeTitle, String noticeContent, Timestamp registeredAt) {
+    public ChallengeRoomDetailResponse(Integer roomId, String thumbnailImgUrl, String tagValue, String tagName, int certCnt, String title, Long hostId, String hostNickname, String hostProfileUrl, int userCnt, int recruitCnt, String content, String certContent, String certCorrectImgUrl, String certWrongImgUrl, int bookmarkCnt, String bookmarkYN, int accuseCnt, String noticeTitle, String noticeContent, int continueCertCnt, Timestamp registeredAt) {
         this.roomId = roomId;
         this.thumbnailImgUrl = thumbnailImgUrl;
         this.tagValue = tagValue;
@@ -117,6 +120,7 @@ public class ChallengeRoomDetailResponse {
         this.accuseCnt = accuseCnt;
         this.noticeTitle = noticeTitle;
         this.noticeContent = noticeContent;
+        this.continueCertCnt = continueCertCnt;
         this.registeredAt = registeredAt;
     }
 }

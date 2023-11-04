@@ -140,7 +140,7 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
                         room.id, room.thumbnailImgUrl, roomTag.tagValue, roomTag.tagName, room.certCnt, room.title,
                         room.hostId, room.hostNickname, room.hostProfileUrl, room.userCnt, room.recruitCnt, room.content,
                         room.certContent, room.certCorrectImgUrl, room.certWrongImgUrl, room.bookmarkCnt, new CaseBuilder().when(bookmark.userEntity.isNotNull()).then("Y").otherwise("N").as("bookmarkYN"),
-                        room.accuseCnt, noti.title, noti.content, room.registeredAt
+                        room.accuseCnt, noti.title, noti.content, challengeUser.continueCertCnt, room.registeredAt
                 )).from(room)
                 .innerJoin(room.challengeTagEntity, roomTag)
                 .innerJoin(room.challengeUserEntities, challengeUser)
