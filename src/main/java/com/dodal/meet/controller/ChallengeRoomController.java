@@ -214,17 +214,9 @@ public class ChallengeRoomController {
                     @ApiResponse(responseCode = "401", description = "INVALID_TOKEN", content = @Content(schema = @Schema(implementation = ResponseFail.class))),
                     @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = ResponseFail.class)))
             })
-    @PostMapping(value = "/challenge/room/{room_id}/certification", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ResponseSuccess<Void>> createCertification(@PathVariable(name = "room_id") Integer roomId,
-                                                                           @Schema(name = "certification_img")
-                                                                           @Parameter(name = "certification_img", content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE))
-                                                                           @RequestPart(name = "certification_img") MultipartFile certificationImg,
-
-                                                                           @Size(min = 1, max = 100, message = "content는 1자 ~ 100자 사이여야 합니다.")
-                                                                           @Schema(name =  "content", example = "인증합니다.")
-                                                                           @RequestParam(name = "content") String content,
-                                                                           Authentication authentication) {
-        challengeRoomService.createCertification(roomId, certificationImg, content, authentication);
+    @PostMapping(value = "/challenge/room/{room_id}/certification")
+    public ResponseEntity<ResponseSuccess<Void>> createCertification(@PathVariable(name = "room_id") Integer roomId, @Valid @RequestBody ChallengeFeedCreateRequest request, Authentication authentication) {
+        challengeRoomService.createCertification(roomId, request, authentication);
         return ResponseEntity.created(URI.create("/challenge/room/" + roomId +"/certification")).body(ResponseSuccess.success());
     }
 

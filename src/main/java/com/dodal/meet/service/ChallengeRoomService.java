@@ -168,8 +168,9 @@ public class ChallengeRoomService {
     }
 
     @Transactional
-    public void createCertification(final Integer roomId, final MultipartFile certificationImg, final String content, final Authentication authentication) {
+    public void createCertification(final Integer roomId, final ChallengeFeedCreateRequest request, final Authentication authentication) {
         final ChallengeRoomEntity challengeRoom = getChallengeRoomEntityById(roomId);
+
         UserEntity userEntity = getUserEntityByAuthentication(authentication);
         ChallengeUserEntity challengeUser = challengeUserEntityRepository.findByUserIdAndChallengeRoomEntity(userEntity.getId(), challengeRoom).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM_USER));
         String today = DateUtils.parsingTimestamp(Timestamp.from(Instant.now()));
@@ -181,16 +182,16 @@ public class ChallengeRoomService {
                 }
             }
         }
-        String certImgUrl = imageService.uploadMultipartFile(certificationImg);
         ChallengeFeedEntity entity = ChallengeFeedEntity
                 .builder()
                 .userId(challengeUser.getUserEntity().getId())
-                .certImgUrl(certImgUrl)
-                .certContent(content)
+                .certImgUrl(request.getCertificationImgUrl())
+                .certContent(request.getContent())
                 .roomId(challengeRoom.getId())
                 .roomTitle(challengeRoom.getTitle())
                 .challengeTagId(challengeRoom.getChallengeTagEntity().getTagValue())
                 .build();
+
         challengeFeedEntityRepository.save(entity);
 
         alarmService.saveAlarmHist(MessageUtils.makeAlarmHistResponse(MessageType.REQUEST, challengeRoom.getTitle(), challengeRoom.getHostId(), roomId));
