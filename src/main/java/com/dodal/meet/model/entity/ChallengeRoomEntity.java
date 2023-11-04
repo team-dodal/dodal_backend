@@ -103,13 +103,10 @@ public class ChallengeRoomEntity {
                 .certCnt(request.getCertCnt())
                 .certContent(request.getCertContent())
                 .challengeUserEntities(new ArrayList<>())
+                .thumbnailImgUrl(request.getThumbnailImgUrl())
+                .certCorrectImgUrl(request.getCertCorrectImgUrl())
+                .certWrongImgUrl(request.getCertWrongImgUrl())
                 .build();
-    }
-
-    public void updateImgUrl(String thumbnailImgUrl, String certCorrectImgUrl, String certWrongImgUrl) {
-        this.thumbnailImgUrl = thumbnailImgUrl;
-        this.certCorrectImgUrl = certCorrectImgUrl;
-        this.certWrongImgUrl = certWrongImgUrl;
     }
 
     public void updateUserInfo(UserEntity userEntity) {
@@ -127,5 +124,9 @@ public class ChallengeRoomEntity {
         this.thumbnailImgUrl = request.getThumbnailImgUrl();
         this.certCorrectImgUrl = request.getCertCorrectImgUrl();
         this.certWrongImgUrl = request.getCertWrongImgUrl();
+    }
+
+    public void updateDefaultImgUrl(String defaultImgUrl) {
+        this.thumbnailImgUrl = defaultImgUrl;
     }
 }

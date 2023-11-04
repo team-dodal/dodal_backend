@@ -52,34 +52,22 @@ public class ChallengeRoomService {
 
 
     @Transactional
-    public ChallengeCreateResponse createChallengeRoom(final ChallengeRoomCreateRequest challengeRoomCreateRequest, final Authentication authentication) {
+    public ChallengeCreateResponse createChallengeRoom(final ChallengeRoomCreateRequest request, final Authentication authentication) {
 
-        ChallengeRoomEntity challengeRoomEntity = ChallengeRoomEntity.createDtoToEntity(challengeRoomCreateRequest);
-        String thumbnailImgUrl = null;
-        String certCorrectImgUrl = null;
-        String certWrongImgUrl = null;
-        final String tagValue = challengeRoomCreateRequest.getTagValue();
-        TagEntity tagEntity = tagEntityRepository.findByTagValue(tagValue).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_TAG));
+        ChallengeRoomEntity challengeRoomEntity = ChallengeRoomEntity.createDtoToEntity(request);
 
-        if (!isEmpty(challengeRoomEntity.getThumbnailImgUrl())) {
-            thumbnailImgUrl = imageService.uploadMultipartFile(challengeRoomCreateRequest.getThumbnailImg());
-        } else {
-            final String categoryValue = tagEntity.getCategoryEntity().getCategoryValue();
-            thumbnailImgUrl = ImageUtils.findByCategoryValueToRoomThumbnailImageUrl(categoryValue);
-        }
+        final String tagValue = request.getTagValue();
+        final TagEntity tagEntity = tagEntityRepository.findByTagValue(tagValue).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_TAG));
+        final String categoryValue = tagEntity.getCategoryEntity().getCategoryValue();
 
-        if (!isEmpty(challengeRoomCreateRequest.getCertCorrectImg())) {
-            certCorrectImgUrl = imageService.uploadMultipartFile(challengeRoomCreateRequest.getCertCorrectImg());
-        }
-
-        if (!isEmpty(challengeRoomCreateRequest.getCertWrongImg())) {
-            certWrongImgUrl = imageService.uploadMultipartFile(challengeRoomCreateRequest.getCertWrongImg());
+        // 요청 온 이미지가 없는 경우 카테고리 값을 비교하여 서버에 저장된 디폴트 이미지를 저장한다.
+        if (!StringUtils.hasText(request.getThumbnailImgUrl())) {
+            challengeRoomEntity.updateDefaultImgUrl(ImageUtils.findByCategoryValueToRoomThumbnailImageUrl(categoryValue));
         }
 
         UserEntity userEntity = userService.userToUserEntity(authentication);
         ChallengeUserEntity challengeUserEntity = ChallengeUserEntity.getHostEntity(userEntity);
 
-        challengeRoomEntity.updateImgUrl(thumbnailImgUrl, certCorrectImgUrl, certWrongImgUrl);
         challengeRoomEntity.updateUserInfo(userEntity);
         challengeRoomEntityRepository.save(challengeRoomEntity);
 
@@ -91,10 +79,7 @@ public class ChallengeRoomService {
         challengeRoomEntity.addChallengeTagEntity(challengeTagEntity);
         challengeTagEntityRepository.save(challengeTagEntity);
 
-        final Integer roomId = challengeRoomEntity.getId();
-        getChallengeRoomEntityById(roomId);
-
-        final ChallengeRoomDetailResponse challengeRoomDetail = challengeRoomEntityRepository.getChallengeRoomDetail(roomId, userEntity);
+        final ChallengeRoomDetailResponse challengeRoomDetail = challengeRoomEntityRepository.getChallengeRoomDetail(challengeRoomEntity.getId(), userEntity);
 
         return ChallengeCreateResponse.fromChallengeRoomDetail(challengeRoomDetail);
     }
