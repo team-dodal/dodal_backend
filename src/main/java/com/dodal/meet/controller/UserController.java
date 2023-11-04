@@ -61,43 +61,9 @@ public class UserController {
                     @ApiResponse(responseCode = "401", description = "실패 - INVALID_TOKEN", content = @Content(schema = @Schema(implementation = ResponseFail.class))),
                     @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = ResponseFail.class)))
             })
-    @PostMapping(value = "/sign-up", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ResponseSuccess<UserSignUpResponse>> signUp(
-                                                                            @Schema(name =  "social_type", example = "KAKAO")
-                                                                            @RequestParam(name = "social_type") SocialType socialType,
-
-                                                                            @NotBlank(message = "social_id는 필수값입니다.")
-                                                                            @Schema(name =  "social_id", example = "2843361325")
-                                                                            @RequestParam(name = "social_id") String socialId,
-
-                                                                            @Email(message = "이메일 형식에 맞지 않습니다.") @Schema(name =  "email", example = "sasca37@naver.com")
-                                                                            @RequestParam(name = "email", required = false) String email,
-
-                                                                            @Pattern(regexp = "^[가-힣a-zA-Z0-9\\s]{1,16}$", message = "nickname은 한글, 영어, 숫자로만 이루어진 1자리 이상 16자리 이하의 값이어야 합니다.")
-                                                                            @Schema(name =  "nickname", example = "노래하는 어피치")
-                                                                            @RequestParam(name = "nickname") String nickname,
-
-                                                                            @Pattern(regexp = "^(.{0}|.{1,40})$", message = "값은 40자리 이하이어야 합니다.")
-                                                                            @Schema(name =  "content", example = "안녕하세요")
-                                                                            @RequestParam(name = "content", required = false) String content,
-
-                                                                            @ArraySchema(schema = @Schema(implementation = String.class, name =  "tag_list", type = "array", example = "[\"001001\", \"002001\", \"003001\"]"))
-                                                                            @RequestParam(name = "tag_list") List<String> tagList,
-
-                                                                            @Schema(name = "profile")
-                                                                            @Parameter(name = "profile", content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE))
-                                                                            @RequestParam(name = "profile", required = false) MultipartFile profile
-                                                                            ) {
-        final String trimNickname = nickname.trim();
-        UserSignUpRequest userSignUpRequest = UserSignUpRequest.builder()
-                .socialType(socialType)
-                .socialId(socialId)
-                .email(email)
-                .nickname(trimNickname)
-                .content(content)
-                .tagList(tagList)
-                .build();
-        return ResponseEntity.created(URI.create("/sign-up")).body(ResponseSuccess.success(userService.signUp(userSignUpRequest, profile)));
+    @PostMapping(value = "/sign-up")
+    public ResponseEntity<ResponseSuccess<UserSignUpResponse>> signUp(@Valid @RequestBody UserSignUpRequest request) {
+        return ResponseEntity.created(URI.create("/sign-up")).body(ResponseSuccess.success(userService.signUp(request)));
     }
 
     @Operation(summary = "유저 정보 수정 API"

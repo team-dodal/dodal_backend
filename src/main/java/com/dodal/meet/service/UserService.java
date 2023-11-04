@@ -104,8 +104,8 @@ public class UserService {
     }
 
     @Transactional
-    public UserSignUpResponse signUp(final UserSignUpRequest request, final MultipartFile profile) {
-
+    public UserSignUpResponse signUp(final UserSignUpRequest request) {
+        request.setNickname(request.getNickname().trim());
         validNickname(request.getNickname());
 
         final String socialId = request.getSocialId();
@@ -124,12 +124,6 @@ public class UserService {
         // 회원 가입 이후에 FCM 토큰을 따로 저장한다.
         final TokenEntity tokenEntity = TokenEntity.builder().refreshToken(refreshToken).build();
         tokenEntityRepository.save(tokenEntity);
-
-        // 이미지 정보가 있는 경우 S3 버킷 저장 및 URL 반환
-        if (profile != null) {
-            String profileUrl = imageService.uploadProfileImg(new UserProfileRequest(profile)).getProfileUrl();
-            request.setProfileUrl(profileUrl);
-        }
 
         final UserEntity newUserEntity = UserEntity.SignUpDtoToEntity()
                 .request(request)
