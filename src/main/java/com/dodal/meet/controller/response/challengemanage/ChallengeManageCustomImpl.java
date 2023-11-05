@@ -110,7 +110,7 @@ public class ChallengeManageCustomImpl implements ChallengeManageCustom {
                 .on(room.id.eq(challengeUser.challengeRoomEntity.id))
                 .innerJoin(user)
                 .on(challengeUser.userEntity.id.eq(user.id))
-                .where(room.id.eq(roomId).and(challengeUser.roomRole.ne(RoomRole.HOST)))
+                .where(room.id.eq(roomId))
                 .fetch();
 
         for (ChallengeUserInfoResponse dto : list) {
