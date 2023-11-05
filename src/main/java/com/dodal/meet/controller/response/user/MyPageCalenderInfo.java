@@ -9,6 +9,7 @@ import lombok.*;
 
 @Builder
 @Getter
+@Setter
 @Schema(description = "마이페이지 도전방 월별 정보")
 @JsonNaming(value = PropertyNamingStrategy.SnakeCaseStrategy.class)
 @NoArgsConstructor

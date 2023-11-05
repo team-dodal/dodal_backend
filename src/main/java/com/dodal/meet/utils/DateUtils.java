@@ -149,21 +149,9 @@ public class DateUtils {
 
         return String.valueOf(code);
     }
-
-    public static void main(String[] args) {
-        Map<Integer, String> weekInfo = getWeekInfo();
-        String monday = weekInfo.get(DateUtils.MON);
-        System.out.println(monday);
-
-        LocalDate date1 = LocalDate.of(2021, 10, 30);
-        LocalDate date2 = LocalDate.of(2021, 11, 5);
-
-        long daysBetween = ChronoUnit.DAYS.between(date1, date2);
-        long monthsBetween = ChronoUnit.MONTHS.between(date1, date2);
-        long yearsBetween = ChronoUnit.YEARS.between(date1, date2);
-
-        System.out.println("Days between: " + daysBetween);
-        System.out.println("Months between: " + monthsBetween);
-        System.out.println("Years between: " + yearsBetween);
+    public static String parsingDay(String registerDate) {
+        String day = registerDate.substring(6, 8);
+        return String.valueOf(Integer.parseInt(day));
     }
+
 }

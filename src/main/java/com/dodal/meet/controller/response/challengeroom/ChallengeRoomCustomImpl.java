@@ -375,7 +375,7 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
     @Override
     public MyPageCalenderResponse getMyPageCalendarInfo(Integer roomId, String dateYM, Long userId) {
         List<MyPageCalenderInfo> infoList = queryFactory
-                .select(new QMyPageCalenderInfo(feed.id, feed.certImgUrl, feed.registeredDate.substring(4, 6)))
+                .select(new QMyPageCalenderInfo(feed.id, feed.certImgUrl, feed.registeredDate))
                 .from(feed)
                 .where(feed.roomId.eq(roomId)
                         .and(feed.userId.eq(userId))
@@ -383,6 +383,9 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
                         .and(feed.registeredDate.substring(0, 6).eq(dateYM)))
                 .orderBy(feed.registeredDate.asc())
                 .fetch();
+
+        infoList.forEach(r -> r.setDay(DateUtils.parsingDay(r.getDay())));
+
         return MyPageCalenderResponse.builder().userId(userId).myPageCalenderInfoList(infoList).build();
     }
 
@@ -428,19 +431,6 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
 
     @Override
     public void updateUserCntByDeleteUser(Long userId) {
-/*        QChallengeRoomEntity subRoom = new QChallengeRoomEntity("subRoom");
-        queryFactory
-                .update(room)
-                .set(room.userCnt, Expressions.numberTemplate(Integer.class, "{0} - 1", room.userCnt))
-                .where(
-                        room.id.in(JPAExpressions
-                                .select(subRoom.id)
-                                .from(subRoom)
-                                .innerJoin(subRoom.challengeUserEntities, challengeUser)
-                                .innerJoin(challengeUser.userEntity, user)
-                                .where(user.id.eq(userId))
-                        )
-                ).execute();*/
         QChallengeRoomEntity subRoom = new QChallengeRoomEntity("subRoom");
         List<Integer> list = queryFactory.select(subRoom.id)
                 .from(subRoom)
