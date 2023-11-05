@@ -11,6 +11,7 @@ import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 public class DateUtils {
@@ -93,10 +94,6 @@ public class DateUtils {
         return yesterday.format(formatter);
     }
 
-    public static void main(String[] args) {
-        System.out.println(getYesterday());
-    }
-
     public static String getMonth() {
         LocalDate today = LocalDate.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMM");
@@ -136,8 +133,37 @@ public class DateUtils {
 
     public static String convertWeekCode(String registerDate) {
         Map<Integer, String> weekInfo = getWeekInfo();
-        String monday = weekInfo.get(DateUtils.MON);
-        int code = Integer.parseInt(registerDate) - Integer.parseInt(monday);
+        int code = 0;
+        boolean finishFlag = false;
+        for(int i= 0; i < 7; i++) {
+            String day = weekInfo.get(i);
+            if (day.equals(registerDate)) {
+                code = i;
+                finishFlag = true;
+                break;
+            }
+        }
+        if (!finishFlag) {
+            throw new DodalApplicationException(ErrorCode.INTERNAL_SERVER_ERROR);
+        }
+
         return String.valueOf(code);
+    }
+
+    public static void main(String[] args) {
+        Map<Integer, String> weekInfo = getWeekInfo();
+        String monday = weekInfo.get(DateUtils.MON);
+        System.out.println(monday);
+
+        LocalDate date1 = LocalDate.of(2021, 10, 30);
+        LocalDate date2 = LocalDate.of(2021, 11, 5);
+
+        long daysBetween = ChronoUnit.DAYS.between(date1, date2);
+        long monthsBetween = ChronoUnit.MONTHS.between(date1, date2);
+        long yearsBetween = ChronoUnit.YEARS.between(date1, date2);
+
+        System.out.println("Days between: " + daysBetween);
+        System.out.println("Months between: " + monthsBetween);
+        System.out.println("Years between: " + yearsBetween);
     }
 }
