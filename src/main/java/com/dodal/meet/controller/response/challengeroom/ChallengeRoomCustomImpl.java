@@ -170,7 +170,8 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
                     .where(feed.userId.eq(userEntity.getId())
                             .and(feed.certCode.eq(FeedUtils.CONFIRM))
                             .and(feed.registeredDate.goe(weekInfo.get(DateUtils.MON)))
-                            .and(feed.registeredDate.loe(weekInfo.get(DateUtils.SUN))))
+                            .and(feed.registeredDate.loe(weekInfo.get(DateUtils.SUN)))
+                            .and(room.id.eq(roomId)))
                     .orderBy(feed.registeredDate.asc())
                     .fetch();
             response.setUserCertPerWeekList(userCertPerWeekList);
