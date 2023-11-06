@@ -31,10 +31,7 @@ import org.springframework.util.StringUtils;
 
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.springframework.util.ObjectUtils.*;
@@ -199,6 +196,9 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
                     .leftJoin(room.challengeNotiEntities, noti).limit(1)
                     .where(room.id.eq(roomId))
                     .fetchOne();
+
+            // 빈 배열로 초기화하여 응답
+            response.setUserCertPerWeekList(new ArrayList<>());
         }
 
         response.setJoinYN(commonUserCnt != 0 ? "Y" : "N");
