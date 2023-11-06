@@ -28,7 +28,7 @@ public class ImageUtils {
 
     public static final String IMG_1X1 = "1x1";
 
-    public static final String IMG_2X2 = "2x2";
+    public static final String IMG_2X1 = "2x1";
 
     public static String findByCategoryValueToRoomThumbnailImageUrl(String categoryValue) {
         String imagePath = serverUrl + "/image/room";

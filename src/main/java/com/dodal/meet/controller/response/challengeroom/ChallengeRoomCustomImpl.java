@@ -207,7 +207,7 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
 
         // 현재 썸네일 이미지가 서버 내 디폴트 이미지 URL 이면 2x1 비율로 변경한다.
         if (response.getThumbnailImgUrl().indexOf(ImageUtils.IMG_1X1) != -1) {
-            String changeThumbnailImgUrl = response.getThumbnailImgUrl().replace(ImageUtils.IMG_1X1, ImageUtils.IMG_2X2);
+            String changeThumbnailImgUrl = response.getThumbnailImgUrl().replace(ImageUtils.IMG_1X1, ImageUtils.IMG_2X1);
             response.setThumbnailImgUrl(changeThumbnailImgUrl);
         }
 
