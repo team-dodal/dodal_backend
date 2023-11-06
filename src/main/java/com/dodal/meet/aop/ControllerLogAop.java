@@ -16,14 +16,15 @@ import java.lang.reflect.Method;
 public class ControllerLogAop {
 
     // 메소드 실행 조인 포인트 매칭 - execution(접근제어자? 반환타입 선언타입? 메서드이름(파라미터) 예외?)
-    @Pointcut("execution(* com.dodal.meet.controller..*.*(..))")
+    // @Pointcut("execution(* com.dodal.meet.controller..*.*(..))")
+    @Pointcut("execution(* com.dodal.meet.controller..*.*(..)) && within(com.dodal.meet.controller.*)")
     private void pointCut() {}
 
     // 메서드가 실행되기 전일 때
     @Before("pointCut()")
     public void before(JoinPoint joinPoint) {
         Method method = getMethod(joinPoint);
-        log.info("##################### method name = {} #####################", method.getName());
+        log.info("##################### Start method name = {} #####################", method.getName());
 
         Object[] args = joinPoint.getArgs();
         if (args.length == 0) {
@@ -42,7 +43,7 @@ public class ControllerLogAop {
     @AfterReturning(value = "pointCut()", returning = "returnObj")
     public void afterReturnLog(JoinPoint joinPoint, Object returnObj) {
         Method method = getMethod(joinPoint);
-        log.info("##################### method name : {} #####################", method.getName());
+        log.info("##################### End method name : {} #####################", method.getName());
         if (!ObjectUtils.isEmpty(returnObj)) {
             log.info("return : {}, value : {}", returnObj.getClass().getSimpleName(), returnObj);
         }
