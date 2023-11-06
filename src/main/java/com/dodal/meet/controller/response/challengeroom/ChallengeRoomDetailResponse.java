@@ -123,4 +123,29 @@ public class ChallengeRoomDetailResponse {
         this.continueCertCnt = continueCertCnt;
         this.registeredAt = registeredAt;
     }
+
+    @QueryProjection
+    public ChallengeRoomDetailResponse(Integer roomId, String thumbnailImgUrl, String tagValue, String tagName, int certCnt, String title, Long hostId, String hostNickname, String hostProfileUrl, int userCnt, int recruitCnt, String content, String certContent, String certCorrectImgUrl, String certWrongImgUrl, int bookmarkCnt, String bookmarkYN, int accuseCnt, String noticeTitle, String noticeContent, Timestamp registeredAt) {
+        this.roomId = roomId;
+        this.thumbnailImgUrl = thumbnailImgUrl;
+        this.tagValue = tagValue;
+        this.tagName = tagName;
+        this.certCnt = certCnt;
+        this.title = title;
+        this.hostId = hostId;
+        this.hostNickname = hostNickname;
+        this.hostProfileUrl = hostProfileUrl;
+        this.userCnt = userCnt;
+        this.recruitCnt = recruitCnt;
+        this.content = content;
+        this.certContent = certContent;
+        this.certCorrectImgUrl = certCorrectImgUrl;
+        this.certWrongImgUrl = certWrongImgUrl;
+        this.bookmarkCnt = bookmarkCnt;
+        this.bookmarkYN = bookmarkYN;
+        this.accuseCnt = accuseCnt;
+        this.noticeTitle = noticeTitle;
+        this.noticeContent = noticeContent;
+        this.registeredAt = registeredAt;
+    }
 }
