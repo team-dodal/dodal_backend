@@ -392,7 +392,7 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
 
     @Override
     public void updateChallengeUserCertCnt() {
-        String yesterday = DateUtils.getToday();
+        String yesterday = DateUtils.getYesterday();
         List<Integer> challengeUserIdList = queryFactory
                 .select(challengeUser.id)
                 .from(feed)
