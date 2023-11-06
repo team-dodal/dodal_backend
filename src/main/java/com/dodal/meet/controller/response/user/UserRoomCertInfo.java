@@ -1,15 +1,13 @@
 package com.dodal.meet.controller.response.user;
 
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
 @Builder
 @AllArgsConstructor
+@ToString
 public class UserRoomCertInfo {
 
     private int maxContinueCertCnt;

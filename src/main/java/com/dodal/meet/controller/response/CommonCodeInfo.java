@@ -6,12 +6,14 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 @Getter
 @Setter
 @Schema(description = "공통 코드 정보")
 @JsonNaming(value = PropertyNamingStrategy.SnakeCaseStrategy.class)
 @Builder
+@ToString
 public class CommonCodeInfo {
 
     @Schema(description = "코드", example = "001")

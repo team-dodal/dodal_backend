@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +18,7 @@ import java.util.List;
 @Schema(description = "공통 코드 응답")
 @JsonNaming(value = PropertyNamingStrategy.SnakeCaseStrategy.class)
 @Builder
+@ToString
 public class CommonCodeResponse {
 
     @Schema(description = "카테고리", example = "ACCUSE")

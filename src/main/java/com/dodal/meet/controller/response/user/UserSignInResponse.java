@@ -17,7 +17,6 @@ import java.sql.Timestamp;
 import java.util.List;
 
 @Data
-@ToString
 @Builder
 @Schema(description = "유저 소셜 로그인 응답")
 @JsonNaming(value = PropertyNamingStrategy.SnakeCaseStrategy.class)

@@ -7,12 +7,14 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 @Getter
 @Setter
 @Schema(description = "도전방 정보 응답")
 @JsonNaming(value = PropertyNamingStrategy.SnakeCaseStrategy.class)
 @Builder
+@ToString
 public class ChallengeRoomResponse {
 
     @Schema(description = "도전방 시퀀스 번호", example = "1")
