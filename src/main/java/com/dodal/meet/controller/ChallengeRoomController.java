@@ -56,7 +56,7 @@ public class ChallengeRoomController {
             })
     @GetMapping("/challenge/rooms")
     public ResponseEntity<ResponseSuccess<Page<ChallengeRoomSearchResponse>>> getChallengeRoom(@Schema(description = "조회 조건 (0, 1, 2)", example = "0") @RequestParam(name = "condition") String condition,
-                                                                                                     @Schema(description = "카테고리 코드 값 (관심있는 도전에서 사용)", example = "001") @RequestParam(name = "categoryValue", required = false) String categoryValue,
+                                                                                                     @Schema(description = "카테고리 코드 값 (관심있는 도전에서 사용)", example = "001") @RequestParam(name = "category_value", required = false) String categoryValue,
                                                                                                      @Schema(description = "요청 페이지 번호", example = "0") @RequestParam(name = "page") Integer page ,
                                                                                                      @Schema(description = "요청 페이지 사이즈", example = "3") @RequestParam(name = "page_size") Integer pageSize,
                                                                                                      Authentication authentication) {
