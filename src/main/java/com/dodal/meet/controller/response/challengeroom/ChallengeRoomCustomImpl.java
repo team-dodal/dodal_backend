@@ -153,7 +153,7 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
                     .on(user.id.eq(userEntity.getId()))
                     .leftJoin(bookmark)
                     .on(room.eq(bookmark.challengeRoomEntity).and(bookmark.userEntity.id.eq(userEntity.getId())))
-                    .leftJoin(room.challengeNotiEntities, noti).limit(1)
+                    .leftJoin(room.challengeNotiEntities, noti).orderBy(noti.registeredAt.desc()).limit(1)
                     .where(room.id.eq(roomId))
                     .fetchOne();
 
@@ -193,7 +193,7 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
                     .innerJoin(room.challengeTagEntity, roomTag)
                     .leftJoin(bookmark)
                     .on(room.eq(bookmark.challengeRoomEntity).and(bookmark.userEntity.id.eq(userEntity.getId())))
-                    .leftJoin(room.challengeNotiEntities, noti).limit(1)
+                    .leftJoin(room.challengeNotiEntities, noti).orderBy(noti.registeredAt.desc()).limit(1)
                     .where(room.id.eq(roomId))
                     .fetchOne();
 
