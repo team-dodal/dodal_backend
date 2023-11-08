@@ -392,12 +392,13 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
     @Override
     public void updateChallengeUserCertCnt() {
         String yesterday = DateUtils.getYesterday();
+        String today = DateUtils.getToday();
         List<Integer> challengeUserIdList = queryFactory
                 .select(challengeUser.id)
                 .from(feed)
                 .innerJoin(challengeUser)
                 .on(feed.roomId.eq(challengeUser.challengeRoomEntity.id).and(feed.userId.eq(challengeUser.userEntity.id)))
-                .where(feed.registeredDate.eq(yesterday).and(feed.certCode.in(FeedUtils.CONFIRM, FeedUtils.REQUEST))).fetch();
+                .where(feed.registeredDate.between(yesterday, today).and(feed.certCode.in(FeedUtils.CONFIRM, FeedUtils.REQUEST))).fetch();
 
         if (challengeUserIdList != null) {
             queryFactory
