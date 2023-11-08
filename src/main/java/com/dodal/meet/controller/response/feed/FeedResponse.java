@@ -40,6 +40,9 @@ public class FeedResponse {
     @Schema(description = "유저 닉네임", example = "노래하는 어피치")
     private String nickname;
 
+    @Schema(description = "유저 프로필 url", example = "https://dodal-bucket.s3.com/skdmks.png")
+    private String profileUrl;
+
     // challengeUserEntity
     @Schema(description = "유저 연속 인증 횟수", example = "10")
     private int continueCertCnt;
@@ -73,7 +76,7 @@ public class FeedResponse {
     private Timestamp registeredAt;
 
     @QueryProjection
-    public FeedResponse(Integer roomId, String title, Long feedId, int certCnt, String categoryName, Long userId, String nickname, int continueCertCnt, String certImgUrl, String certContent, int likeCnt, int commentCnt, int accuseCnt, String likeYN, String registeredDate, Timestamp registeredAt) {
+    public FeedResponse(Integer roomId, String title, Long feedId, int certCnt, String categoryName, Long userId, String nickname, String profileUrl, int continueCertCnt, String certImgUrl, String certContent, int likeCnt, int commentCnt, int accuseCnt, String likeYN, String registeredDate, Timestamp registeredAt) {
         this.roomId = roomId;
         this.title = title;
         this.feedId = feedId;
@@ -81,6 +84,7 @@ public class FeedResponse {
         this.categoryName = categoryName;
         this.userId = userId;
         this.nickname = nickname;
+        this.profileUrl = profileUrl;
         this.continueCertCnt = continueCertCnt;
         this.certImgUrl = certImgUrl;
         this.certContent = certContent;

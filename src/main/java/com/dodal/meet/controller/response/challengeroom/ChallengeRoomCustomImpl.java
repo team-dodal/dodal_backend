@@ -315,7 +315,7 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
 
         List<FeedResponse> content = queryFactory
                 .select(new QFeedResponse(
-                        room.id, room.title, feed.id, room.certCnt, roomTag.categoryName, user.id, user.nickname, challengeUser.continueCertCnt,
+                        room.id, room.title, feed.id, room.certCnt, roomTag.categoryName, user.id, user.nickname, user.profileUrl, challengeUser.continueCertCnt,
                         feed.certImgUrl, feed.certContent, feed.likeCnt, feed.commentCnt, feed.accuseCnt,
                         new CaseBuilder().when(feedLike.isNotNull()).then("Y").otherwise("N").as("likeYN"),
                         feed.registeredDate, feed.registeredAt
@@ -348,7 +348,7 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
     public Page<FeedResponse> getRoomFeeds(final UserEntity userEntity, final Integer roomId, final Pageable pageable) {
         List<FeedResponse> content = queryFactory
                 .select(new QFeedResponse(
-                        room.id, room.title, feed.id, room.certCnt, roomTag.categoryName, user.id, user.nickname, challengeUser.continueCertCnt,
+                        room.id, room.title, feed.id, room.certCnt, roomTag.categoryName, user.id, user.nickname, user.profileUrl, challengeUser.continueCertCnt,
                         feed.certImgUrl, feed.certContent, feed.likeCnt, feed.commentCnt, feed.accuseCnt,
                         new CaseBuilder().when(feedLike.isNotNull()).then("Y").otherwise("N").as("likeYN"),
                         feed.registeredDate, feed.registeredAt
