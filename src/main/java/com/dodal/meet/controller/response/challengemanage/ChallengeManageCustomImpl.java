@@ -4,15 +4,19 @@ import com.dodal.meet.model.RoomRole;
 import com.dodal.meet.model.entity.*;
 import com.dodal.meet.utils.DateUtils;
 import com.dodal.meet.utils.FeedUtils;
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.ExpressionUtils;
+import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.JPAExpressions;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -26,22 +30,25 @@ public class ChallengeManageCustomImpl implements ChallengeManageCustom {
         Map<Integer, String> weekInfo = DateUtils.getWeekInfo();
         String today = DateUtils.parsingTimestamp(Timestamp.from(Instant.now()));
 
+        List<ChallengeUserRoleResponse> weekUserCertCntList = queryFactory
+                .select(new QChallengeUserRoleResponse(room.id, feed.count().intValue()))
+                .from(feed)
+                .innerJoin(room)
+                .on(feed.roomId.eq(room.id))
+                .where(feed.userId.eq(userEntity.getId()).
+                        and(feed.certCode.eq(FeedUtils.CONFIRM)).
+                        and(feed.registeredDate.goe(weekInfo.get(DateUtils.MON))).
+                        and(feed.registeredDate.loe(weekInfo.get(DateUtils.SUN))))
+                .groupBy(room.id).fetch();
+
+        Map<Integer, Integer> weekUserCertCntMap = new HashMap<>();
+        weekUserCertCntList.forEach(dto -> weekUserCertCntMap.put(dto.getChallengeRoomId(), dto.getWeekUserCertCnt()));
+
         List<ChallengeUserRoleResponse> content = queryFactory
                 .select(new QChallengeUserRoleResponse(
                         room.id, room.hostId, room.hostNickname, room.hostProfileUrl, room.title, room.certCnt, room.thumbnailImgUrl, room.recruitCnt,
                         room.userCnt, room.bookmarkCnt, new CaseBuilder().when(bookmark.userEntity.isNotNull()).then("Y").otherwise("N").as("bookmarkYN"),
                         room.registeredAt, roomTag.categoryName, roomTag.categoryValue, roomTag.tagName, roomTag.tagValue,
-                            ExpressionUtils.as(JPAExpressions.
-                                        select(feed.count().intValue()).
-                                        from(feed).
-                                        innerJoin(room).
-                                        on(room.id.eq(feed.roomId)).
-                                        where(
-                                                feed.userId.eq(userEntity.getId()).
-                                                and(feed.certCode.eq(FeedUtils.CONFIRM)).
-                                                and(feed.registeredDate.goe(weekInfo.get(DateUtils.MON))).
-                                                and(feed.registeredDate.loe(weekInfo.get(DateUtils.SUN))))
-                                , "weekUserCertCnt"),
                         new CaseBuilder().when(feed.certCode.isNotNull()).then(feed.certCode).otherwise(FeedUtils.EMPTY).as("certCode")
                 ))
                 .from(room)
@@ -54,6 +61,8 @@ public class ChallengeManageCustomImpl implements ChallengeManageCustom {
                 .where(challengeUser.roomRole.eq(RoomRole.USER).and(challengeUser.userEntity.id.eq(userEntity.getId())))
                 .orderBy(feed.certCode.asc())
                 .fetch();
+
+        content.forEach(resp -> resp.setWeekUserCertCnt(weekUserCertCntMap.getOrDefault(resp.getChallengeRoomId(), 0)));
 
         return content;
     }

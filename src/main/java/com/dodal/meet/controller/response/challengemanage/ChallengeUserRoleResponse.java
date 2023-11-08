@@ -15,6 +15,7 @@ import java.sql.Timestamp;
 @Schema(description = "진행중인 도전방 정보 응답")
 @JsonNaming(value = PropertyNamingStrategy.SnakeCaseStrategy.class)
 @NoArgsConstructor
+@AllArgsConstructor
 @ToString
 public class ChallengeUserRoleResponse {
     @Schema(description = "도전방 시퀀스 번호", example = "1")
@@ -73,7 +74,7 @@ public class ChallengeUserRoleResponse {
 
 
     @QueryProjection
-    public ChallengeUserRoleResponse(Integer challengeRoomId, Long userId, String nickname, String profileUrl, String title, int certCnt, String thumbnailImgUrl, int recruitCnt, int userCnt, int bookmarkCnt, String bookmarkYN, Timestamp registeredAt, String categoryName, String categoryValue, String tagName, String tagValue, int weekUserCertCnt, String certCode) {
+    public ChallengeUserRoleResponse(Integer challengeRoomId, Long userId, String nickname, String profileUrl, String title, int certCnt, String thumbnailImgUrl, int recruitCnt, int userCnt, int bookmarkCnt, String bookmarkYN, Timestamp registeredAt, String categoryName, String categoryValue, String tagName, String tagValue, String certCode) {
         this.challengeRoomId = challengeRoomId;
         this.userId = userId;
         this.nickname = nickname;
@@ -90,7 +91,12 @@ public class ChallengeUserRoleResponse {
         this.categoryValue = categoryValue;
         this.tagName = tagName;
         this.tagValue = tagValue;
-        this.weekUserCertCnt = weekUserCertCnt;
         this.certCode = certCode;
+    }
+
+    @QueryProjection
+    public ChallengeUserRoleResponse(Integer challengeRoomId, int weekUserCertCnt) {
+        this.challengeRoomId = challengeRoomId;
+        this.weekUserCertCnt = weekUserCertCnt;
     }
 }
