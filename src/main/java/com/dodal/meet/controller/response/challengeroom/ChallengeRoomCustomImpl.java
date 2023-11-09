@@ -339,6 +339,7 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
             if (roomList.contains(x.getRoomId())) {
                 x.setJoinYN("Y");
             }
+            x.setRegisterCode(DateUtils.convertToRegisterCode(x.getRegisteredAt()));
         });
 
         return new PageImpl<>(content, pageable, content.size());
@@ -367,6 +368,8 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
+
+        content.forEach(dto -> dto.setRegisterCode(DateUtils.convertToRegisterCode(dto.getRegisteredAt())));
 
         return new PageImpl<>(content, pageable, content.size());
     }

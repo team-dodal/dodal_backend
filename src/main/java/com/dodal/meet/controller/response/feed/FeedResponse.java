@@ -69,6 +69,9 @@ public class FeedResponse {
     @Schema(description = "가입 여부", example = "Y")
     private String joinYN = "N";
 
+    @Schema(description = "댓글 생성 코드", example = "1시간전")
+    private String registerCode;
+
     @Schema(description = "등록일", example = "20230819")
     private String registeredDate;
 

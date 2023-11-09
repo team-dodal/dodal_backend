@@ -2,6 +2,7 @@ package com.dodal.meet.controller.response.feed;
 
 
 import com.dodal.meet.model.entity.*;
+import com.dodal.meet.utils.DateUtils;
 import com.dodal.meet.utils.DtoUtils;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -65,6 +66,7 @@ public class FeedCustomImpl implements FeedCustom{
                 .fetchOne();
         // 마이페이지 조회 건으로 Y로 사용
         feedResponse.setJoinYN(DtoUtils.Y);
+        feedResponse.setRegisterCode(DateUtils.convertToRegisterCode(feedResponse.getRegisteredAt()));
         return feedResponse;
     }
 
