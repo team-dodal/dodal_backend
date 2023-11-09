@@ -1,6 +1,7 @@
 package com.dodal.meet.controller.response.feed;
 
 import com.dodal.meet.model.entity.CommentEntity;
+import com.dodal.meet.utils.DateUtils;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -42,6 +43,9 @@ public class CommentResponse {
     @Schema(description = "댓글 내용", example = "테스트 내용 입니다.")
     private String content;
 
+    @Schema(description = "댓글 생성 코드", example = "1시간전")
+    private String registerCode;
+
     @Schema(description = "댓글 생성 시간", example = "2023-10-23T16:04:37.071+09:00")
     private Timestamp registeredAt;
 
@@ -58,6 +62,7 @@ public class CommentResponse {
                 .parentId(entity.getParent() != null ? entity.getParent().getId() : null)
                 .content(entity.getContent())
                 .children(new ArrayList<>())
+                .registerCode(DateUtils.convertToRegisterCode(entity.getRegisteredAt()))
                 .registeredAt(entity.getRegisteredAt())
                 .build();
     }

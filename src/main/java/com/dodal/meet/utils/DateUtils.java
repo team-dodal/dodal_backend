@@ -3,15 +3,12 @@ package com.dodal.meet.utils;
 import com.dodal.meet.exception.DodalApplicationException;
 import com.dodal.meet.exception.ErrorCode;
 import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
-
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 public class DateUtils {
@@ -154,4 +151,29 @@ public class DateUtils {
         return String.valueOf(Integer.parseInt(day));
     }
 
+    public static String convertToRegisterCode(Timestamp timestamp) {
+        long currentTime = System.currentTimeMillis();
+        long timestampTime = timestamp.getTime();
+
+        long diff = currentTime - timestampTime;
+        long seconds = diff / 1000;
+        long minutes = seconds / 60;
+        long hours = minutes / 60;
+        long days = hours / 24;
+        long weeks = days / 7;
+
+        if (weeks > 0) {
+            return weeks + "주 전";
+        } else if (days > 6) {
+            return "1주 전";
+        } else if (days > 0) {
+            return days + "일 전";
+        } else if (hours > 0) {
+            return hours + "시간 전";
+        } else if (minutes > 0) {
+            return minutes + "분 전";
+        } else {
+            return "방금 전";
+        }
+    }
 }
