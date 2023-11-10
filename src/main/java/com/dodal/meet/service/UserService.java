@@ -5,6 +5,7 @@ import com.dodal.meet.controller.request.user.*;
 import com.dodal.meet.controller.response.CommonCodeResponse;
 import com.dodal.meet.controller.response.category.TagResponse;
 import com.dodal.meet.controller.response.category.UserCategoryResponse;
+import com.dodal.meet.controller.response.feed.FeedCustom;
 import com.dodal.meet.controller.response.user.*;
 import com.dodal.meet.exception.DodalApplicationException;
 import com.dodal.meet.exception.ErrorCode;
@@ -24,16 +25,15 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class UserService {
+    private final FeedCustom challengeFeedEntityRepository;
     private final CommonCodeEntityRepository commonCodeEntityRepository;
     private final AccuseEntityRepository accuseEntityRepository;
     private final ChallengeRoomEntityRepository challengeRoomEntityRepository;
@@ -112,10 +112,9 @@ public class UserService {
         final SocialType socialType = request.getSocialType();
 
         // 회원가입되어 있는 지 체크
-        UserEntity entity = userEntityRepository.findBySocialIdAndSocialType(socialId, socialType).orElse(null);
-        if (entity != null) {
+        userEntityRepository.findBySocialIdAndSocialType(socialId, socialType).ifPresent(it -> {
             throw new DodalApplicationException(ErrorCode.INVALID_SIGNUP_REQUEST);
-        }
+        });
 
         // JWT 토큰 발행 (액세스 토큰 / 리프레시 토큰)
         final String accessToken = JwtTokenUtils.generateAccessToken(socialId, socialType, jwtKey);
@@ -306,9 +305,15 @@ public class UserService {
 
         List<ChallengeRoomResponse> challengeRoomList = new ArrayList<>();
 
+        // 가입한 도전방 리스트의 경우 방장이 도전방 제목을 변경했어도 유저가 피드를 올리기 전까지 이전 도전방 제목으로 보여지도록 한다.
+        // 피드에 저장된 마지막 도전방 제목 정보를 가지고 보여지도록 한다.
+        Map<Integer, String> map = challengeFeedEntityRepository.findMaxDateFeedByUserId(userEntity.getId())
+                .stream().collect(Collectors.toMap(ChallengeFeedEntity::getRoomId, ChallengeFeedEntity::getRoomTitle));
+
         challengeUserInfo.forEach(dto -> challengeRoomList.add(ChallengeRoomResponse.builder()
                 .roomId(dto.getChallengeRoomEntity().getId())
-                .title(dto.getChallengeRoomEntity().getTitle())
+                .title(map.containsKey(dto.getChallengeRoomEntity().getId()) ?
+                        map.get(dto.getChallengeRoomEntity().getId()) : dto.getChallengeRoomEntity().getTitle())
                 .build()));
 
         UserRoomCertInfo userRoomCertInfo = challengeUserEntityRepository.findMaxCertInfoByUserId(userEntity.getId());

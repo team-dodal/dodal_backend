@@ -4,7 +4,14 @@ package com.dodal.meet.controller.response.feed;
 import com.dodal.meet.model.entity.*;
 import com.dodal.meet.utils.DateUtils;
 import com.dodal.meet.utils.DtoUtils;
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.Tuple;
+import com.querydsl.core.types.Expression;
+import com.querydsl.core.types.SubQueryExpression;
 import com.querydsl.core.types.dsl.CaseBuilder;
+import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.SimpleExpression;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.ObjectUtils;
@@ -13,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 public class FeedCustomImpl implements FeedCustom{
@@ -70,6 +78,30 @@ public class FeedCustomImpl implements FeedCustom{
         return feedResponse;
     }
 
+    @Override
+    public List<ChallengeFeedEntity> findMaxDateFeedByUserId(Long userId) {
+        List<FeedMaxRegist> feedMaxList = queryFactory
+                .select(new QFeedMaxRegist(feed.roomId, feed.registeredAt.max()))
+                .from(feed)
+                .where(feed.userId.eq(userId))
+                .groupBy(feed.roomId)
+                .fetch();
+
+        BooleanBuilder builder = new BooleanBuilder();
+        feedMaxList.forEach(dto -> {
+            builder.or(feed.roomId.eq(dto.getRoomId()).and(feed.registeredAt.eq(dto.getRegisteredAt())));
+        });
+
+        return queryFactory
+                .selectFrom(feed)
+                .where(feed.userId.eq(userId)
+                .and(builder))
+                .fetch();
+    }
+
+    public static SimpleExpression<Object> tuple2(Object ...args) {
+        return Expressions.template(Object.class, "(({0}, {1}))", args);
+    }
 
     QUserEntity user = QUserEntity.userEntity;
     QChallengeRoomEntity room = QChallengeRoomEntity.challengeRoomEntity;
