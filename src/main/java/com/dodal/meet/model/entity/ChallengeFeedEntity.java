@@ -47,6 +47,8 @@ public class ChallengeFeedEntity {
 
     private String challengeTagId;
 
+    private int continueCertCnt;
+
     @Builder.Default
     @OneToMany(mappedBy = "challengeFeedEntity", fetch = FetchType.LAZY, orphanRemoval = true)
     private List<FeedLikeEntity> feedLikeEntityList = new ArrayList<>();
@@ -62,6 +64,10 @@ public class ChallengeFeedEntity {
 
     public void updateCertCode(String code) {
         this.certCode = code;
+    }
+
+    public void updateContinueCertCnt(int continueCertCnt) {
+        this.continueCertCnt = continueCertCnt;
     }
 
     public void updateLikeCntByNum(int num) {
