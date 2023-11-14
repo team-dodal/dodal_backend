@@ -605,6 +605,7 @@ FodyWeavers.xsd
 **/application-dev.yml
 **/application-prod.yml
 **/docker-compose-local.yml
+**/docker-compose-dev.yml
 **/application.yml
 
 ## igrnoe fcm json
