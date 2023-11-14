@@ -56,7 +56,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             final SocialType socialType = getSocialType(JwtTokenUtils.getUserSocialType(token, key));
 
             // check the user is valid
-            User user = userService.findBySocialIdAndSocialTypeToUser(socialId, socialType);
+            User user = userService.loadUserBySocialIdAndSocialType(socialId, socialType);
 
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                     user, null, null

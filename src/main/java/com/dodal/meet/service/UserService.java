@@ -45,6 +45,8 @@ public class UserService {
 
     private final ImageService imageService;
 
+    private final UserCacheRepository userCacheRepository;
+
     @Value("${jwt.secret-key}")
     private String jwtKey;
 
@@ -70,6 +72,8 @@ public class UserService {
             tagList.forEach(e -> categorySet.add(e.getCategoryEntity()));
 
             List<CategoryEntity> categoryList = new ArrayList<>(categorySet);
+
+            userCacheRepository.setUser(loadUserBySocialIdAndSocialType(socialId, socialType));
 
             return UserSignInResponse.builder()
                     .isSigned("true")
@@ -246,6 +250,12 @@ public class UserService {
         final SocialType socialType = user.getSocialType();
         return userEntityRepository.findBySocialIdAndSocialType(socialId, socialType)
                 .orElseThrow(() -> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
+    }
+
+    public User loadUserBySocialIdAndSocialType(String socialId, SocialType socialType) {
+        return userCacheRepository.getUser(socialId, socialType).orElseGet(() ->
+                userEntityRepository.findBySocialIdAndSocialType(socialId, socialType).map(User::fromEntity)
+                        .orElseThrow(() -> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST)));
     }
 
     private void validNickname(String nickname) {
