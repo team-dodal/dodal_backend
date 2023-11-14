@@ -82,6 +82,12 @@ dependencies {
     // s3 pre-signed url
     implementation group: 'com.amazonaws', name: 'aws-java-sdk', version: '1.12.565'
 
+    // redis
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+    // test
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
 }
 
 tasks.named('test') {
