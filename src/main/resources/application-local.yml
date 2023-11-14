@@ -10,6 +10,10 @@ spring:
     url: jdbc:mysql://localhost:3306/dodal
     username: ${LOCAL_MYSQL_USERNAME}
     password: ${LOCAL_MYSQL_PASSWORD}
+  redis:
+    host: localhost
+    port: 6379
+
   jpa:
 #    show-sql: true
     hibernate:
