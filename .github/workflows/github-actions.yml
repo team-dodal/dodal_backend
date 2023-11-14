@@ -59,3 +59,5 @@ jobs:
             sudo docker stop $(sudo docker ps -qa)
             sudo docker run -d --log-driver=syslog -p 8080:8080 ${{ secrets.DOCKER_REPO }}/dodal
             sudo docker image prune -a -f
+            sudo docker-compose -f /docker/docker-compose-${{ secrets.SERVER_PROFILE}}.yml down --rmi all
+            sudo docker-compose -f /docker/docker-compose-${{ secrets.SERVER_PROFILE}}.yml up -d
