@@ -50,6 +50,9 @@ public class UserService {
     @Value("${jwt.secret-key}")
     private String jwtKey;
 
+    @Value("${spring.config.activate.on-profile}")
+    private String profile;
+
     @Transactional
     public UserSignInResponse signIn(final UserSignInRequest request) {
         final String socialId = request.getSocialId();
@@ -73,7 +76,9 @@ public class UserService {
 
             List<CategoryEntity> categoryList = new ArrayList<>(categorySet);
 
-            userCacheRepository.setUser(loadUserBySocialIdAndSocialType(socialId, socialType));
+            if (!profile.equals("test")){
+                userCacheRepository.setUser(loadUserBySocialIdAndSocialType(socialId, socialType));
+            }
 
             return UserSignInResponse.builder()
                     .isSigned("true")
