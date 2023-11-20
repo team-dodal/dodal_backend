@@ -110,7 +110,7 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
                         room.registeredAt, roomTag.categoryName, roomTag.categoryValue, roomTag.tagName, roomTag.tagValue
                 )).from(room)
                 .innerJoin(roomTag)
-                .on(roomTag.challengeRoomEntity.eq(room))
+                .on(roomTag.eq(room.challengeTagEntity))
                 .leftJoin(bookmark)
                 .on(bookmark.userEntity.eq(userEntity).and(bookmark.challengeRoomEntity.eq(room)))
                 .where(room.title.contains(request.getWord()).and(certCntListIn(request.getCertCntList())))

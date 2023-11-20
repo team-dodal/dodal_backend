@@ -40,7 +40,7 @@ public class ControllerLogAop {
             if (!ObjectUtils.isEmpty(args[i]) && !args[i].getClass().getSimpleName().equals("UsernamePasswordAuthenticationToken")) {
                 sb.append("[").append(i+1).append("] ").append("Type : ").append(args[i].getClass().getSimpleName()).append(", ").append("Value : ").append(args[i]).append("\n");
             }
-            else if (!args[i].getClass().getSimpleName().equals("UsernamePasswordAuthenticationToken")){
+            else if (ObjectUtils.isEmpty(args[i])){
                 sb.append("[").append(i+1).append("] ").append("Type : null, ").append("Value : null\n");
             }
         }
