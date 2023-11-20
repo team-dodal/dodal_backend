@@ -2,6 +2,7 @@ package com.dodal.meet.controller.response.challengeroom;
 
 import com.dodal.meet.controller.request.challengeroom.ChallengeRoomCondition;
 import com.dodal.meet.controller.request.challengeroom.ChallengeRoomSearchCategoryRequest;
+import com.dodal.meet.controller.request.challengeroom.ChallengeRoomSearchRequest;
 import com.dodal.meet.controller.response.feed.FeedResponse;
 import com.dodal.meet.controller.response.feed.QFeedResponse;
 import com.dodal.meet.controller.response.user.*;
@@ -92,9 +93,16 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
     }
 
     @Override
-    public List<ChallengeRoomSearchResponse> getChallengeRoomsByWord(UserEntity userEntity, String word) {
-        List<Integer> userRoomList = queryFactory.select(challengeUser.challengeRoomEntity.id).from(challengeUser).where(challengeUser.userEntity.id.eq(userEntity.getId())).fetch();
+    public Page<ChallengeRoomSearchResponse> getChallengeRoomsByWord(UserEntity userEntity, ChallengeRoomSearchRequest request) {
+        Set<Integer> userRoomSet = queryFactory
+                .select(challengeUser.challengeRoomEntity.id)
+                .from(challengeUser)
+                .where(challengeUser.userEntity.id.eq(userEntity.getId()))
+                .fetch()
+                .stream()
+                .collect(Collectors.toSet());
 
+        Pageable pageable = request.getPageable();
         List<ChallengeRoomSearchResponse> content = queryFactory
                 .select(new QChallengeRoomSearchResponse(
                         room.id, room.hostId, room.hostNickname, room.hostProfileUrl, room.title, room.content, room.certCnt, room.thumbnailImgUrl, room.recruitCnt,
@@ -105,17 +113,19 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
                 .on(roomTag.challengeRoomEntity.eq(room))
                 .leftJoin(bookmark)
                 .on(bookmark.userEntity.eq(userEntity).and(bookmark.challengeRoomEntity.eq(room)))
-                .where(room.title.contains(word))
+                .where(room.title.contains(request.getWord()).and(certCntListIn(request.getCertCntList())))
+                .orderBy(orderByConditionCode(request.getConditionCode()))
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
                 .fetch();
 
-        Set<Integer> userRoomSet = new HashSet<>(userRoomList);
         content.forEach(row -> {
             if (userRoomSet.contains(row.getChallengeRoomId())) {
                 row.setJoinYN("Y");
             }
         });
 
-        return content;
+        return new PageImpl<>(content, pageable, content.size());
     }
 
 

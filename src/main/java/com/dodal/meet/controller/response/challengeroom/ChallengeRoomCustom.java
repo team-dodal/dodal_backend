@@ -2,6 +2,7 @@ package com.dodal.meet.controller.response.challengeroom;
 
 import com.dodal.meet.controller.request.challengeroom.ChallengeRoomCondition;
 import com.dodal.meet.controller.request.challengeroom.ChallengeRoomSearchCategoryRequest;
+import com.dodal.meet.controller.request.challengeroom.ChallengeRoomSearchRequest;
 import com.dodal.meet.controller.response.feed.FeedResponse;
 import com.dodal.meet.controller.response.user.MyPageCalenderResponse;
 import com.dodal.meet.model.entity.UserEntity;
@@ -14,7 +15,7 @@ public interface ChallengeRoomCustom {
     Page<ChallengeRoomSearchResponse> getChallengeRooms(ChallengeRoomCondition challengeRoomCondition, Pageable pageable, UserEntity userEntity);
     Page<ChallengeRoomSearchResponse> getChallengeRoomsByCategory(ChallengeRoomSearchCategoryRequest request, Pageable pageable, UserEntity userEntity);
 
-    List<ChallengeRoomSearchResponse> getChallengeRoomsByWord(UserEntity userEntity, String word);
+    Page<ChallengeRoomSearchResponse> getChallengeRoomsByWord(UserEntity userEntity, ChallengeRoomSearchRequest request);
 
     ChallengeRoomDetailResponse getChallengeRoomDetail(Integer roomId, UserEntity userEntity);
 

@@ -379,14 +379,14 @@ public class ChallengeRoomService {
 
 
     @Transactional
-    public List<ChallengeRoomSearchResponse> getChallengeRoomsByWord(User user, String searchWord) {
+    public Page<ChallengeRoomSearchResponse> getChallengeRoomsByWord(User user, ChallengeRoomSearchRequest request) {
         UserEntity userEntity = userEntityRepository.findBySocialIdAndSocialType(user.getSocialId(), user.getSocialType()).orElseThrow(()-> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
         ChallengeWordEntity wordEntity = ChallengeWordEntity.builder()
-                .word(searchWord)
+                .word(request.getWord())
                 .userId(userEntity.getId())
                 .build();
         challengeWordEntityRepository.save(wordEntity);
-        return challengeRoomEntityRepository.getChallengeRoomsByWord(userEntity, searchWord);
+        return challengeRoomEntityRepository.getChallengeRoomsByWord(userEntity, request);
     }
 
     @Transactional(readOnly = true)

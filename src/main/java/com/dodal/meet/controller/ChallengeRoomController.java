@@ -301,13 +301,25 @@ public class ChallengeRoomController {
                     @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = ResponseFail.class)))
             })
     @GetMapping("/challenge/room/search")
-    public ResponseEntity<ResponseSuccess<List<ChallengeRoomSearchResponse>>> getSearch(@RequestParam(name = "word") String word, Authentication authentication) {
+    public ResponseEntity<ResponseSuccess<Page<ChallengeRoomSearchResponse>>> getSearch(@RequestParam(name = "word") String word,
+                                                                                        @Schema(description = "조회 코드 값 - 0(인기순) , 1(최신순), 2(인원 많은 순), 3(인원 적은순) ", allowableValues = {"0", "1", "2", "3"}, example = "0") @RequestParam(name = "condition_code", defaultValue = "0") String conditionCode,
+                                                                                        @ArraySchema(schema = @Schema(implementation = Integer.class, description = "도전 빈도 리스트", example = "[1, 3, 5]", type = "array")) @RequestParam(name = "cert_cnt_list") List<Integer> certCntList,
+                                                                                        @Schema(description = "요청 페이지 번호", example = "0") @RequestParam(name = "page") Integer page,
+                                                                                        @Schema(description = "요청 페이지 사이즈", example = "3") @RequestParam(name = "page_size") Integer pageSize,
+                                                                                        Authentication authentication) {
         if (!StringUtils.hasText(word)) {
             throw new DodalApplicationException(ErrorCode.NOT_FOUND_WORD);
         }
-        final String searchWord = word.trim();
         final User user = (User) authentication.getPrincipal();
-        return ResponseEntity.ok().body(ResponseSuccess.success(challengeRoomService.getChallengeRoomsByWord(user, searchWord)));
+
+        final ChallengeRoomSearchRequest request = ChallengeRoomSearchRequest.builder()
+                .word(word.trim())
+                .conditionCode(conditionCode)
+                .certCntList(certCntList)
+                .pageable(PageRequest.of(page, pageSize))
+                .build();
+
+        return ResponseEntity.ok().body(ResponseSuccess.success(challengeRoomService.getChallengeRoomsByWord(user, request)));
     }
 
     @Operation(summary = "도전방 최근 검색 API"
