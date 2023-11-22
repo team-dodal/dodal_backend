@@ -1,6 +1,7 @@
 package com.dodal.meet.service;
 
 import com.dodal.meet.controller.request.challengeroom.*;
+import com.dodal.meet.controller.request.fcm.FcmKafkaPush;
 import com.dodal.meet.controller.response.challengeroom.*;
 import com.dodal.meet.exception.DodalApplicationException;
 import com.dodal.meet.exception.ErrorCode;
@@ -8,6 +9,7 @@ import com.dodal.meet.model.RoomRole;
 import com.dodal.meet.model.RoomSearchType;
 import com.dodal.meet.model.User;
 import com.dodal.meet.model.entity.*;
+import com.dodal.meet.producer.PushProducer;
 import com.dodal.meet.repository.*;
 import com.dodal.meet.utils.*;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +20,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -48,6 +49,7 @@ public class ChallengeRoomService {
     private final ImageService imageService;
     private final FcmPushService fcmPushService;
 
+    private final PushProducer pushProducer;
     private final AlarmService alarmService;
 
 
@@ -195,7 +197,8 @@ public class ChallengeRoomService {
         challengeFeedEntityRepository.save(entity);
 
         alarmService.saveAlarmHist(MessageUtils.makeAlarmHistResponse(MessageType.REQUEST, challengeRoom.getTitle(), challengeRoom.getHostId(), roomId));
-        fcmPushService.sendFcmPushUser(challengeRoom.getHostId(), MessageUtils.makeFcmPushRequest(MessageType.REQUEST, challengeRoom.getTitle()));
+
+        pushProducer.send(FcmKafkaPush.makeKafkaPush(challengeRoom.getHostId(), MessageUtils.makeFcmPushRequest(MessageType.REQUEST, challengeRoom.getTitle())));
     }
 
     @Transactional

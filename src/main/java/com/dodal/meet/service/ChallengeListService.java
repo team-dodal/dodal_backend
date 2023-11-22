@@ -1,5 +1,6 @@
 package com.dodal.meet.service;
 
+import com.dodal.meet.controller.request.fcm.FcmKafkaPush;
 import com.dodal.meet.controller.response.challengemanage.ChallengeCertImgManage;
 import com.dodal.meet.controller.response.challengemanage.ChallengeHostRoleResponse;
 import com.dodal.meet.controller.response.challengemanage.ChallengeUserInfoResponse;
@@ -12,6 +13,7 @@ import com.dodal.meet.model.entity.ChallengeFeedEntity;
 import com.dodal.meet.model.entity.ChallengeRoomEntity;
 import com.dodal.meet.model.entity.ChallengeUserEntity;
 import com.dodal.meet.model.entity.UserEntity;
+import com.dodal.meet.producer.PushProducer;
 import com.dodal.meet.repository.*;
 import com.dodal.meet.utils.*;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +38,8 @@ public class ChallengeListService {
     private final FcmPushService fcmPushService;
 
     private final AlarmService alarmService;
+
+    private final PushProducer pushProducer;
 
     @Transactional
     public List<ChallengeUserRoleResponse> getUserRoleChallengeRooms(final Authentication authentication) {
@@ -70,12 +74,13 @@ public class ChallengeListService {
             challengeUserEntity.updateCertCnts(DtoUtils.ONE);
             // Feed를 올린 사용자에게 알림 이력 및 FCM 푸시 알림
             alarmService.saveAlarmHist(MessageUtils.makeAlarmHistResponse(MessageType.CONFIRM, roomEntity.getTitle(), feedEntity.getUserId(), roomId));
-            fcmPushService.sendFcmPushUser(feedEntity.getUserId(), MessageUtils.makeFcmPushRequest(MessageType.CONFIRM, roomEntity.getTitle()));
+            pushProducer.send(FcmKafkaPush.makeKafkaPush(feedEntity.getUserId(), MessageUtils.makeFcmPushRequest(MessageType.CONFIRM, roomEntity.getTitle())));
+
         } else if (StringUtils.equals(confirmYN, DtoUtils.N)) {
             feedEntity.updateCertCode(FeedUtils.REJECT);
             // Feed를 올린 사용자에게 알림 이력 및 FCM 푸시 알림
             alarmService.saveAlarmHist(MessageUtils.makeAlarmHistResponse(MessageType.REJECT, roomEntity.getTitle(), feedEntity.getUserId(), roomId));
-            fcmPushService.sendFcmPushUser(feedEntity.getUserId(), MessageUtils.makeFcmPushRequest(MessageType.REJECT, roomEntity.getTitle()));
+            pushProducer.send(FcmKafkaPush.makeKafkaPush(feedEntity.getUserId(), MessageUtils.makeFcmPushRequest(MessageType.REJECT, roomEntity.getTitle())));
         } else {
             throw new DodalApplicationException(ErrorCode.INVALID_YN_REQUEST);
         }
