@@ -45,7 +45,7 @@ spring:
         spring:
           json:
             trusted:
-              packages: "*"
+              packages: com.dodal.meet.*
     producer:
       bootstrap-servers: ${KAFKA_BROKER_INFO}
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
