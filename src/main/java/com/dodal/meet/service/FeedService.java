@@ -1,6 +1,7 @@
 package com.dodal.meet.service;
 
 
+import com.dodal.meet.controller.request.fcm.FcmKafkaPush;
 import com.dodal.meet.controller.request.feed.CommentCreateRequest;
 import com.dodal.meet.controller.request.feed.CommentUpdateRequest;
 import com.dodal.meet.controller.response.feed.CommentResponse;
@@ -12,8 +13,11 @@ import com.dodal.meet.model.entity.ChallengeFeedEntity;
 import com.dodal.meet.model.entity.CommentEntity;
 import com.dodal.meet.model.entity.FeedLikeEntity;
 import com.dodal.meet.model.entity.UserEntity;
+import com.dodal.meet.producer.PushProducer;
 import com.dodal.meet.repository.*;
 import com.dodal.meet.utils.DtoUtils;
+import com.dodal.meet.utils.MessageType;
+import com.dodal.meet.utils.MessageUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -34,6 +38,9 @@ public class FeedService {
     private final ChallengeRoomEntityRepository challengeRoomEntityRepository;
     private final FeedLikeEntityRepository feedLikeEntityRepository;
     private final ChallengeFeedEntityRepository challengeFeedEntityRepository;
+
+    private final PushProducer pushProducer;
+    private final AlarmService alarmService;
 
     @Transactional(readOnly = true)
     public Page<FeedResponse> getRoomFeeds(final User user, final Integer roomId, final Pageable pageable) {
@@ -64,6 +71,10 @@ public class FeedService {
 
         feedLikeEntityRepository.save(feedLikeEntity);
         feedEntity.updateLikeCntByNum(DtoUtils.ONE);
+
+        alarmService.saveAlarmHist(MessageUtils.makeAlarmHistResponse(MessageType.FEED_LIKE, feedEntity.getRoomTitle(), feedEntity.getUserId(), feedEntity.getRoomId()));
+        pushProducer.send(FcmKafkaPush.makeKafkaPush(feedEntity.getUserId(),
+                MessageUtils.makeFcmPushRequest(MessageType.FEED_LIKE, feedEntity.getRoomTitle())));
     }
 
     @Transactional
@@ -95,6 +106,13 @@ public class FeedService {
 
         // FeedEntity Comment 갯수 1개 업데이트
         feedEntity.updateCommentCntByNum(DtoUtils.ONE);
+
+        // 피드 작성자와 댓글 요청자가 다른 경우 작성자에게 PUSH 알림
+        if (userEntity.getId() != feedEntity.getUserId()) {
+            alarmService.saveAlarmHist(MessageUtils.makeAlarmHistResponse(MessageType.FEED_COMMENT, feedEntity.getRoomTitle(), feedEntity.getUserId(), feedEntity.getRoomId()));
+            pushProducer.send(FcmKafkaPush.makeKafkaPush(feedEntity.getUserId(),
+                    MessageUtils.makeFcmPushRequest(MessageType.FEED_COMMENT, feedEntity.getRoomTitle())));
+        }
         return getFeedComments(feedId);
     }
 
