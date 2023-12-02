@@ -10,7 +10,6 @@ import com.dodal.meet.controller.response.challengemanage.ChallengeUserInfoRespo
 import com.dodal.meet.controller.response.challengemanage.ChallengeUserRoleResponse;
 import com.dodal.meet.model.User;
 import com.dodal.meet.service.ChallengeListService;
-import com.dodal.meet.utils.FeedUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -22,7 +21,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
 import javax.validation.Valid;
 import java.util.List;
 import java.util.Map;
@@ -47,7 +45,8 @@ public class ChallengeManageController {
             })
     @GetMapping("/user")
     public ResponseEntity<ResponseSuccess<List<ChallengeUserRoleResponse>>> getUserRoleChallengeRooms(Authentication authentication) {
-        return ResponseEntity.ok().body(ResponseSuccess.success(challengeListService.getUserRoleChallengeRooms(authentication)));
+        final User user = (User) authentication.getPrincipal();
+        return ResponseEntity.ok().body(ResponseSuccess.success(challengeListService.getUserRoleChallengeRooms(user)));
     }
 
     @Operation(summary = "운영 중인 도전 API"
@@ -60,7 +59,8 @@ public class ChallengeManageController {
             })
     @GetMapping("/host")
     public ResponseEntity<ResponseSuccess<List<ChallengeHostRoleResponse>>> getHostRoleChallengeRooms(Authentication authentication) {
-        return ResponseEntity.ok().body(ResponseSuccess.success(challengeListService.getHostRoleChallengeRooms(authentication)));
+        final User user = (User) authentication.getPrincipal();
+        return ResponseEntity.ok().body(ResponseSuccess.success(challengeListService.getHostRoleChallengeRooms(user)));
     }
 
     @Operation(summary = "도전방 인증 관리 API"
@@ -73,7 +73,8 @@ public class ChallengeManageController {
             })
     @GetMapping("/manage/{room_id}/certifications")
     public ResponseEntity<ResponseSuccess<Map<String, List<ChallengeCertImgManage>>>> getCertImgList(@PathVariable(name = "room_id") Integer roomId, @RequestParam(name = "date_ym") String dateYM, Authentication authentication) {
-        return ResponseEntity.ok().body(ResponseSuccess.success(challengeListService.getCertImgList(roomId, dateYM, authentication)));
+        final User user = (User) authentication.getPrincipal();
+        return ResponseEntity.ok().body(ResponseSuccess.success(challengeListService.getCertImgList(roomId, dateYM, user)));
     }
 
     @Operation(summary = "도전방 피드 승인 / 거절 API"
@@ -86,7 +87,8 @@ public class ChallengeManageController {
             })
     @PatchMapping("/manage/{room_id}/certifications/{feed_id}")
     public ResponseEntity<ResponseSuccess<Void>> updateFeedStatus(@PathVariable(name = "room_id") Integer roomId, @PathVariable(name = "feed_id") Long feedId, @RequestParam(name = "confirm_yn") String confirmYN, Authentication authentication) {
-        challengeListService.updateFeedStatus(roomId, feedId, confirmYN, authentication);
+        final User user = (User) authentication.getPrincipal();
+        challengeListService.updateFeedStatus(roomId, feedId, confirmYN, user);
         return ResponseEntity.ok().body(ResponseSuccess.success());
     }
 
@@ -100,7 +102,7 @@ public class ChallengeManageController {
             })
     @GetMapping("/manage/{room_id}/users")
     public ResponseEntity<ResponseSuccess<List<ChallengeUserInfoResponse>>> getUserList(@PathVariable(name = "room_id") Integer roomId, Authentication authentication) {
-        User user = (User) authentication.getPrincipal();
+        final User user = (User) authentication.getPrincipal();
         return ResponseEntity.ok().body(ResponseSuccess.success(challengeListService.getUserList(roomId, user)));
     }
 
@@ -115,7 +117,7 @@ public class ChallengeManageController {
             })
     @DeleteMapping("/manage/{room_id}/users/{user_id}")
     public ResponseEntity<ResponseSuccess<Void>> deleteChallengeUser(@PathVariable(name = "room_id") Integer roomId, @PathVariable(name = "user_id") Long userId, Authentication authentication) {
-        User user = (User) authentication.getPrincipal();
+        final User user = (User) authentication.getPrincipal();
         challengeListService.deleteChallengeUser(user, roomId, userId);
         return ResponseEntity.noContent().build();
     }

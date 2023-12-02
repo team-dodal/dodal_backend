@@ -9,6 +9,7 @@ import com.dodal.meet.controller.response.user.UserSignUpResponse;
 import com.dodal.meet.exception.DodalApplicationException;
 import com.dodal.meet.exception.ErrorCode;
 import com.dodal.meet.model.SocialType;
+import com.dodal.meet.model.User;
 import com.dodal.meet.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -105,6 +106,7 @@ class UserControllerTest {
         String content = "안녕하세요";
         List<String> tagList = Arrays.asList("001001", "001002");
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User user = (User) authentication.getPrincipal();
         UserUpdateRequest request = UserUpdateRequest
                 .builder()
                 .nickname("updateNickname")
@@ -113,7 +115,7 @@ class UserControllerTest {
                 .profileUrl(profileUrl)
                 .build();
 
-        when(userService.updateUser(request, authentication)).thenReturn(mock(UserInfoResponse.class));
+        when(userService.updateUser(request, user)).thenReturn(mock(UserInfoResponse.class));
 
         mockMvc.perform(patch("/api/v1/users/me")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -128,6 +130,7 @@ class UserControllerTest {
         String content = "안녕하세요";
         List<String> tagList = Arrays.asList("001001", "001002");
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User user = (User) authentication.getPrincipal();
         UserUpdateRequest request = UserUpdateRequest
                 .builder()
                 .nickname("updateNickname")
@@ -136,7 +139,7 @@ class UserControllerTest {
                 .profileUrl(profileUrl)
                 .build();
 
-        when(userService.updateUser(request, authentication)).thenThrow(new DodalApplicationException(ErrorCode.INVALID_TOKEN));
+        when(userService.updateUser(request, user)).thenThrow(new DodalApplicationException(ErrorCode.INVALID_TOKEN));
 
         mockMvc.perform(patch("/api/v1/users/me")
                 .contentType(MediaType.APPLICATION_JSON)

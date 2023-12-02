@@ -5,31 +5,26 @@ import com.dodal.meet.controller.response.CommonCodeResponse;
 import com.dodal.meet.controller.response.ResponseFail;
 import com.dodal.meet.controller.response.ResponseSuccess;
 import com.dodal.meet.controller.response.user.*;
-import com.dodal.meet.model.SocialType;
+import com.dodal.meet.exception.DodalApplicationException;
+import com.dodal.meet.exception.ErrorCode;
 import com.dodal.meet.model.User;
 import com.dodal.meet.service.UserService;
 import com.dodal.meet.utils.DateUtils;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.MediaType;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 import javax.validation.Valid;
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 import java.net.URI;
-import java.util.List;
 
 @Tag(name = "User", description = "유저 API")
 @RestController
@@ -49,7 +44,7 @@ public class UserController {
             @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = ResponseFail.class)))
     })
     @PostMapping("/sign-in")
-    public ResponseEntity<ResponseSuccess<UserSignInResponse>> signIn(@Valid @RequestBody UserSignInRequest request) {
+    public ResponseEntity<ResponseSuccess<UserSignInResponse>> signIn(@Valid @RequestBody final UserSignInRequest request) {
         return ResponseEntity.ok().body(ResponseSuccess.success(userService.signIn(request)));
     }
 
@@ -62,7 +57,7 @@ public class UserController {
                     @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = ResponseFail.class)))
             })
     @PostMapping(value = "/sign-up")
-    public ResponseEntity<ResponseSuccess<UserSignUpResponse>> signUp(@Valid @RequestBody UserSignUpRequest request) {
+    public ResponseEntity<ResponseSuccess<UserSignUpResponse>> signUp(@Valid @RequestBody final UserSignUpRequest request) {
         return ResponseEntity.created(URI.create("/sign-up")).body(ResponseSuccess.success(userService.signUp(request)));
     }
 
@@ -75,8 +70,9 @@ public class UserController {
                     @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = ResponseFail.class)))
             })
     @PatchMapping(value = "/me")
-    public ResponseEntity<ResponseSuccess<UserInfoResponse>> updateUser(@Valid @RequestBody UserUpdateRequest userUpdateRequest,Authentication authentication) {
-        return ResponseEntity.ok().body(ResponseSuccess.success(userService.updateUser(userUpdateRequest, authentication)));
+    public ResponseEntity<ResponseSuccess<UserInfoResponse>> updateUser(@Valid @RequestBody final UserUpdateRequest request, final Authentication authentication) {
+        final User user = (User) authentication.getPrincipal();
+        return ResponseEntity.ok().body(ResponseSuccess.success(userService.updateUser(request, user)));
     }
 
     @Operation(summary = "닉네임 중복 확인 API"
@@ -88,8 +84,11 @@ public class UserController {
             })
     @GetMapping("/nickname/{nickname}")
     public ResponseEntity<ResponseSuccess<Void>> checkNickname(@Pattern(regexp = "^[가-힣a-zA-Z0-9\\s]{1,16}$", message = "nickname은 한글, 영어, 숫자로만 이루어진 1자리 이상 16자리 이하의 값이어야 합니다.") @PathVariable String nickname) {
-        final String trimNickname = nickname.trim();
-        final boolean isExistNickname = userService.findByNickname(trimNickname);
+        final String trimSafeNickname = StringUtils.trim(nickname);
+        if (StringUtils.isEmpty(trimSafeNickname)) {
+            throw new DodalApplicationException(ErrorCode.INVALID_NICKNAME_FIELD);
+        }
+        final boolean isExistNickname = userService.findByNickname(trimSafeNickname);
         return isExistNickname ?
                 ResponseEntity.badRequest().body(ResponseSuccess.fail()) :
                 ResponseEntity.ok().body(ResponseSuccess.success());
@@ -103,8 +102,9 @@ public class UserController {
                     @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = ResponseFail.class)))
             })
     @GetMapping("/me")
-    public ResponseEntity<ResponseSuccess<UserInfoResponse>> getUser(Authentication authentication) {
-        return ResponseEntity.ok().body(ResponseSuccess.success(userService.getUser(authentication)));
+    public ResponseEntity<ResponseSuccess<UserInfoResponse>> getUser(final Authentication authentication) {
+        final User user = (User) authentication.getPrincipal();
+        return ResponseEntity.ok().body(ResponseSuccess.success(userService.getUser(user)));
     }
 
     @Operation(summary = "FCM 토큰 저장 API"
@@ -115,8 +115,9 @@ public class UserController {
                     @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = ResponseFail.class)))
             })
     @PostMapping("/fcm-token")
-    public ResponseEntity<ResponseSuccess<Void>> postFcmToken(@Valid @RequestBody UserFcmTokenRequest request, Authentication authentication) {
-        userService.postFcmToken(request.getFcmToken(), authentication);
+    public ResponseEntity<ResponseSuccess<Void>> postFcmToken(@Valid @RequestBody final UserFcmTokenRequest request, final Authentication authentication) {
+        final User user = (User) authentication.getPrincipal();
+        userService.postFcmToken(request.getFcmToken(), user);
         return ResponseEntity.created(URI.create("/fcm-token")).body(ResponseSuccess.success());
     }
 
@@ -128,8 +129,9 @@ public class UserController {
                     @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = ResponseFail.class)))
             })
     @PostMapping("/access-token")
-    public ResponseEntity<ResponseSuccess<UserAccessTokenResponse>> postAccessToken(Authentication authentication) {
-        return ResponseEntity.created(URI.create("/access-token")).body(ResponseSuccess.success(userService.postAccessToken(authentication)));
+    public ResponseEntity<ResponseSuccess<UserAccessTokenResponse>> postAccessToken(final Authentication authentication) {
+        final User user = (User) authentication.getPrincipal();
+        return ResponseEntity.created(URI.create("/access-token")).body(ResponseSuccess.success(userService.postAccessToken(user)));
     }
 
     @Operation(summary = "유저 회원 탈퇴 API"
@@ -141,8 +143,9 @@ public class UserController {
                     @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = ResponseFail.class)))
             })
     @DeleteMapping("/me")
-    public ResponseEntity<ResponseSuccess<Void>> deleteUser(Authentication authentication) {
-        userService.deleteUser(authentication);
+    public ResponseEntity<ResponseSuccess<Void>> deleteUser(final Authentication authentication) {
+        final User user = (User) authentication.getPrincipal();
+        userService.deleteUser(user);
         return ResponseEntity.noContent().build();
     }
 
@@ -155,8 +158,8 @@ public class UserController {
                     @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = ResponseFail.class)))
             })
     @GetMapping("/my-page")
-    public ResponseEntity<ResponseSuccess<MyPageResponse>> getMyPage(Authentication authentication) {
-        User user = (User) authentication.getPrincipal();
+    public ResponseEntity<ResponseSuccess<MyPageResponse>> getMyPage(final Authentication authentication) {
+        final User user = (User) authentication.getPrincipal();
         return ResponseEntity.ok().body(ResponseSuccess.success(userService.getMyPage(user)));
     }
 
@@ -168,9 +171,9 @@ public class UserController {
                     @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = ResponseFail.class)))
             })
     @GetMapping("/my-page/challenge-room/{room_id}")
-    public ResponseEntity<ResponseSuccess<MyPageCalenderResponse>> getMyPageByChallengeRoom(@PathVariable(name = "room_id") Integer roomId, @RequestParam(name = "date_ym") String dateYM, Authentication authentication) {
+    public ResponseEntity<ResponseSuccess<MyPageCalenderResponse>> getMyPageByChallengeRoom(@PathVariable(name = "room_id") final Integer roomId, @RequestParam(name = "date_ym") final String dateYM, final Authentication authentication) {
         DateUtils.validDateYM(dateYM);
-        User user = (User) authentication.getPrincipal();
+        final User user = (User) authentication.getPrincipal();
         return ResponseEntity.ok().body(ResponseSuccess.success(userService.getMyPageCalendarInfo(roomId, dateYM, user)));
     }
 
@@ -195,8 +198,8 @@ public class UserController {
                     @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = ResponseFail.class)))
             })
     @PostMapping("/accuse/{user_id}")
-    public ResponseEntity<ResponseSuccess<Void>> postAccuseUser(@PathVariable(name = "user_id") Long userId, @Valid @RequestBody UserAccuseRequest request, Authentication authentication) {
-        User user = (User) authentication.getPrincipal();
+    public ResponseEntity<ResponseSuccess<Void>> postAccuseUser(@PathVariable(name = "user_id") final Long userId, @Valid @RequestBody final UserAccuseRequest request, final Authentication authentication) {
+        final User user = (User) authentication.getPrincipal();
         userService.postAccuseUser(userId, request, user);
         return ResponseEntity.created(URI.create("/accuse/"+ userId)).body(ResponseSuccess.success());
     }

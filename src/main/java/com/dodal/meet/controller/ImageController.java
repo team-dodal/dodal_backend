@@ -39,7 +39,7 @@ public class ImageController {
             })
     @GetMapping("/url/{file_name}")
     public ResponseEntity<ResponseSuccess<String>> getAlarmHists(@PathVariable("file_name") final String fileName, final Authentication authentication) {
-        User user = (User) authentication.getPrincipal();
+        final User user = (User) authentication.getPrincipal();
         return ResponseEntity.ok().body(ResponseSuccess.success(imageService.getPresignedUrl(fileName, user)));
     }
 }

@@ -9,7 +9,6 @@ import com.dodal.meet.exception.ErrorCode;
 import com.dodal.meet.model.User;
 import com.dodal.meet.service.ChallengeRoomService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -17,21 +16,15 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.validator.constraints.Range;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.util.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
 import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Size;
 import java.net.URI;
 import java.util.List;
 
@@ -60,8 +53,9 @@ public class ChallengeRoomController {
                                                                                                      @Schema(description = "요청 페이지 번호", example = "0") @RequestParam(name = "page") Integer page ,
                                                                                                      @Schema(description = "요청 페이지 사이즈", example = "3") @RequestParam(name = "page_size") Integer pageSize,
                                                                                                      Authentication authentication) {
-        Pageable pageable = PageRequest.of(page, pageSize);
-        return ResponseEntity.ok().body(ResponseSuccess.success(challengeRoomService.getChallengeRooms(condition, categoryValue, pageable, authentication)));
+        final Pageable pageable = PageRequest.of(page, pageSize);
+        final User user = (User) authentication.getPrincipal();
+        return ResponseEntity.ok().body(ResponseSuccess.success(challengeRoomService.getChallengeRooms(condition, categoryValue, pageable, user)));
     }
 
     @Operation(summary = "도전방 카테고리별 조회 API"
@@ -83,18 +77,13 @@ public class ChallengeRoomController {
                                                                                                         @Schema(description = "요청 페이지 번호", example = "0") @RequestParam(name = "page") Integer page,
                                                                                                         @Schema(description = "요청 페이지 사이즈", example = "3") @RequestParam(name = "page_size") Integer pageSize,
                                                                                                         Authentication authentication) {
-        ChallengeRoomSearchCategoryRequest request = ChallengeRoomSearchCategoryRequest
-                .builder()
-                .tagValue(tagValue)
-                .categoryValue(categoryValue)
-                .conditionCode(conditionCode)
-                .certCntList(certCntList)
-                .page(page)
-                .pageSize(pageSize)
-                .build();
-        Pageable pageable = PageRequest.of(request.getPage(), request.getPageSize());
-        return ResponseEntity.ok().body(ResponseSuccess.success(challengeRoomService.getChallengeRoomsByCategory(request, pageable, authentication)));
+        final ChallengeRoomSearchCategoryRequest request = ChallengeRoomSearchCategoryRequest.newInstance(categoryValue, tagValue, conditionCode, certCntList, page, pageSize);
+        final Pageable pageable = PageRequest.of(request.getPage(), request.getPageSize());
+        final User user = (User) authentication.getPrincipal();
+        return ResponseEntity.ok().body(ResponseSuccess.success(challengeRoomService.getChallengeRoomsByCategory(request, pageable, user)));
     }
+
+
 
     @Operation(summary = "도전방 상세 조회 API"
             , description = "도전방 상세 정보를 반환한다.",
@@ -106,7 +95,8 @@ public class ChallengeRoomController {
             })
     @GetMapping("/challenge/rooms/{room_id}")
     public ResponseEntity<ResponseSuccess<ChallengeRoomDetailResponse>> getChallengeRoomDetail(@PathVariable(name = "room_id") Integer roomId, Authentication authentication) {
-        return ResponseEntity.ok().body(ResponseSuccess.success(challengeRoomService.getChallengeRoomDetail(roomId, authentication)));
+        final User user = (User) authentication.getPrincipal();
+        return ResponseEntity.ok().body(ResponseSuccess.success(challengeRoomService.getChallengeRoomDetail(roomId, user)));
     }
 
     @Operation(summary = "도전방 가입 API"
@@ -119,7 +109,8 @@ public class ChallengeRoomController {
             })
     @PostMapping("/challenge/rooms/{room_id}/join")
     public ResponseEntity<ResponseSuccess<ChallengeRoomDetailResponse>> joinChallengeRoom(@PathVariable(name = "room_id") Integer roomId, Authentication authentication) {
-        return ResponseEntity.ok().body(ResponseSuccess.success(challengeRoomService.joinChallengeRoom(roomId, authentication)));
+        final User user = (User) authentication.getPrincipal();
+        return ResponseEntity.ok().body(ResponseSuccess.success(challengeRoomService.joinChallengeRoom(roomId, user)));
     }
 
     @Operation(summary = "도전방 탈퇴 API"
@@ -132,7 +123,8 @@ public class ChallengeRoomController {
             })
     @DeleteMapping("/challenge/rooms/{room_id}/join")
     public ResponseEntity<ResponseSuccess<Void>> leaveChallengeRoom(@PathVariable(name = "room_id") Integer roomId, Authentication authentication) {
-        challengeRoomService.leaveChallengeRoom(roomId, authentication);
+        final User user = (User) authentication.getPrincipal();
+        challengeRoomService.leaveChallengeRoom(roomId, user);
         return ResponseEntity.noContent().build();
     }
 
@@ -147,7 +139,8 @@ public class ChallengeRoomController {
             })
     @PostMapping(value = "/challenge/room")
     public ResponseEntity<ResponseSuccess<ChallengeCreateResponse>> createChallengeRoom(@Valid @RequestBody ChallengeRoomCreateRequest request,  final Authentication authentication) {
-        ChallengeCreateResponse result = challengeRoomService.createChallengeRoom(request, authentication);
+        final User user = (User) authentication.getPrincipal();
+        final ChallengeCreateResponse result = challengeRoomService.createChallengeRoom(request, user);
         return ResponseEntity.created(URI.create("/challenge/room/" + result.getRoomId())).body(ResponseSuccess.success(result));
     }
 
@@ -161,7 +154,8 @@ public class ChallengeRoomController {
             })
     @PatchMapping(value = "/challenge/room/{room_id}")
     public ResponseEntity<ResponseSuccess<ChallengeRoomDetailResponse>> updateChallengeRoom(@PathVariable(name = "room_id") Integer roomId, @RequestBody @Valid ChallengeRoomUpdateRequest request, final Authentication authentication) {
-        return ResponseEntity.ok().body(ResponseSuccess.success(challengeRoomService.updateChallengeRoom(roomId, request, authentication)));
+        final User user = (User) authentication.getPrincipal();
+        return ResponseEntity.ok().body(ResponseSuccess.success(challengeRoomService.updateChallengeRoom(roomId, request, user)));
     }
 
     @Operation(summary = "북마크 리스트 조회 API"
@@ -187,7 +181,8 @@ public class ChallengeRoomController {
             })
     @PostMapping("/challenge/room/{room_id}/bookmark")
     public ResponseEntity<ResponseSuccess<Void>> createBookmark(@PathVariable(name = "room_id") Integer roomId, Authentication authentication) {
-        challengeRoomService.createBookmark(roomId, authentication);
+        final User user = (User) authentication.getPrincipal();
+        challengeRoomService.createBookmark(roomId, user);
         return ResponseEntity.created(URI.create("/challenge/room/" + roomId +"/bookmark")).body(ResponseSuccess.success());
     }
 
@@ -202,7 +197,8 @@ public class ChallengeRoomController {
             })
     @DeleteMapping("/challenge/room/{room_id}/bookmark")
     public ResponseEntity<ResponseSuccess<Void>> deleteBookmark(@PathVariable(name = "room_id") Integer roomId, Authentication authentication) {
-        challengeRoomService.deleteBookmark(roomId, authentication);
+        final User user = (User) authentication.getPrincipal();
+        challengeRoomService.deleteBookmark(roomId, user);
         return ResponseEntity.noContent().build();
     }
 
@@ -216,7 +212,8 @@ public class ChallengeRoomController {
             })
     @PostMapping(value = "/challenge/room/{room_id}/certification")
     public ResponseEntity<ResponseSuccess<Void>> createCertification(@PathVariable(name = "room_id") Integer roomId, @Valid @RequestBody ChallengeFeedCreateRequest request, Authentication authentication) {
-        challengeRoomService.createCertification(roomId, request, authentication);
+        final User user = (User) authentication.getPrincipal();
+        challengeRoomService.createCertification(roomId, request, user);
         return ResponseEntity.created(URI.create("/challenge/room/" + roomId +"/certification")).body(ResponseSuccess.success());
     }
 
@@ -230,7 +227,8 @@ public class ChallengeRoomController {
             })
     @PostMapping("/challenge/room/{room_id}/noti")
     public ResponseEntity<ResponseSuccess<Void>> registNoti(@PathVariable(name = "room_id") Integer roomId, @RequestBody ChallengeNotiCreateRequest challengeNotiCreateRequest, Authentication authentication) {
-        challengeRoomService.registNoti(roomId, challengeNotiCreateRequest, authentication);
+        final User user = (User) authentication.getPrincipal();
+        challengeRoomService.registNoti(roomId, challengeNotiCreateRequest, user);
         return ResponseEntity.created(URI.create("/challenge/room/" + roomId + "/noti")).body(ResponseSuccess.success());
     }
 
@@ -244,7 +242,8 @@ public class ChallengeRoomController {
             })
     @GetMapping("/challenge/room/{room_id}/noti")
     public ResponseEntity<ResponseSuccess<List<ChallengeNotiResponse>>> getNotis(@PathVariable(name = "room_id") Integer roomId, Authentication authentication) {
-        return ResponseEntity.ok().body(ResponseSuccess.success(challengeRoomService.getNotis(roomId, authentication)));
+        final User user = (User) authentication.getPrincipal();
+        return ResponseEntity.ok().body(ResponseSuccess.success(challengeRoomService.getNotis(roomId, user)));
     }
 
     @Operation(summary = "공지사항 수정 API"
@@ -257,7 +256,8 @@ public class ChallengeRoomController {
             })
     @PatchMapping("/challenge/room/{room_id}/noti/{noti_id}")
     public ResponseEntity<ResponseSuccess<Void>> updateNoti(@PathVariable(name = "room_id") Integer roomId, @PathVariable(name = "noti_id") Integer notiId, @RequestBody ChallengeNotiUpdateRequest challengeNotiUpdateRequest, Authentication authentication) {
-        challengeRoomService.updateNoti(roomId, notiId, challengeNotiUpdateRequest, authentication);
+        final User user = (User) authentication.getPrincipal();
+        challengeRoomService.updateNoti(roomId, notiId, challengeNotiUpdateRequest, user);
         return ResponseEntity.ok().body(ResponseSuccess.success());
     }
 
@@ -271,7 +271,8 @@ public class ChallengeRoomController {
             })
     @DeleteMapping("/challenge/room/{room_id}/noti/{noti_id}")
     public ResponseEntity<ResponseSuccess<Void>> deleteNoti(@PathVariable(name = "room_id") Integer roomId, @PathVariable(name = "noti_id") Integer notiId, Authentication authentication) {
-        challengeRoomService.deleteNoti(roomId, notiId, authentication);
+        final User user = (User) authentication.getPrincipal();
+        challengeRoomService.deleteNoti(roomId, notiId, user);
         return ResponseEntity.noContent().build();
     }
 
@@ -285,10 +286,11 @@ public class ChallengeRoomController {
             })
     @GetMapping("/challenge/room/{room_id}/rank")
     public ResponseEntity<ResponseSuccess<List<ChallengeRoomRankResponse>>> getRank(@PathVariable(name = "room_id") Integer roomId, @RequestParam(name = "code") String code, Authentication authentication) {
-        if (!code.equals("0") && !code.equals("1") && !code.equals("2")) {
+
+        if (StringUtils.equalsAny(code, "0", "1", "2")) {
             throw new DodalApplicationException(ErrorCode.INVALID_RANK_CODE);
         }
-        User user = (User) authentication.getPrincipal();
+        final User user = (User) authentication.getPrincipal();
         return ResponseEntity.ok().body(ResponseSuccess.success(challengeRoomService.getRank(roomId, code, user)));
     }
 
@@ -307,7 +309,7 @@ public class ChallengeRoomController {
                                                                                         @Schema(description = "요청 페이지 번호", example = "0") @RequestParam(name = "page") Integer page,
                                                                                         @Schema(description = "요청 페이지 사이즈", example = "3") @RequestParam(name = "page_size") Integer pageSize,
                                                                                         Authentication authentication) {
-        if (!StringUtils.hasText(word)) {
+        if (!StringUtils.isEmpty(word)) {
             throw new DodalApplicationException(ErrorCode.NOT_FOUND_WORD);
         }
         final User user = (User) authentication.getPrincipal();
