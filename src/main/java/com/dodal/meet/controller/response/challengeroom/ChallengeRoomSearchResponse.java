@@ -52,6 +52,7 @@ public class ChallengeRoomSearchResponse {
     @Schema(description = "유저 북마크 여부", example = "N")
     private String bookmarkYN;
 
+    @Builder.Default
     @Schema(description = "유저 가입 여부", example = "N")
     private String joinYN = "N";
 

@@ -64,6 +64,7 @@ public enum ErrorCode {
     NOT_FOUND_TAG(HttpStatus.NOT_FOUND, "태그 정보가 서버에 존재하지 않습니다."),
     NOT_FOUND_ACCUSE_CODE(HttpStatus.NOT_FOUND, "존재하지 않는 신고 코드입니다."),
     NOT_FOUND_WORD(HttpStatus.NOT_FOUND, "검색어가 비어 있습니다."),
+    NOT_FOUND_COMMON_CODE(HttpStatus.NOT_FOUND, "공통 코드 정보가 없습니다."),
 
     // 500 - INTERNAL SERVER ERROR
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 오류가 발생했습니다."),

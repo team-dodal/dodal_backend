@@ -2,6 +2,9 @@ package com.dodal.meet.controller.response.user;
 
 import com.dodal.meet.controller.response.category.TagResponse;
 import com.dodal.meet.controller.response.category.UserCategoryResponse;
+import com.dodal.meet.model.entity.CategoryEntity;
+import com.dodal.meet.model.entity.UserEntity;
+import com.dodal.meet.model.entity.UserTagEntity;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -42,4 +45,17 @@ public class MyPageResponse {
     @Schema(description = "현재 연속 인증 횟수", example = "50")
     private int totalCertCnt;
 
+    public static MyPageResponse newInstance(UserEntity userEntity, List<CategoryEntity> categoryEntityList, List<UserTagEntity> userTagEntityList, List<ChallengeRoomResponse> challengeRoomList, UserRoomCertInfo userRoomCertInfo) {
+        return MyPageResponse.builder()
+                .userId(userEntity.getId())
+                .nickname(userEntity.getNickname())
+                .profileUrl(userEntity.getProfileUrl())
+                .content(userEntity.getContent())
+                .categoryList(UserCategoryResponse.listFrom(categoryEntityList))
+                .tagList(TagResponse.userEntitesToList(userTagEntityList))
+                .challengeRoomList(challengeRoomList)
+                .maxContinueCertCnt(userRoomCertInfo.getMaxContinueCertCnt())
+                .totalCertCnt(userRoomCertInfo.getTotalCertCnt())
+                .build();
+    }
 }

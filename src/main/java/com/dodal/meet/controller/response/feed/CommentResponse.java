@@ -52,7 +52,7 @@ public class CommentResponse {
     @Schema(implementation = CommentResponse.class, name = "children")
     private List<CommentResponse> children;
 
-    public static CommentResponse convertCommentToDto(CommentEntity entity) {
+    public static CommentResponse newInstance(CommentEntity entity) {
         return CommentResponse.builder()
                 .feedId(entity.getChallengeFeedEntity().getId())
                 .userId(entity.getUserId())

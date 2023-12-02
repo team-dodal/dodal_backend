@@ -68,7 +68,7 @@ public class UserSignUpResponse {
     @Schema(description = "가입시간", example = "2023-06-25T12:06:23.573+00:00")
     private Timestamp registerAt;
 
-    public static UserSignUpResponse convertUserInfoToUserSignUp(UserInfoResponse userInfoResponse, String accessToken) {
+    public static UserSignUpResponse newInstance(UserInfoResponse userInfoResponse, String accessToken) {
         return UserSignUpResponse.builder()
                 .userId(userInfoResponse.getUserId())
                 .socialId(userInfoResponse.getSocialId())

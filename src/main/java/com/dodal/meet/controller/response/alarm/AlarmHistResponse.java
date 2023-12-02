@@ -37,7 +37,7 @@ public class AlarmHistResponse {
     @Schema(description = "알림 생성 시간", example = "2023-07-15T18:58:51.056899")
     private Timestamp registeredAt;
 
-    public static AlarmHistResponse entityToAlarmHistResponse(AlarmHistEntity alarmHistEntity) {
+    public static AlarmHistResponse newInstance(AlarmHistEntity alarmHistEntity) {
         return AlarmHistResponse
                 .builder()
                 .userId(alarmHistEntity.getUserId())

@@ -5,13 +5,9 @@ import com.dodal.meet.model.entity.*;
 import com.dodal.meet.utils.DateUtils;
 import com.dodal.meet.utils.DtoUtils;
 import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.Tuple;
-import com.querydsl.core.types.Expression;
-import com.querydsl.core.types.SubQueryExpression;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.SimpleExpression;
-import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.ObjectUtils;
@@ -20,7 +16,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 public class FeedCustomImpl implements FeedCustom{
@@ -40,7 +35,7 @@ public class FeedCustomImpl implements FeedCustom{
         List<CommentResponse> result = new ArrayList<>();
         Map<Long, CommentResponse> map = new HashMap<>();
         commentEntityList.forEach(e -> {
-            CommentResponse dto = CommentResponse.convertCommentToDto(e);
+            CommentResponse dto = CommentResponse.newInstance(e);
             map.put(dto.getCommentId(), dto);
             if (ObjectUtils.isEmpty(e.getParent())) {
                 result.add(dto);

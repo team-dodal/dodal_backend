@@ -1,6 +1,8 @@
 package com.dodal.meet.controller.response;
 
 
+import com.dodal.meet.exception.DodalApplicationException;
+import com.dodal.meet.exception.ErrorCode;
 import com.dodal.meet.model.entity.CommonCodeEntity;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -9,6 +11,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,10 +32,24 @@ public class CommonCodeResponse {
 
     List<CommonCodeInfo> codeInfoList;
 
-    public static CommonCodeResponse commonCodeEntityToDto(List<CommonCodeEntity> entityList) {
-        CommonCodeEntity findEntity = entityList.get(0);
-        CommonCodeResponse dto = CommonCodeResponse.builder().category(findEntity.getCategory()).categoryName(findEntity.getCategoryName()).codeInfoList(new ArrayList<>()).build();
-        entityList.forEach(entity -> dto.codeInfoList.add(CommonCodeInfo.builder().code(entity.getCode()).codeName(entity.getCodeName()).build()));
+    public static CommonCodeResponse newInstance(List<CommonCodeEntity> entityList) {
+        if (CollectionUtils.isEmpty(entityList)) {
+            throw new DodalApplicationException(ErrorCode.COMMON_CODE_ERROR);
+        }
+        final CommonCodeEntity findEntity = entityList.get(0);
+        CommonCodeResponse dto = newInstance(findEntity);
+        entityList.stream()
+                .map(entity -> CommonCodeInfo.newInstance(entity))
+                .forEach(dto.codeInfoList::add);
+
         return dto;
+    }
+
+    public static CommonCodeResponse newInstance(final CommonCodeEntity commonCodeEntity) {
+        return CommonCodeResponse.builder()
+                .category(commonCodeEntity.getCategory())
+                .categoryName(commonCodeEntity.getCategoryName())
+                .codeInfoList(new ArrayList<>())
+                .build();
     }
 }

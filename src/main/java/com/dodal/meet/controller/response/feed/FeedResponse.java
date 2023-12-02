@@ -66,6 +66,7 @@ public class FeedResponse {
     @Schema(description = "유저 좋아요 클릭 여부", example = "Y")
     private String likeYN;
 
+    @Builder.Default
     @Schema(description = "가입 여부", example = "Y")
     private String joinYN = "N";
 

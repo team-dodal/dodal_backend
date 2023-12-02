@@ -100,7 +100,7 @@ public class DateUtils {
     public static void validDateYM(String dateYM) {
         try {
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMM");
-            dateFormat.setLenient(false);   // 입력 값 오류 시 에러 반환 설정
+            dateFormat.setLenient(Boolean.FALSE);   // 입력 값 오류 시 에러 반환 설정
             dateFormat.parse(dateYM);
         } catch (ParseException e) {
             throw new DodalApplicationException(ErrorCode.INVALID_DATE_FORMAT);

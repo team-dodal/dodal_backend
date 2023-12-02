@@ -33,7 +33,7 @@ public class CategoryResponse {
     @Schema(description = "태그정보", example = "체중 관리, 홈 트레이닝 등")
     private List<TagResponse> tags;
 
-    public static CategoryResponse fromEntity(CategoryEntity entity) {
+    public static CategoryResponse newInstance(CategoryEntity entity) {
         return CategoryResponse.builder()
                 .name(entity.getName())
                 .subName(entity.getSubName())

@@ -4,12 +4,7 @@ package com.dodal.meet.model;
 import com.dodal.meet.model.entity.UserEntity;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.oauth2.core.user.OAuth2User;
-
 import java.sql.Timestamp;
-import java.util.Collection;
-import java.util.Map;
 
 @AllArgsConstructor
 @Getter
@@ -38,9 +33,8 @@ public class User {
                 entity.getProfileUrl(),
                 entity.getRole(),
                 entity.getSocialType(),
-                entity.getRegisterAt(),
+                entity.getRegisteredAt(),
                 entity.getUpdatedAt()
         );
-
     }
 }

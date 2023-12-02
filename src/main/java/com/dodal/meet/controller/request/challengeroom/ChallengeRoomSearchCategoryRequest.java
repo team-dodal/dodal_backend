@@ -25,4 +25,14 @@ public class ChallengeRoomSearchCategoryRequest {
 
     private Integer pageSize;
 
+    public static ChallengeRoomSearchCategoryRequest newInstance(String categoryValue, String tagValue, String conditionCode, List<Integer> certCntList, Integer page, Integer pageSize) {
+        return ChallengeRoomSearchCategoryRequest.builder()
+                .tagValue(tagValue)
+                .categoryValue(categoryValue)
+                .conditionCode(conditionCode)
+                .certCntList(certCntList)
+                .page(page)
+                .pageSize(pageSize)
+                .build();
+    }
 }

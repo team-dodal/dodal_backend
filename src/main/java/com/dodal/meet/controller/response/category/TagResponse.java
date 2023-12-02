@@ -7,8 +7,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,21 +23,21 @@ public class TagResponse {
     private String value;
 
     public static List<TagResponse> tagEntitiesToList(List<TagEntity> tagEntities) {
-        return tagEntities.stream().map(entity -> fromTagEntity(entity)).collect(Collectors.toList());
+        return tagEntities.stream().map(entity -> newInstance(entity)).collect(Collectors.toList());
     }
 
     public static List<TagResponse> userEntitesToList(List<UserTagEntity> userTagEntities) {
-        return userTagEntities.stream().map(entity -> fromUserEntity(entity)).collect(Collectors.toList());
+        return userTagEntities.stream().map(entity -> newInstance(entity)).collect(Collectors.toList());
     }
 
-    private static TagResponse fromTagEntity(TagEntity entity) {
+    private static TagResponse newInstance(TagEntity entity) {
         return TagResponse.builder()
                 .name(entity.getName())
                 .value(entity.getTagValue())
                 .build();
     }
 
-    private static TagResponse fromUserEntity(UserTagEntity entity) {
+    private static TagResponse newInstance(UserTagEntity entity) {
         return TagResponse.builder()
                 .name(entity.getTagName())
                 .value(entity.getTagValue())

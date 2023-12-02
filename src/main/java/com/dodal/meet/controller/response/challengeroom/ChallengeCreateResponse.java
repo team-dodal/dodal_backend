@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
-import lombok.ToString;
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -93,7 +92,7 @@ public class ChallengeCreateResponse {
     @Schema(description = "도전방 생성 시간")
     private Timestamp registeredAt;
 
-    public static ChallengeCreateResponse fromChallengeRoomDetail(ChallengeRoomDetailResponse response) {
+    public static ChallengeCreateResponse newInstance(ChallengeRoomDetailResponse response) {
         return ChallengeCreateResponse.builder()
                 .roomId(response.getRoomId())
                 .thumbnailImgUrl(response.getThumbnailImgUrl())

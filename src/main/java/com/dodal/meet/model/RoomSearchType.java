@@ -5,8 +5,6 @@ import com.dodal.meet.exception.DodalApplicationException;
 import com.dodal.meet.exception.ErrorCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.StringUtils;
-
 import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Collectors;

@@ -1,18 +1,19 @@
 package com.dodal.meet.controller.response.user;
 
 
-import com.dodal.meet.controller.response.category.CategoryResponse;
 import com.dodal.meet.controller.response.category.TagResponse;
 import com.dodal.meet.controller.response.category.UserCategoryResponse;
 import com.dodal.meet.model.SocialType;
 import com.dodal.meet.model.UserRole;
+import com.dodal.meet.model.entity.CategoryEntity;
+import com.dodal.meet.model.entity.TagEntity;
+import com.dodal.meet.model.entity.UserEntity;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
-import lombok.ToString;
-
+import org.apache.commons.lang3.BooleanUtils;
 import java.sql.Timestamp;
 import java.util.List;
 
@@ -69,4 +70,32 @@ public class UserSignInResponse {
 
     @Schema(description = "자체 생성 리프레시 토큰 - 30일 뒤 만료", example = "서버 리프레시 토큰")
     private String refreshToken;
+
+    public static UserSignInResponse newInstance(UserEntity userEntity, String accessToken, String refreshToken, List<TagEntity> tagEntityList, List<CategoryEntity> categoryEntityList) {
+        return UserSignInResponse.builder()
+                .isSigned(BooleanUtils.TRUE)
+                .userId(userEntity.getId())
+                .socialId(userEntity.getSocialId())
+                .socialType(userEntity.getSocialType())
+                .role(userEntity.getRole())
+                .email(userEntity.getEmail())
+                .nickname(userEntity.getNickname())
+                .profileUrl(userEntity.getProfileUrl())
+                .content(userEntity.getContent())
+                .categoryList(UserCategoryResponse.listFrom(categoryEntityList))
+                .tagList(TagResponse.tagEntitiesToList(tagEntityList))
+                .alarmYn(userEntity.getAlarmYn())
+                .accuseCnt(userEntity.getAccuseCnt())
+                .fcmToken(userEntity.getTokenEntity().getFcmToken())
+                .registerAt(userEntity.getRegisteredAt())
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .build();
+    }
+
+    public static UserSignInResponse newInstance() {
+        return UserSignInResponse.builder()
+                .isSigned(BooleanUtils.FALSE)
+                .build();
+    }
 }

@@ -4,6 +4,7 @@ import com.dodal.meet.controller.response.category.TagResponse;
 import com.dodal.meet.controller.response.category.UserCategoryResponse;
 import com.dodal.meet.model.SocialType;
 import com.dodal.meet.model.UserRole;
+import com.dodal.meet.model.entity.*;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -65,4 +66,23 @@ public class UserInfoResponse {
     @Schema(description = "가입시간", example = "2023-06-25T12:06:23.573+00:00")
     private Timestamp registerAt;
 
+    public static UserInfoResponse newInstance(UserEntity userEntity, List<UserTagEntity> userTagEntityList, List<CategoryEntity> categoryList) {
+        return UserInfoResponse.builder()
+                .userId(userEntity.getId())
+                .socialId(userEntity.getSocialId())
+                .socialType(userEntity.getSocialType())
+                .role(userEntity.getRole())
+                .email(userEntity.getEmail())
+                .nickname(userEntity.getNickname())
+                .profileUrl(userEntity.getProfileUrl())
+                .content(userEntity.getContent())
+                .alarmYn(userEntity.getAlarmYn())
+                .accuseCnt(userEntity.getAccuseCnt())
+                .categoryList(UserCategoryResponse.listFrom(categoryList))
+                .tagList(TagResponse.userEntitesToList(userTagEntityList))
+                .fcmToken(userEntity.getTokenEntity().getFcmToken())
+                .refreshToken(userEntity.getTokenEntity().getRefreshToken())
+                .registerAt(userEntity.getRegisteredAt())
+                .build();
+    }
 }

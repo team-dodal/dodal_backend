@@ -11,7 +11,6 @@ import lombok.Setter;
 import lombok.ToString;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -37,7 +36,7 @@ public class UserCategoryResponse {
     @Schema(description = "해시태그", example = "#체력키우기")
     private List<String> hashTags;
 
-    public static List<UserCategoryResponse> fromEntityList(List<CategoryEntity> entity) {
+    public static List<UserCategoryResponse> listFrom(List<CategoryEntity> entity) {
         List<UserCategoryResponse> result = new ArrayList<>();
         entity.forEach(e -> result.add(
                 UserCategoryResponse.builder()
