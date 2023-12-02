@@ -95,10 +95,9 @@ class UserServiceTest {
 
         TokenEntity tokenEntity = TokenEntity.builder().fcmToken("token").refreshToken("token").build();
 
-        UserEntity fixture = UserEntity.SignUpDtoToEntity().request(userSignUpRequest)
-                .tokenEntity(tokenEntity).build();
+        UserEntity fixture = UserEntity.newInstance(userSignUpRequest, tokenEntity);
 
-        when(tokenEntityRepository.findByUserEntity(any())).thenReturn(Optional.of(tokenEntity));
+        when(tokenEntityRepository.findById(any())).thenReturn(Optional.of(tokenEntity));
         when(userEntityRepository.findBySocialIdAndSocialType(SOCIAL_ID, SOCIAL_TYPE)).thenReturn(Optional.of(fixture));
         UserSignInResponse userSignInResponse = userService.signIn(userSignInRequest);
 

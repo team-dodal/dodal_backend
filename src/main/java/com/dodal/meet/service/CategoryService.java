@@ -10,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,7 +26,7 @@ public class CategoryService {
             throw new DodalApplicationException(ErrorCode.NOT_FOUND_TAG);
         }
         List<CategoryResponse> categoryResponses = categoryEntities.stream()
-                        .map(CategoryResponse::fromEntity).collect(Collectors.toList());
+                        .map(CategoryResponse::newInstance).collect(Collectors.toList());
 
         return CategoryAndTagInfoResponse
                 .builder()

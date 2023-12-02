@@ -14,10 +14,9 @@ import com.dodal.meet.controller.response.user.UserProfileResponse;
 import com.dodal.meet.exception.DodalApplicationException;
 import com.dodal.meet.exception.ErrorCode;
 import com.dodal.meet.model.User;
-import com.dodal.meet.repository.UserEntityRepository;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -27,16 +26,21 @@ import java.util.Date;
 import java.util.UUID;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class ImageService {
-    private final UserEntityRepository userEntityRepository;
+    private final UserService userService;
 
     private final AmazonS3Client amazonS3Client;
+
+    public ImageService(@Lazy UserService userService, AmazonS3Client amazonS3Client) {
+        this.userService = userService;
+        this.amazonS3Client = amazonS3Client;
+    }
 
     @Value("${cloud.aws.s3.bucket}")
     public String bucket;
 
+    @Deprecated(since = "AWS 이미지 업로드 기능을 preSignedUrl로 변경하면서 Deprecated 됨")
     public UserProfileResponse uploadProfileImg(UserProfileRequest userProfileRequest) {
         if (userProfileRequest == null) {
             throw new DodalApplicationException(ErrorCode.INVALID_IMAGE_REQUEST);
@@ -52,6 +56,10 @@ public class ImageService {
     }
 
     public void deleteImg(final String imgUrl) {
+        if (imgUrl.indexOf("s3") == -1) {
+            return;
+        }
+
         try {
             amazonS3Client.deleteObject(bucket, parsingFileName(imgUrl));
         } catch (AmazonServiceException e) {
@@ -64,7 +72,7 @@ public class ImageService {
     
     @Transactional
     public String getPresignedUrl(final String fileName, final User user) {
-        userEntityRepository.findBySocialIdAndSocialType(user.getSocialId(), user.getSocialType()).orElseThrow(() -> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
+        userService.userToUserEntity(user);
 
         Date expiration = new Date();
         long expTimeMillis = expiration.getTime();
@@ -90,6 +98,7 @@ public class ImageService {
         }
     }
 
+    @Deprecated(since = "AWS 이미지 업로드 기능을 preSignedUrl로 변경하면서 Deprecated 됨")
     public String uploadMultipartFile(MultipartFile multipartFile) {
         if (multipartFile == null) {
             throw new DodalApplicationException(ErrorCode.INVALID_IMAGE_REQUEST);

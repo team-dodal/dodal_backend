@@ -4,7 +4,6 @@ import com.dodal.meet.controller.response.alarm.AlarmHistResponse;
 import com.dodal.meet.exception.DodalApplicationException;
 import com.dodal.meet.exception.ErrorCode;
 import com.dodal.meet.model.entity.AlarmHistEntity;
-import com.dodal.meet.model.entity.UserEntity;
 import com.dodal.meet.repository.AlarmHistEntityRepository;
 import com.dodal.meet.repository.UserEntityRepository;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +23,7 @@ public class AlarmService {
 
     @Transactional
     public void saveAlarmHist(final AlarmHistResponse response) {
-        AlarmHistEntity entity = AlarmHistEntity.alarmHistResponseToEntity(response);
+        AlarmHistEntity entity = AlarmHistEntity.newInstance(response);
         alarmHistEntityRepository.save(entity);
     }
 
@@ -32,7 +31,7 @@ public class AlarmService {
     public List<AlarmHistResponse> getAlarmHists(Long userId) {
         userEntityRepository.findById(userId).orElseThrow(() -> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
         List<AlarmHistEntity> alarmHists = alarmHistEntityRepository.findAllByUserId(userId);
-        return AlarmHistEntity.entityToAlarmHistResponseList(alarmHists);
+        return AlarmHistEntity.fromList(alarmHists);
     }
 
     @Transactional

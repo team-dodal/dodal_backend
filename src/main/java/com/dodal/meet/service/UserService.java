@@ -1,10 +1,7 @@
 package com.dodal.meet.service;
 
-
 import com.dodal.meet.controller.request.user.*;
 import com.dodal.meet.controller.response.CommonCodeResponse;
-import com.dodal.meet.controller.response.category.TagResponse;
-import com.dodal.meet.controller.response.category.UserCategoryResponse;
 import com.dodal.meet.controller.response.feed.FeedCustom;
 import com.dodal.meet.controller.response.user.*;
 import com.dodal.meet.exception.DodalApplicationException;
@@ -17,15 +14,12 @@ import com.dodal.meet.utils.DtoUtils;
 import com.dodal.meet.utils.JwtTokenUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
-import org.springframework.web.multipart.MultipartFile;
-
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -33,6 +27,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class UserService {
+    private final CategoryEntityRepository categoryEntityRepository;
     private final FeedCustom challengeFeedEntityRepository;
     private final CommonCodeEntityRepository commonCodeEntityRepository;
     private final AccuseEntityRepository accuseEntityRepository;
@@ -40,16 +35,13 @@ public class UserService {
     private final ChallengeUserEntityRepository challengeUserEntityRepository;
     private final TagEntityRepository tagEntityRepository;
     private final UserTagEntityRepository userTagEntityRepository;
+    private final UserTagBulkRepository userTagBulkRepository;
     private final UserEntityRepository userEntityRepository;
     private final TokenEntityRepository tokenEntityRepository;
-
     private final ImageService imageService;
-
     private final UserCacheRepository userCacheRepository;
-
     @Value("${jwt.secret-key}")
     private String jwtKey;
-
     @Value("${spring.config.activate.on-profile}")
     private String profile;
 
@@ -57,135 +49,116 @@ public class UserService {
     public UserSignInResponse signIn(final UserSignInRequest request) {
         final String socialId = request.getSocialId();
         final SocialType socialType = request.getSocialType();
-        final UserEntity user = userEntityRepository.findBySocialIdAndSocialType(socialId, socialType).orElse(null);
-        if (user != null) {
+        final UserEntity userEntity = userEntityRepository.findBySocialIdAndSocialType(socialId, socialType).orElse(null);
+
+        if (!ObjectUtils.isEmpty(userEntity)) {
             final String accessToken = JwtTokenUtils.generateAccessToken(socialId, socialType, jwtKey);
             final String refreshToken = JwtTokenUtils.generateRefreshToken(socialId, socialType, jwtKey);
-            List<UserTagEntity> userTagEntity = userTagEntityRepository.findAllByUserEntity(user);
-            TokenEntity tokenEntity = tokenEntityRepository.findByUserEntity(user).orElseThrow(()-> new DodalApplicationException(ErrorCode.INVALID_TOKEN));
+            final List<UserTagEntity> userTagEntityList = userTagEntityRepository.findAllByUserEntity(userEntity);
+
+            // 가입한 유저가 로그인한 경우 리프레시 토큰을 업데이트한다.
+            TokenEntity tokenEntity = tokenEntityRepository.findById(userEntity.getTokenEntity().getId()).orElseThrow(()-> new DodalApplicationException(ErrorCode.INVALID_TOKEN));
             tokenEntity.updateRefreshToken(refreshToken);
-            tokenEntityRepository.save(tokenEntity);
 
-            List<String> userTagValueList = new ArrayList<>();
-            userTagEntity.forEach(entity -> userTagValueList.add(entity.getTagValue()));
-
-            List<TagEntity> tagList = tagEntityRepository.findAllByUserTagValue(userTagValueList);
-
-            Set<CategoryEntity> categorySet = new HashSet<>();
-            tagList.forEach(e -> categorySet.add(e.getCategoryEntity()));
-
-            List<CategoryEntity> categoryList = new ArrayList<>(categorySet);
+            final List<String> userTagValueList = userTagEntityList.stream().map(t -> t.getTagValue()).collect(Collectors.toList());
+            final List<TagEntity> tagEntityList = tagEntityRepository.findAllByTagValueList(userTagValueList);
+            // FETCH JOIN
+            final List<CategoryEntity> categoryEntityList = categoryEntityRepository.findAllByTagEntity(tagEntityList);
 
             if (!profile.equals("test")){
                 userCacheRepository.setUser(loadUserBySocialIdAndSocialType(socialId, socialType));
             }
-
-            return UserSignInResponse.builder()
-                    .isSigned("true")
-                    .userId(user.getId())
-                    .socialId(user.getSocialId())
-                    .socialType(user.getSocialType())
-                    .role(user.getRole())
-                    .email(user.getEmail())
-                    .nickname(user.getNickname())
-                    .profileUrl(user.getProfileUrl())
-                    .content(user.getContent())
-                    .categoryList(UserCategoryResponse.fromEntityList(categoryList))
-                    .tagList(TagResponse.tagEntitiesToList(tagList))
-                    .alarmYn(user.getAlarmYn())
-                    .accuseCnt(user.getAccuseCnt())
-                    .fcmToken(user.getTokenEntity().getFcmToken())
-                    .registerAt(user.getRegisterAt())
-                    .accessToken(accessToken)
-                    .refreshToken(refreshToken)
-                    .build();
-        } else {
-            return UserSignInResponse.builder()
-                    .isSigned("false")
-                    .build();
+            return UserSignInResponse.newInstance(userEntity, accessToken, refreshToken, tagEntityList, categoryEntityList);
         }
+        return UserSignInResponse.newInstance();
     }
 
-    @Transactional(readOnly = true)
-    public User findBySocialIdAndSocialTypeToUser(final String socialId, final SocialType socialType) {
-        return userEntityRepository.findBySocialIdAndSocialType(socialId, socialType)
-                .map(User::fromEntity).orElseThrow(() -> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
-    }
+
+
 
     @Transactional
     public UserSignUpResponse signUp(final UserSignUpRequest request) {
-        request.setNickname(request.getNickname().trim());
-        validNickname(request.getNickname());
+        // 닉네임 공백 제거
+        final String nickname = StringUtils.trim(request.getNickname());
+        request.setNickname(nickname);
 
         final String socialId = request.getSocialId();
         final SocialType socialType = request.getSocialType();
 
-        // 회원가입되어 있는 지 체크
-        userEntityRepository.findBySocialIdAndSocialType(socialId, socialType).ifPresent(it -> {
-            throw new DodalApplicationException(ErrorCode.INVALID_SIGNUP_REQUEST);
-        });
+        // 이미 가입한 회원인 경우 예외 반환
+        checkIfAlreadySignedUp(socialId, socialType);
 
-        // JWT 토큰 발행 (액세스 토큰 / 리프레시 토큰)
+        // JWT 토큰 발행 및 엔티티 저장
         final String accessToken = JwtTokenUtils.generateAccessToken(socialId, socialType, jwtKey);
         final String refreshToken = JwtTokenUtils.generateRefreshToken(socialId, socialType, jwtKey);
+        final TokenEntity tokenEntity = saveRefreshToken(refreshToken);
+        final UserEntity userEntity = saveUserEntity(request, tokenEntity);
 
-        // 회원 가입 이후에 FCM 토큰을 따로 저장한다.
+        final List<TagEntity> tagEntityList = tagEntityRepository.findAllByTagValueList(request.getTagList());
+        final List<UserTagEntity> userTagEntityList = saveUserTags(tagEntityList, userEntity);
+
+        // FETCH JOIN
+        final List<CategoryEntity> categoryEntityList = categoryEntityRepository.findAllByTagEntity(tagEntityList);
+
+        final UserInfoResponse userInfoResponse = UserInfoResponse.newInstance(userEntity,userTagEntityList, categoryEntityList);
+        return UserSignUpResponse.newInstance(userInfoResponse, accessToken);
+    }
+
+    private void checkIfAlreadySignedUp(final String socialId, final SocialType socialType) {
+        userEntityRepository.findBySocialIdAndSocialType(socialId, socialType)
+                .ifPresent(it -> {
+                    throw new DodalApplicationException(ErrorCode.INVALID_SIGNUP_REQUEST);
+                });
+    }
+
+    private TokenEntity saveRefreshToken(final String refreshToken) {
         final TokenEntity tokenEntity = TokenEntity.builder().refreshToken(refreshToken).build();
-        tokenEntityRepository.save(tokenEntity);
+        return tokenEntityRepository.save(tokenEntity);
+    }
 
-        final UserEntity newUserEntity = UserEntity.SignUpDtoToEntity()
-                .request(request)
-                .tokenEntity(tokenEntity)
-                .build();
+    private UserEntity saveUserEntity(final UserSignUpRequest request, final TokenEntity tokenEntity) {
+        return userEntityRepository.save(UserEntity.newInstance(request, tokenEntity));
+    }
 
-        userEntityRepository.save(newUserEntity);
+    private List<UserTagEntity> saveUserTags(final List<TagEntity> tagEntityList, final UserEntity userEntity) {
+        final List<UserTagEntity> userTagEntityList = tagEntityList.stream()
+                .map(tagEntity -> UserTagEntity.newInstance(userEntity, tagEntity))
+                .collect(Collectors.toList());
 
-        List<UserTagEntity> userTagEntities = new ArrayList<>();
-        request.getTagList().forEach(tagValue -> {
-            TagEntity tagEntity = tagEntityRepository.findByTagValue(tagValue).orElseThrow(
-                    () -> new DodalApplicationException(ErrorCode.INVALID_TAG_LIST_FIELD));
-            userTagEntities.add(UserTagEntity.tagEntityToUserTagEntity(newUserEntity, tagEntity));
-            }
-        );
-
-        userTagEntityRepository.saveAll(userTagEntities);
-
-        UserInfoResponse userInfoResponse = entityToUserInfo(newUserEntity, tokenEntity, userTagEntities);
-
-        return UserSignUpResponse.convertUserInfoToUserSignUp(userInfoResponse, accessToken);
+        // BULK INSERT 작업 - JdbcTemplate
+        userTagBulkRepository.saveAll(userTagEntityList);
+        return userTagEntityList;
     }
 
 
     @Transactional(readOnly = true)
-    public boolean findByNickname(String nickname) {
-        validNickname(nickname);
-        UserEntity entity = userEntityRepository.findByNickname(nickname).orElse(null);
-        return entity != null ? true : false;
+    public boolean findByNickname(final String nickname) {
+        final UserEntity entity = userEntityRepository.findByNickname(nickname).orElse(null);
+        return entity != null ? Boolean.TRUE : Boolean.FALSE;
     }
 
     @Transactional(readOnly = true)
-    public UserInfoResponse getUser(final Authentication authentication) {
-        User user = (User) authentication.getPrincipal();
-        final String socialId = user.getSocialId();
-        final SocialType socialType = user.getSocialType();
-        UserEntity userEntity = userEntityRepository.findBySocialIdAndSocialType(socialId, socialType)
-                .orElseThrow(() -> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
-        TokenEntity tokenEntity = tokenEntityRepository.findByUserEntity(userEntity)
-                .orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_JWT_TOKEN));
-        List<UserTagEntity> userTagList = userTagEntityRepository.findAllByUserEntity(userEntity);
+    public UserInfoResponse getUser(final User user) {
+        final UserEntity userEntity = userToUserEntity(user);
+        return getUserInfo(userEntity);
+    }
 
-        return entityToUserInfo(userEntity, tokenEntity, userTagList);
+    private UserInfoResponse getUserInfo(final UserEntity userEntity) {
+        final List<UserTagEntity> userTagEntityList = userTagEntityRepository.findAllByUserEntity(userEntity);
+        final List<String> userTagValueList = userTagEntityList.stream().map(t -> t.getTagValue()).collect(Collectors.toList());
+        final List<TagEntity> tagEntityList = tagEntityRepository.findAllByTagValueList(userTagValueList);
+        // FETCH JOIN
+        final List<CategoryEntity> categoryEntityList = categoryEntityRepository.findAllByTagEntity(tagEntityList);
+        return UserInfoResponse.newInstance(userEntity,userTagEntityList, categoryEntityList);
     }
 
     @Transactional
-    public UserInfoResponse updateUser(final UserUpdateRequest userUpdateRequest, Authentication authentication) {
-        final UserInfoResponse userInfo = getUser(authentication);
-
-        UserEntity userEntity = userEntityRepository.findById(userInfo.getUserId()).orElse(null);
-
+    public UserInfoResponse updateUser(final UserUpdateRequest userUpdateRequest, final User user) {
+        // TODO : REDIS CACHE EVICT
+        UserEntity userEntity = userToUserEntity(user);
         final String requestNickname = userUpdateRequest.getNickname();
         final String requestContent = userUpdateRequest.getContent();
-        final List<String> requestTagList = userUpdateRequest.getTagList();
+        final List<String> requestTagValueList = userUpdateRequest.getTagList();
         final String beforeProfileUrl = userEntity.getProfileUrl();
 
         userEntity.updateNickname(requestNickname);
@@ -197,47 +170,43 @@ public class UserService {
             imageService.deleteImg(beforeProfileUrl);
         }
 
-        challengeRoomEntityRepository.updateNicknameAndProfileUrlByUserId(userEntity.getId(), requestNickname, userUpdateRequest.getProfileUrl());
+        // 방장으로 운영중인 도전방이 있는 경우 도전방 정보 업데이트
+        challengeRoomEntityRepository.updateNicknameAndProfileUrlByHostUserId(userEntity.getId(), requestNickname, userUpdateRequest.getProfileUrl());
 
-        if (!requestTagList.isEmpty()) {
-            List<UserTagEntity> userTagEntity = userTagEntityRepository.findAllByUserEntity(userEntity);
-            userTagEntityRepository.deleteAll(userTagEntity);
+        final List<UserTagEntity> userTagEntityList = userTagEntityRepository.findAllByUserEntity(userEntity);
+        // BULK DELETE
+        userTagBulkRepository.deleteAll(userTagEntityList);
 
-            List<UserTagEntity> userTagEntities = new ArrayList<>();
-            requestTagList.forEach(tagValue -> {
-                        TagEntity tagEntity = tagEntityRepository.findByTagValue(tagValue).orElseThrow(
-                                () -> new DodalApplicationException(ErrorCode.INVALID_TAG_LIST_FIELD));
-                        userTagEntities.add(UserTagEntity.tagEntityToUserTagEntity(userEntity, tagEntity));
-                    }
-            );
-
-            userTagEntityRepository.saveAll(userTagEntities);
+        List<TagEntity> tagEntityList = tagEntityRepository.findAllByTagValueList(requestTagValueList);
+        if (requestTagValueList.size() != tagEntityList.size()) {
+            throw new DodalApplicationException(ErrorCode.INVALID_TAG_LIST_FIELD);
         }
+        saveUserTags(tagEntityList, userEntity);
 
-        return getUser(authentication);
+        return getUserInfo(userEntity);
     }
 
     @Transactional
-    public void postFcmToken(String fcmToken, Authentication authentication) {
-        if (!StringUtils.hasLength(fcmToken)) {
+    public void postFcmToken(final String fcmToken, final User user) {
+        if (!StringUtils.isEmpty(fcmToken)) {
             throw new DodalApplicationException(ErrorCode.INVALID_TOKEN);
         }
-        UserEntity userEntity = userToUserEntity(authentication);
+        final UserEntity userEntity = userToUserEntity(user);
         TokenEntity tokenEntity = userEntity.getTokenEntity();
         tokenEntity.updateFcmToken(fcmToken);
         tokenEntityRepository.save(tokenEntity);
     }
 
     @Transactional
-    public UserAccessTokenResponse postAccessToken(Authentication authentication) {
-        UserEntity userEntity = userToUserEntity(authentication);
-        String accessToken = JwtTokenUtils.generateAccessToken(userEntity.getSocialId(), userEntity.getSocialType(), jwtKey);
-        return UserAccessTokenResponse.builder().accessToken(accessToken).build();
+    public UserAccessTokenResponse postAccessToken(final User user) {
+        final UserEntity userEntity = userToUserEntity(user);
+        final String accessToken = JwtTokenUtils.generateAccessToken(userEntity.getSocialId(), userEntity.getSocialType(), jwtKey);
+        return UserAccessTokenResponse.newInstance(accessToken);
     }
 
     @Transactional
-    public void deleteUser(Authentication authentication) {
-        UserEntity userEntity = userToUserEntity(authentication);
+    public void deleteUser(final User user) {
+        final UserEntity userEntity = userToUserEntity(user);
 
         List<ChallengeRoomEntity> hostRoomList = challengeRoomEntityRepository.findAllByHostId(userEntity.getId());
         if (!CollectionUtils.isEmpty(hostRoomList)) {
@@ -249,8 +218,8 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public UserEntity userToUserEntity(Authentication authentication) {
-        User user = (User) authentication.getPrincipal();
+    public UserEntity userToUserEntity(User user) {
+        // TODO : REDIS CACHE
         final String socialId = user.getSocialId();
         final SocialType socialType = user.getSocialType();
         return userEntityRepository.findBySocialIdAndSocialType(socialId, socialType)
@@ -263,117 +232,68 @@ public class UserService {
                         .orElseThrow(() -> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST)));
     }
 
-    private void validNickname(String nickname) {
-        String trimNickname = nickname.trim();
-        if (trimNickname.length() == 0 || trimNickname == null) {
-            throw new DodalApplicationException(ErrorCode.INVALID_NICKNAME_FIELD);
-        }
-    }
-
-    private UserInfoResponse entityToUserInfo(UserEntity userEntity, TokenEntity tokenEntity, List<UserTagEntity> userTagEntities) {
-        List<String> userTagValueList = new ArrayList<>();
-        userTagEntities.forEach(entity -> userTagValueList.add(entity.getTagValue()));
-
-        List<TagEntity> tagList = tagEntityRepository.findAllByUserTagValue(userTagValueList);
-
-        Set<CategoryEntity> categorySet = new HashSet<>();
-        tagList.forEach(e -> categorySet.add(e.getCategoryEntity()));
-
-        List<CategoryEntity> categoryList = new ArrayList<>(categorySet);
-        return UserInfoResponse.builder()
-                .userId(userEntity.getId())
-                .socialId(userEntity.getSocialId())
-                .socialType(userEntity.getSocialType())
-                .role(userEntity.getRole())
-                .email(userEntity.getEmail())
-                .nickname(userEntity.getNickname())
-                .profileUrl(userEntity.getProfileUrl())
-                .content(userEntity.getContent())
-                .alarmYn(userEntity.getAlarmYn())
-                .accuseCnt(userEntity.getAccuseCnt())
-                .categoryList(UserCategoryResponse.fromEntityList(categoryList))
-                .tagList(TagResponse.userEntitesToList(userTagEntities))
-                .fcmToken(tokenEntity.getFcmToken())
-                .refreshToken(tokenEntity.getRefreshToken())
-                .registerAt(userEntity.getRegisterAt())
-                .build();
-    }
-
     @Transactional(readOnly = true)
-    public MyPageResponse getMyPage(User user) {
-        final String socialId = user.getSocialId();
-        final SocialType socialType = user.getSocialType();
-        UserEntity userEntity = userEntityRepository.findBySocialIdAndSocialType(socialId, socialType)
-                .orElseThrow(() -> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
-        List<UserTagEntity> userTagList = userTagEntityRepository.findAllByUserEntity(userEntity);
+    public MyPageResponse getMyPage(final User user) {
+        final UserEntity userEntity = userToUserEntity(user);
+        final List<UserTagEntity> userTagEntityList = userTagEntityRepository.findAllByUserEntity(userEntity);
 
-        List<String> userTagValueList = new ArrayList<>();
-        userTagList.forEach(entity -> userTagValueList.add(entity.getTagValue()));
+        final List<String> userTagValueList = userTagEntityList.stream().map(t -> t.getTagValue()).collect(Collectors.toList());
+        final List<TagEntity> tagEntityList = tagEntityRepository.findAllByTagValueList(userTagValueList);
+        // FETCH JOIN
+        final List<CategoryEntity> categoryEntityList = categoryEntityRepository.findAllByTagEntity(tagEntityList);
 
-        List<TagEntity> tagList = tagEntityRepository.findAllByUserTagValue(userTagValueList);
+        final List<ChallengeUserEntity> challengeUserInfo = challengeUserEntityRepository.findAllByUserId(userEntity.getId());
 
-        Set<CategoryEntity> categorySet = new HashSet<>();
-        tagList.forEach(e -> categorySet.add(e.getCategoryEntity()));
-        List<CategoryEntity> categoryList = new ArrayList<>(categorySet);
-
-        List<ChallengeUserEntity> challengeUserInfo = challengeUserEntityRepository.findAllByUserId(userEntity.getId());
-
-        List<ChallengeRoomResponse> challengeRoomList = new ArrayList<>();
-
-        // 가입한 도전방 리스트의 경우 방장이 도전방 제목을 변경했어도 유저가 피드를 올리기 전까지 이전 도전방 제목으로 보여지도록 한다.
-        // 피드에 저장된 마지막 도전방 제목 정보를 가지고 보여지도록 한다.
-        Map<Integer, String> map = challengeFeedEntityRepository.findMaxDateFeedByUserId(userEntity.getId())
+        /*
+            가입한 도전방 리스트의 경우 방장이 도전방 제목을 변경했어도 유저가 피드를 올리기 전까지 이전 도전방 제목으로 보여지도록 한다.
+            피드에 저장된 마지막 도전방 제목 정보가 있으면 해당 제목으로 보여지도록 한다.
+         */
+        final Map<Integer, String> latestChallengeRoomTitles = challengeFeedEntityRepository.findMaxDateFeedByUserId(userEntity.getId())
                 .stream().collect(Collectors.toMap(ChallengeFeedEntity::getRoomId, ChallengeFeedEntity::getRoomTitle));
 
-        challengeUserInfo.forEach(dto -> challengeRoomList.add(ChallengeRoomResponse.builder()
-                .roomId(dto.getChallengeRoomEntity().getId())
-                .title(map.containsKey(dto.getChallengeRoomEntity().getId()) ?
-                        map.get(dto.getChallengeRoomEntity().getId()) : dto.getChallengeRoomEntity().getTitle())
-                .build()));
+        final List<ChallengeRoomResponse> challengeRoomList = challengeUserInfo.stream()
+                .map(dto -> ChallengeRoomResponse.builder()
+                        .roomId(dto.getChallengeRoomEntity().getId())
+                        .title(getChallengeRoomTitle(dto, latestChallengeRoomTitles))
+                        .build())
+                .collect(Collectors.toList());
 
-        UserRoomCertInfo userRoomCertInfo = challengeUserEntityRepository.findMaxCertInfoByUserId(userEntity.getId());
-        return MyPageResponse.builder()
-                .userId(userEntity.getId())
-                .nickname(userEntity.getNickname())
-                .profileUrl(userEntity.getProfileUrl())
-                .content(userEntity.getContent())
-                .categoryList(UserCategoryResponse.fromEntityList(categoryList))
-                .tagList(TagResponse.userEntitesToList(userTagList))
-                .challengeRoomList(challengeRoomList)
-                .maxContinueCertCnt(userRoomCertInfo.getMaxContinueCertCnt())
-                .totalCertCnt(userRoomCertInfo.getTotalCertCnt())
-                .build();
+        final UserRoomCertInfo userRoomCertInfo = challengeUserEntityRepository.findMaxCertInfoByUserId(userEntity.getId());
+        return MyPageResponse.newInstance(userEntity, categoryEntityList, userTagEntityList, challengeRoomList, userRoomCertInfo);
+    }
+
+    private String getChallengeRoomTitle(final ChallengeUserEntity challengeUserEntity, final Map<Integer, String> latestChallengeRoomTitles) {
+        final int roomId = challengeUserEntity.getChallengeRoomEntity().getId();
+        // 피드에 저장된 가장 최신의 도전방 제목이 있으면 그것을 반환하고, 없으면 도전방의 기본 제목을 반환
+        return latestChallengeRoomTitles.getOrDefault(roomId, challengeUserEntity.getChallengeRoomEntity().getTitle());
     }
 
     @Transactional(readOnly = true)
-    public MyPageCalenderResponse getMyPageCalendarInfo(Integer roomId, String dateYM, User user) {
-        final String socialId = user.getSocialId();
-        final SocialType socialType = user.getSocialType();
-        UserEntity userEntity = userEntityRepository.findBySocialIdAndSocialType(socialId, socialType)
-                .orElseThrow(() -> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
+    public MyPageCalenderResponse getMyPageCalendarInfo(final Integer roomId, final String dateYM, final User user) {
+        final UserEntity userEntity = userToUserEntity(user);
         challengeRoomEntityRepository.findById(roomId).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM));
-
         return challengeRoomEntityRepository.getMyPageCalendarInfo(roomId, dateYM, userEntity.getId());
     }
 
     @Transactional
-    public void postAccuseUser(Long targetUserId, UserAccuseRequest request, User sourceUser) {
-        List<CommonCodeEntity> codeEntityList = commonCodeEntityRepository.findAllByCategory("ACCUSE");
+    public void postAccuseUser(final Long targetUserId, final UserAccuseRequest request, final User sourceUser) {
+        final List<CommonCodeEntity> codeEntityList = commonCodeEntityRepository.findAllByCategory("ACCUSE");
         if (CollectionUtils.isEmpty(codeEntityList)) {
-            throw new DodalApplicationException(ErrorCode.COMMON_CODE_ERROR);
+            throw new DodalApplicationException(ErrorCode.NOT_FOUND_COMMON_CODE);
         }
 
-        List<String> codeList = codeEntityList.stream().map(e -> e.getCode()).collect(Collectors.toList());
+        final List<String> codeList = codeEntityList.stream().map(e -> e.getCode()).collect(Collectors.toList());
 
+        // 공통코드에 없는 코드 값이 있는 경우 예외 반환
         if (!codeList.contains(request.getAccuseCode())) {
             throw new DodalApplicationException(ErrorCode.NOT_FOUND_ACCUSE_CODE);
         }
 
-        UserEntity userEntity = userEntityRepository.findBySocialIdAndSocialType(sourceUser.getSocialId(), sourceUser.getSocialType())
-                .orElseThrow(() -> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
-        userEntityRepository.findById(targetUserId).orElseThrow(() -> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
+        final UserEntity userEntity = userToUserEntity(sourceUser);
+        UserEntity targetUserEntity = userEntityRepository.findById(targetUserId).orElseThrow(() -> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
 
-        AccuseEntity beforeAccuseEntity = accuseEntityRepository.findBySourceUserIdAndTargetUserId(sourceUser.getId(), targetUserId);
+        // 과거에 신고한 이력이 있었는 지 확인
+        final AccuseEntity beforeAccuseEntity = accuseEntityRepository.findBySourceUserIdAndTargetUserId(sourceUser.getId(), targetUserId);
         if (!ObjectUtils.isEmpty(beforeAccuseEntity)) {
             throw new DodalApplicationException(ErrorCode.ALREADY_ACCUSE_SUCCEED);
         }
@@ -382,20 +302,23 @@ public class UserService {
             throw new DodalApplicationException(ErrorCode.INVALID_USER_ACCUSE);
         }
 
-        if ( (request.getAccuseCode().equals("007") && !StringUtils.hasText(request.getContent())) ||
-            !request.getAccuseCode().equals("007") && StringUtils.hasText(request.getContent())
+        // 신고 문항이 7번인 경우 주관식 응답 요청이 와야한다.
+        if ( (request.getAccuseCode().equals("007") && !StringUtils.isEmpty(request.getContent())) ||
+            !request.getAccuseCode().equals("007") && StringUtils.isEmpty(request.getContent())
         ) {
             throw new DodalApplicationException(ErrorCode.INVALID_ACCUSE_REQUEST);
         }
 
-        AccuseEntity accuseEntity = AccuseEntity.userAccuseRequestToEntity(request, targetUserId, userEntity);
+        final AccuseEntity accuseEntity = AccuseEntity.newInstance(request, targetUserId, userEntity);
         accuseEntityRepository.save(accuseEntity);
-        userEntity.updateAccuseCnt(DtoUtils.ONE);
+
+        // 피신고자 신고 횟수 업데이트
+        targetUserEntity.updateAccuseCnt(DtoUtils.ONE);
     }
 
     @Transactional(readOnly = true)
     public CommonCodeResponse getAccuseCode() {
         List<CommonCodeEntity> codeList = commonCodeEntityRepository.findAllByCategory("ACCUSE");
-        return CommonCodeResponse.commonCodeEntityToDto(codeList);
+        return CommonCodeResponse.newInstance(codeList);
     }
 }
