@@ -26,14 +26,17 @@ public class CategoryEntity {
     @Builder.Default
     @OneToMany(mappedBy = "categoryEntity", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TagEntity> tagEntities = new ArrayList<>();
+
+    @Column(nullable = false, length = 50)
     private String name;
 
-    @Column(name = "category_value")
+    @Column(nullable = false, length = 50)
     private String categoryValue;
 
+    @Column(nullable = true)
     private String emoji;
 
-    @Column(name = "sub_name")
+    @Column(nullable = true)
     private String subName;
 
     @Builder.Default

@@ -1,12 +1,11 @@
 package com.dodal.meet.model.entity;
 
 
+import com.dodal.meet.model.BaseTime;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.*;
 import lombok.experimental.Accessors;
-import org.springframework.util.Assert;
-
 import javax.persistence.*;
 
 @Entity
@@ -17,25 +16,24 @@ import javax.persistence.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Accessors(chain = true)
-public class TokenEntity {
+public class TokenEntity extends BaseTime {
 
     @Id
     @Column(name = "token_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(mappedBy = "tokenEntity", fetch = FetchType.LAZY)
-    private UserEntity userEntity;
+    @Column(nullable = false)
     private String refreshToken;
+
+    @Column(nullable = true)
     private String fcmToken;
 
     public void updateRefreshToken(String refreshToken) {
-        Assert.notNull(refreshToken, "refreshToken must not be null");
         this.refreshToken = refreshToken;
     }
 
     public void updateFcmToken(String fcmToken) {
-        Assert.notNull(fcmToken, "fcmToken must not be null");
         this.fcmToken = fcmToken;
     }
 }

@@ -25,8 +25,9 @@ public class TagEntity {
     @JoinColumn(name = "category_id")
     private CategoryEntity categoryEntity;
 
+    @Column(nullable = false)
     private String name;
 
-    @Column(name = "tag_value")
+    @Column(nullable = false)
     private String tagValue;
 }

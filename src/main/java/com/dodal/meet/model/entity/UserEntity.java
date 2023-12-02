@@ -2,15 +2,13 @@ package com.dodal.meet.model.entity;
 
 
 import com.dodal.meet.controller.request.user.UserSignUpRequest;
+import com.dodal.meet.model.BaseTime;
 import com.dodal.meet.model.SocialType;
 import com.dodal.meet.model.UserRole;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.*;
-import org.springframework.util.Assert;
 import javax.persistence.*;
-import java.sql.Timestamp;
-import java.time.Instant;
 
 @Entity
 @Table(name = "users")
@@ -19,69 +17,52 @@ import java.time.Instant;
 @JsonNaming(value = PropertyNamingStrategy.SnakeCaseStrategy.class)
 @Builder
 @AllArgsConstructor
-public class UserEntity {
+public class UserEntity extends BaseTime {
 
     @Id
     @Column(name = "user_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = true, length = 30)
     private String email;
 
+    @Column(nullable = false, length = 16)
     private String nickname;
 
+    @Column(nullable = false, length = 20)
     private String socialId;
 
+    @Column(nullable = false, length = 10)
     @Enumerated(EnumType.STRING)
     private UserRole role;
 
+    @Column(nullable = false, length = 20)
     @Enumerated(EnumType.STRING)
     private SocialType socialType;
 
+    @Column(nullable = true, length = 255)
     private String profileUrl;
 
+    @Column(nullable = true, length = 50)
     private String content;
 
+    @Column(nullable = false, length = 1)
     private char alarmYn;
 
+    @Column(nullable = false, length = 30)
     private int accuseCnt;
 
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-    @JoinColumn(name = "token_id")
+    @JoinColumn(name = "token_id", nullable = true)
     private TokenEntity tokenEntity;
 
-    private Timestamp registerAt;
-
-    private Timestamp updatedAt;
 
     @PrePersist
     void registedAt() {
-        this.registerAt = Timestamp.from(Instant.now());
         this.role = UserRole.USER;
         this.alarmYn = 'Y';
         this.accuseCnt = 0;
-    }
-
-    @PreUpdate
-    void updatedAt() {
-        this.updatedAt = Timestamp.from(Instant.now());
-    }
-
-
-    @Builder(builderClassName = "SignUpDtoToEntity", builderMethodName = "SignUpDtoToEntity")
-    public UserEntity (UserSignUpRequest request, TokenEntity tokenEntity) {
-
-        Assert.notNull(request.getSocialId(), "socialId must not be null");
-        Assert.notNull(request.getSocialType(), "socialType must not be null");
-        Assert.notNull(tokenEntity, "token must not be null");
-
-        this.socialId = request.getSocialId();
-        this.socialType = request.getSocialType();
-        this.email = request.getEmail();
-        this.nickname = request.getNickname();
-        this.profileUrl = request.getProfileUrl();
-        this.content = request.getContent();
-        this.tokenEntity = tokenEntity;
     }
 
     public void updateProfileUrl(String profileUrl) {
@@ -93,5 +74,17 @@ public class UserEntity {
 
     public void updateAccuseCnt(int num) {
         this.accuseCnt += num;
+    }
+
+    public static UserEntity newInstance(UserSignUpRequest userSignUpRequest, TokenEntity tokenEntity) {
+        return UserEntity.builder()
+                .socialId(userSignUpRequest.getSocialId())
+                .socialType(userSignUpRequest.getSocialType())
+                .email(userSignUpRequest.getEmail())
+                .nickname(userSignUpRequest.getNickname())
+                .profileUrl(userSignUpRequest.getProfileUrl())
+                .content(userSignUpRequest.getContent())
+                .tokenEntity(tokenEntity)
+                .build();
     }
 }

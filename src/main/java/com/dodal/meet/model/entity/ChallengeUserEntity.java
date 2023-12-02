@@ -1,6 +1,7 @@
 package com.dodal.meet.model.entity;
 
 
+import com.dodal.meet.model.BaseTime;
 import com.dodal.meet.model.RoomRole;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -8,9 +9,8 @@ import lombok.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
+import javax.annotation.Nullable;
 import javax.persistence.*;
-import java.sql.Timestamp;
-import java.time.Instant;
 
 @Entity
 @Table(name = "challenge_user")
@@ -19,7 +19,7 @@ import java.time.Instant;
 @JsonNaming(value = PropertyNamingStrategies.SnakeCaseStrategy.class)
 @AllArgsConstructor
 @Builder
-public class ChallengeUserEntity {
+public class ChallengeUserEntity extends BaseTime {
 
     @Id
     @Column(name = "challenge_user_id")
@@ -30,13 +30,17 @@ public class ChallengeUserEntity {
     @JoinColumn(name = "challenge_room_id")
     private ChallengeRoomEntity challengeRoomEntity;
 
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private RoomRole roomRole;
 
+    @Column(nullable = false, length = 50)
     private int continueCertCnt;
 
+    @Column(nullable = false, length = 50)
     private int maxContinueCertCnt;
 
+    @Column(nullable = false, length = 50)
     private int totalCertCnt;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -44,14 +48,11 @@ public class ChallengeUserEntity {
     @OnDelete(action = OnDeleteAction.CASCADE)
     private UserEntity userEntity;
 
-    private Timestamp registeredAt;
-
     @PrePersist
     void prePersist() {
         this.continueCertCnt = 0;
         this.maxContinueCertCnt = 0;
         this.totalCertCnt = 0;
-        this.registeredAt = Timestamp.from(Instant.now());
     }
 
     // 연관 관계 편의 메서드
@@ -63,7 +64,7 @@ public class ChallengeUserEntity {
         challengeRoomEntity.getChallengeUserEntities().add(this);
     }
 
-    public static ChallengeUserEntity getHostEntity(UserEntity userEntity) {
+    public static ChallengeUserEntity fromHostEntity(UserEntity userEntity) {
         return ChallengeUserEntity.builder()
                 .roomRole(RoomRole.HOST)
                 .userEntity(userEntity)

@@ -14,6 +14,6 @@ public interface TagEntityRepository extends JpaRepository<TagEntity, Integer> {
     Optional<TagEntity> findByTagValue(String value);
 
 
-    @Query("SELECT t FROM TagEntity t WHERE t.tagValue in :userTagValueList")
-    List<TagEntity> findAllByUserTagValue(@Param("userTagValueList") List<String> userTagValueList);
+    @Query("SELECT t FROM TagEntity t WHERE t.tagValue in :tagValueList")
+    List<TagEntity> findAllByTagValueList(@Param("tagValueList") List<String> tagValueList);
 }

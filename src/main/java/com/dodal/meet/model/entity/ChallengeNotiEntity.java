@@ -1,13 +1,11 @@
 package com.dodal.meet.model.entity;
 
 
+import com.dodal.meet.model.BaseTime;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.*;
-
 import javax.persistence.*;
-import java.sql.Timestamp;
-import java.time.Instant;
 
 @Entity
 @Table(name = "challenge_noti")
@@ -16,7 +14,7 @@ import java.time.Instant;
 @JsonNaming(value = PropertyNamingStrategies.SnakeCaseStrategy.class)
 @AllArgsConstructor
 @Builder
-public class ChallengeNotiEntity {
+public class ChallengeNotiEntity extends BaseTime {
 
     @Id
     @Column(name = "challenge_noti_id")
@@ -27,17 +25,11 @@ public class ChallengeNotiEntity {
     @JoinColumn(name = "challenge_room_id")
     private ChallengeRoomEntity challengeRoomEntity;
 
+    @Column(nullable = false, length = 50)
     private String title;
 
+    @Column(nullable = false, length = 2000)
     private String content;
-
-
-    private Timestamp registeredAt;
-
-    @PrePersist
-    void prePersist() {
-        this.registeredAt = Timestamp.from(Instant.now());
-    }
 
     // 연관 관계 편의 메서드
     public void addChallengeRoomEntity(ChallengeRoomEntity challengeRoomEntity) {

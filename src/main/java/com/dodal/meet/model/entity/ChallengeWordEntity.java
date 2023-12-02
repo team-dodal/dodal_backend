@@ -1,11 +1,12 @@
 package com.dodal.meet.model.entity;
 
+import com.dodal.meet.model.BaseTime;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.*;
+import org.checkerframework.checker.units.qual.C;
+
 import javax.persistence.*;
-import java.sql.Timestamp;
-import java.time.Instant;
 
 @Entity
 @Table(name = "challenge_word")
@@ -14,21 +15,17 @@ import java.time.Instant;
 @JsonNaming(value = PropertyNamingStrategies.SnakeCaseStrategy.class)
 @AllArgsConstructor
 @Builder
-public class ChallengeWordEntity {
+public class ChallengeWordEntity extends BaseTime {
 
     @Id
     @Column(name = "challenge_word_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private String word;
 
+    @Column(nullable = false)
     private Long userId;
 
-    private Timestamp registeredAt;
-
-    @PrePersist
-    void prePersist() {
-        this.registeredAt = Timestamp.from(Instant.now());
-    }
 }

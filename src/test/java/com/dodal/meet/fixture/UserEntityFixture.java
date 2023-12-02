@@ -5,10 +5,13 @@ import com.dodal.meet.model.entity.UserEntity;
 
 public class UserEntityFixture {
 
+
     public static UserEntity getUserEntity(final String socialId, final SocialType socialType) {
         return UserEntity.builder()
                 .socialId(socialId)
                 .socialType(socialType)
+                .nickname(socialId + socialType.name())
+                .tokenEntity(TokenEntityFixture.getTokenEntity())
                 .build();
     }
 }

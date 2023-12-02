@@ -1,10 +1,10 @@
 package com.dodal.meet.model.entity;
 
 
+import com.dodal.meet.model.BaseTime;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.*;
-
 import javax.persistence.*;
 
 @Entity
@@ -14,7 +14,7 @@ import javax.persistence.*;
 @JsonNaming(value = PropertyNamingStrategies.SnakeCaseStrategy.class)
 @AllArgsConstructor
 @Builder
-public class ChallengeTagEntity {
+public class ChallengeTagEntity extends BaseTime {
 
     @Id
     @Column(name = "challenge_tag_id")
@@ -24,16 +24,16 @@ public class ChallengeTagEntity {
     @OneToOne(mappedBy = "challengeTagEntity")
     private ChallengeRoomEntity challengeRoomEntity;
 
-    @Column(name = "category_name")
+    @Column(nullable = false, length = 50)
     private String categoryName;
 
-    @Column(name = "category_value")
+    @Column(nullable = false, length = 50)
     private String categoryValue;
 
-    @Column(name = "tag_name")
+    @Column(nullable = false, length = 50)
     private String tagName;
 
-    @Column(name = "tag_value")
+    @Column(nullable = false, length = 50)
     private String tagValue;
 
     public void addChallengeRoomEntity(ChallengeRoomEntity challengeRoomEntity) {

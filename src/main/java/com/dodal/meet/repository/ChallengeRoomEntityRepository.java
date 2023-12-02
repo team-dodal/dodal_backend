@@ -71,5 +71,5 @@ public interface ChallengeRoomEntityRepository extends JpaRepository<ChallengeRo
             "SET r.hostNickname = :nickname, r.hostProfileUrl = :profileUrl " +
             "WHERE r.hostId = :userId"
     )
-    void updateNicknameAndProfileUrlByUserId(@Param("userId") Long userId, @Param("nickname") String nickname, @Param("profileUrl") String profileUrl);
+    void updateNicknameAndProfileUrlByHostUserId(@Param("userId") Long userId, @Param("nickname") String nickname, @Param("profileUrl") String profileUrl);
 }

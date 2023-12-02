@@ -1,14 +1,12 @@
 package com.dodal.meet.model.entity;
 
+import com.dodal.meet.model.BaseTime;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
-
 import javax.persistence.*;
-import java.sql.Timestamp;
-import java.time.Instant;
 
 @Entity
 @Table(name = "challenge_bookmark")
@@ -17,7 +15,7 @@ import java.time.Instant;
 @JsonNaming(value = PropertyNamingStrategies.SnakeCaseStrategy.class)
 @AllArgsConstructor
 @Builder
-public class ChallengeBookmarkEntity {
+public class ChallengeBookmarkEntity extends BaseTime {
 
     @Id
     @Column(name = "challenge_bookmark_id")
@@ -33,11 +31,4 @@ public class ChallengeBookmarkEntity {
     @JoinColumn(name = "user_id")
     @OnDelete(action = OnDeleteAction.CASCADE)
     private UserEntity userEntity;
-
-    private Timestamp registeredAt;
-
-    @PrePersist
-    void prePersist() {
-        this.registeredAt = Timestamp.from(Instant.now());
-    }
 }

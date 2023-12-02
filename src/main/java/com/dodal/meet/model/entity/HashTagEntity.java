@@ -26,6 +26,8 @@ public class HashTagEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
     private CategoryEntity categoryEntity;
+
+    @Column(nullable = false)
     private String name;
 
     public static List<String> convertStringList(List<HashTagEntity> entityList) {

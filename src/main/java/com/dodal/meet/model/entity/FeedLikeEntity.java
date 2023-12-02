@@ -1,13 +1,10 @@
 package com.dodal.meet.model.entity;
 
-import com.dodal.meet.utils.DateUtils;
+import com.dodal.meet.model.BaseTime;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.*;
-
 import javax.persistence.*;
-import java.sql.Timestamp;
-import java.time.Instant;
 
 @Entity
 @Table(name = "feed_like")
@@ -16,7 +13,7 @@ import java.time.Instant;
 @JsonNaming(value = PropertyNamingStrategies.SnakeCaseStrategy.class)
 @AllArgsConstructor
 @Builder
-public class FeedLikeEntity {
+public class FeedLikeEntity extends BaseTime {
 
     @Id
     @Column(name = "feed_like_id")
@@ -27,12 +24,6 @@ public class FeedLikeEntity {
     @JoinColumn(name = "challenge_feed_id")
     private ChallengeFeedEntity challengeFeedEntity;
 
+    @Column(nullable = false)
     private Long likeUserId;
-
-    private Timestamp registeredAt;
-
-    @PrePersist
-    void prePersist() {
-        this.registeredAt = Timestamp.from(Instant.now());
-    }
 }
