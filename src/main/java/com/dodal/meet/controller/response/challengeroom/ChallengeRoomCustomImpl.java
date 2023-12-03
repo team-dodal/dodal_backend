@@ -11,10 +11,7 @@ import com.dodal.meet.exception.ErrorCode;
 import com.dodal.meet.model.RoomRole;
 import com.dodal.meet.model.RoomSearchType;
 import com.dodal.meet.model.entity.*;
-import com.dodal.meet.utils.DateUtils;
-import com.dodal.meet.utils.FeedUtils;
-import com.dodal.meet.utils.ImageUtils;
-import com.dodal.meet.utils.OrderByNull;
+import com.dodal.meet.utils.*;
 import com.querydsl.core.types.ConstantImpl;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.SubQueryExpression;
@@ -85,7 +82,9 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
         Set<Integer> userRoomSet = new HashSet<>(userRoomList);
         content.forEach(row -> {
             if (userRoomSet.contains(row.getChallengeRoomId())) {
-                row.setJoinYN("Y");
+                row.setJoinYN(DtoUtils.Y);
+            } else {
+                row.setJoinYN(DtoUtils.N);
             }
         });
 
@@ -121,7 +120,9 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
 
         content.forEach(row -> {
             if (userRoomSet.contains(row.getChallengeRoomId())) {
-                row.setJoinYN("Y");
+                row.setJoinYN(DtoUtils.Y);
+            } else {
+                row.setJoinYN(DtoUtils.N);
             }
         });
 
@@ -211,7 +212,7 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
             response.setUserCertPerWeekList(new ArrayList<>());
         }
 
-        response.setJoinYN(commonUserCnt != 0 ? "Y" : "N");
+        response.setJoinYN(commonUserCnt != 0 ? DtoUtils.Y : DtoUtils.N);
         // 오늘 인증 여부 update
         response.setTodayCertCode(certCode);
 
@@ -267,11 +268,14 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
                 .select(new QChallengeRoomSearchResponse(
                         room.id, room.hostId, room.hostNickname, room.hostProfileUrl, room.title, room.content, room.certCnt, room.thumbnailImgUrl, room.recruitCnt,
                         room.userCnt, room.bookmarkCnt, new CaseBuilder().when(bookmark.userEntity.isNotNull()).then("Y").otherwise("N").as("bookmarkYN"),
+                        new CaseBuilder().when(challengeUser.isNotNull()).then("Y").otherwise("N").as("joinYN"),
                         room.registeredAt, roomTag.categoryName, roomTag.categoryValue, roomTag.tagName, roomTag.tagValue
                 )).from(room)
                 .innerJoin(room.challengeTagEntity, roomTag)
                 .leftJoin(bookmark)
                 .on(room.eq(bookmark.challengeRoomEntity).and(bookmark.userEntity.id.eq(userEntity.getId())))
+                .leftJoin(challengeUser)
+                .on(challengeUser.userEntity.id.eq(userEntity.getId()))
                 .where(roomTag.tagValue.in(userTagValues))
                 .orderBy(room.bookmarkCnt.desc(), room.registeredAt.desc())
                 .offset(pageable.getOffset())
@@ -292,11 +296,14 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
                 .select(new QChallengeRoomSearchResponse(
                         room.id, room.hostId, room.hostNickname, room.hostProfileUrl, room.title, room.content, room.certCnt, room.thumbnailImgUrl, room.recruitCnt,
                         room.userCnt, room.bookmarkCnt, new CaseBuilder().when(bookmark.userEntity.isNotNull()).then("Y").otherwise("N").as("bookmarkYN"),
+                        new CaseBuilder().when(challengeUser.isNotNull()).then("Y").otherwise("N").as("joinYN"),
                         room.registeredAt, roomTag.categoryName, roomTag.categoryValue, roomTag.tagName, roomTag.tagValue
                 )).from(room)
                 .innerJoin(room.challengeTagEntity, roomTag)
                 .leftJoin(bookmark)
                 .on(room.eq(bookmark.challengeRoomEntity).and(bookmark.userEntity.id.eq(userEntity.getId())))
+                .leftJoin(challengeUser)
+                .on(challengeUser.userEntity.id.eq(userEntity.getId()))
                 ;
 
         // 인기 있는 도전의 경우 북마크 많은 순으로 추가 정렬
@@ -347,7 +354,9 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
 
         content.forEach(x -> {
             if (roomList.contains(x.getRoomId())) {
-                x.setJoinYN("Y");
+                x.setJoinYN(DtoUtils.Y);
+            } else {
+                x.setJoinYN(DtoUtils.N);
             }
             x.setRegisterCode(DateUtils.convertToRegisterCode(x.getRegisteredAt()));
         });

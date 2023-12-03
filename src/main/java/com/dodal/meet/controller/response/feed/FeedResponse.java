@@ -66,9 +66,8 @@ public class FeedResponse {
     @Schema(description = "유저 좋아요 클릭 여부", example = "Y")
     private String likeYN;
 
-    @Builder.Default
     @Schema(description = "가입 여부", example = "Y")
-    private String joinYN = "N";
+    private String joinYN;
 
     @Schema(description = "댓글 생성 코드", example = "1시간전")
     private String registerCode;
