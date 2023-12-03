@@ -1,6 +1,7 @@
 package com.dodal.meet.configuration;
 
 import com.dodal.meet.model.User;
+import com.dodal.meet.model.entity.UserEntity;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,9 +32,9 @@ public class RedisConfig {
         RedisTemplate<byte[], byte[]> redisTemplate = new RedisTemplate<>();
         redisTemplate.setConnectionFactory(redisConnectionFactory());
         redisTemplate.setKeySerializer(new StringRedisSerializer());
-        // 레디스에 직렬화 된 데이터를 위한 설정 지정안하면 아래 오류 발생
-        // org.springframework.core.serializer.support.SerializationFailedException: Failed to serialize object using DefaultSerializer
-        redisTemplate.setValueSerializer(new Jackson2JsonRedisSerializer<>(User.class));
+        redisTemplate.setValueSerializer(new StringRedisSerializer());
+        redisTemplate.setHashKeySerializer(new StringRedisSerializer());
+        redisTemplate.setHashValueSerializer(new StringRedisSerializer());
         return redisTemplate;
     }
 }
