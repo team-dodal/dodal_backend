@@ -38,7 +38,7 @@ public enum ErrorCode {
 
     INVALID_ACCUSE_REQUEST(HttpStatus.BAD_REQUEST, "신고 요청 정보가 잘못 되었습니다. 기타에는 내용이 필수이며, 나머지는 내용이 없어야 합니다."),
     ALREADY_ACCUSE_SUCCEED(HttpStatus.BAD_REQUEST, "이미 신고한 사용자입니다."),
-
+    ROOM_OWNER_CANNOT_LEAVE(HttpStatus.BAD_REQUEST, "방장은 도전방 탈퇴할 수 없습니다."),
     ROOM_DELETE_REQUIRED(HttpStatus.BAD_REQUEST, "운영 중인 도전방이 있습니다."),
     // 401 - UNAUTHORIZED
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다."),
@@ -68,6 +68,8 @@ public enum ErrorCode {
 
     // 500 - INTERNAL SERVER ERROR
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 오류가 발생했습니다."),
+    REDIS_JSON_PARSING_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "레디스 파싱 중 오류가 발생했습니다."),
+    REDIS_VALUE_NOT_FOUND(HttpStatus.INTERNAL_SERVER_ERROR, "레디스 VALUE 값이 비어 있습니다."),
     FCM_PUSH_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "FCM PUSH 알림 발송 중 오류가 발생했습니다."),
 
     COMMON_CODE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버에 등록된 공통코드 정보를 찾을 수 없습니다.")

@@ -32,7 +32,8 @@ public class UserCacheRepository {
             log.info("Set user to Redis {}:{}", key, userValue);
             userRedisTemplate.opsForValue().setIfAbsent(key, userValue, USER_CACHE_TTL);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+            log.error(e.getMessage());
+            throw new DodalApplicationException(ErrorCode.REDIS_JSON_PARSING_ERROR);
         }
     }
 
@@ -46,9 +47,10 @@ public class UserCacheRepository {
                 return Optional.ofNullable(user);
             }
         } catch (JsonProcessingException e) {
-            throw new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST);
+            log.error(e.getMessage());
+            throw new DodalApplicationException(ErrorCode.REDIS_JSON_PARSING_ERROR);
         }
-        throw new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST);
+        throw new DodalApplicationException(ErrorCode.REDIS_VALUE_NOT_FOUND);
     }
 
     private String getKey(String socialId, SocialType socialType) {
