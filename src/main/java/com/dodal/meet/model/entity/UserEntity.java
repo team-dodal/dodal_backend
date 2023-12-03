@@ -5,6 +5,7 @@ import com.dodal.meet.controller.request.user.UserSignUpRequest;
 import com.dodal.meet.model.BaseTime;
 import com.dodal.meet.model.SocialType;
 import com.dodal.meet.model.UserRole;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.*;
@@ -53,13 +54,14 @@ public class UserEntity extends BaseTime {
     @Column(nullable = false, length = 30)
     private int accuseCnt;
 
+    @JsonIgnore
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     @JoinColumn(name = "token_id", nullable = true)
     private TokenEntity tokenEntity;
 
 
     @PrePersist
-    void registedAt() {
+    void registeredAt() {
         this.role = UserRole.USER;
         this.alarmYn = 'Y';
         this.accuseCnt = 0;

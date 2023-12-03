@@ -47,20 +47,20 @@ public class FeedService {
     public Page<FeedResponse> getRoomFeeds(final User user, final Integer roomId, final Pageable pageable) {
         challengeRoomEntityRepository.findById(roomId).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM));
 
-        final UserEntity userEntity = userService.userToUserEntity(user);
+        final UserEntity userEntity = userService.getCachedUserEntity(user);
         return challengeRoomEntityRepository.getRoomFeeds(userEntity, roomId, pageable);
     }
 
     @Transactional(readOnly = true)
     public Page<FeedResponse> getFeeds(final User user, final Pageable pageable) {
-        final UserEntity userEntity = userService.userToUserEntity(user);
+        final UserEntity userEntity = userService.getCachedUserEntity(user);
         return challengeRoomEntityRepository.getFeeds(userEntity, pageable);
     }
 
     @Transactional
     public void postFeedLike(final Long feedId, final User user) {
         ChallengeFeedEntity feedEntity = challengeFeedEntityRepository.findById(feedId).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_FEED));
-        final UserEntity userEntity = userService.userToUserEntity(user);
+        final UserEntity userEntity = userService.getCachedUserEntity(user);
         FeedLikeEntity findFeedLikeEntity = feedLikeEntityRepository.findByFeedInfo(feedId, userEntity.getId()).orElse(null);
         if (!ObjectUtils.isEmpty(findFeedLikeEntity)) {
             throw new DodalApplicationException(ErrorCode.INVALID_FEED_LIKE_REQUEST);
@@ -90,7 +90,7 @@ public class FeedService {
     @Transactional
     public List<CommentResponse> postFeedComment(final Long feedId, final User user, final CommentCreateRequest commentCreateRequest) {
         ChallengeFeedEntity feedEntity = challengeFeedEntityRepository.findById(feedId).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_FEED));
-        final UserEntity userEntity = userService.userToUserEntity(user);
+        final UserEntity userEntity = userService.getCachedUserEntity(user);
 
         CommentEntity newComment = CommentEntity.newInstance(commentCreateRequest, feedEntity, userEntity);
 
@@ -125,7 +125,7 @@ public class FeedService {
     @Transactional
     public List<CommentResponse> updateFeedComment(final Long feedId, final User user, final CommentUpdateRequest commentUpdateRequest) {
         challengeFeedEntityRepository.findById(feedId).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_FEED));
-        final UserEntity userEntity = userService.userToUserEntity(user);
+        final UserEntity userEntity = userService.getCachedUserEntity(user);
         CommentEntity commentEntity = commentEntityRepository.findById(commentUpdateRequest.getCommentId()).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_COMMENT));
         if (commentEntity.getUserId() != userEntity.getId()) {
             throw new DodalApplicationException(ErrorCode.UNAUTHORIZED_COMMENT);
@@ -138,7 +138,7 @@ public class FeedService {
     @Transactional(readOnly = true)
     public FeedResponse getFeed(final User user, final Long feedId) {
         challengeFeedEntityRepository.findById(feedId).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_FEED));
-        final UserEntity userEntity = userService.userToUserEntity(user);
+        final UserEntity userEntity = userService.getCachedUserEntity(user);
         return challengeFeedEntityRepository.getFeed(userEntity, feedId);
     }
 }

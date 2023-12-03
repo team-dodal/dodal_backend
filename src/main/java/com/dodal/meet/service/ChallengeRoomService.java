@@ -66,7 +66,7 @@ public class ChallengeRoomService {
             challengeRoomEntity.updateDefaultImgUrl(ImageUtils.findByCategoryValueToRoomThumbnailImageUrl(categoryValue));
         }
 
-        UserEntity userEntity = userService.userToUserEntity(user);
+        UserEntity userEntity = userService.getCachedUserEntity(user);
         ChallengeUserEntity challengeUserEntity = ChallengeUserEntity.fromHostEntity(userEntity);
 
         challengeRoomEntity.updateUserInfo(userEntity);
@@ -87,7 +87,7 @@ public class ChallengeRoomService {
 
     @Transactional
     public Page<ChallengeRoomSearchResponse> getChallengeRooms(final String condition, final String categoryValue, final Pageable pageable, final User user) {
-        UserEntity userEntity = userService.userToUserEntity(user);
+        UserEntity userEntity = userService.getCachedUserEntity(user);
         if (!isEmpty(categoryValue)) {
             validValue(ValueType.CATEGORY, categoryValue);
         }
@@ -102,7 +102,7 @@ public class ChallengeRoomService {
 
     @Transactional(readOnly = true)
     public Page<ChallengeRoomSearchResponse> getChallengeRoomsByCategory(final ChallengeRoomSearchCategoryRequest request, final Pageable pageable, final User user) {
-        UserEntity userEntity = userService.userToUserEntity(user);
+        UserEntity userEntity = userService.getCachedUserEntity(user);
         final String categoryValue = request.getCategoryValue();
         final String tagValue = request.getTagValue();
         if (!isEmpty(categoryValue)) {
@@ -126,7 +126,7 @@ public class ChallengeRoomService {
 
     @Transactional(readOnly = true)
     public ChallengeRoomDetailResponse getChallengeRoomDetail(final Integer roomId, final User user) {
-        UserEntity userEntity = userService.userToUserEntity(user);
+        UserEntity userEntity = userService.getCachedUserEntity(user);
         getChallengeRoomEntityById(roomId);
         return challengeRoomEntityRepository.getChallengeRoomDetail(roomId,userEntity);
     }
@@ -135,7 +135,7 @@ public class ChallengeRoomService {
     public ChallengeRoomDetailResponse joinChallengeRoom(final Integer roomId, final User user) {
 
         final ChallengeRoomEntity challengeRoom = getChallengeRoomEntityById(roomId);
-        final UserEntity userEntity = userService.userToUserEntity(user);
+        final UserEntity userEntity = userService.getCachedUserEntity(user);
         ChallengeUserEntity challengeUser = challengeUserEntityRepository.findByUserIdAndChallengeRoomEntity(userEntity.getId(), challengeRoom).orElse(null);
         // 이미 가입된 회원이라면
         if (!isEmpty(challengeUser)) {
@@ -158,7 +158,7 @@ public class ChallengeRoomService {
     @Transactional
     public void leaveChallengeRoom(final Integer roomId, final User user) {
         final ChallengeRoomEntity challengeRoom = getChallengeRoomEntityById(roomId);
-        final UserEntity userEntity = userService.userToUserEntity(user);
+        final UserEntity userEntity = userService.getCachedUserEntity(user);
         ChallengeUserEntity challengeUser = challengeUserEntityRepository.findByUserIdAndChallengeRoomEntity(userEntity.getId(), challengeRoom)
                 .orElseThrow(() -> new DodalApplicationException(ErrorCode.INVALID_ROOM_LEAVE));
         challengeUserEntityRepository.delete(challengeUser);
@@ -170,7 +170,7 @@ public class ChallengeRoomService {
     public void createCertification(final Integer roomId, final ChallengeFeedCreateRequest request, final User user) {
         final ChallengeRoomEntity challengeRoom = getChallengeRoomEntityById(roomId);
 
-        UserEntity userEntity = userService.userToUserEntity(user);
+        UserEntity userEntity = userService.getCachedUserEntity(user);
         ChallengeUserEntity challengeUser = challengeUserEntityRepository.findByUserIdAndChallengeRoomEntity(userEntity.getId(), challengeRoom).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM_USER));
         String today = DateUtils.parsingTimestamp(Timestamp.from(Instant.now()));
         List<ChallengeFeedEntity> userTodayFeedList = challengeFeedEntityRepository.findAllByUserIdAndRoomIdAndRegisteredDate(userEntity.getId(), roomId, today);
@@ -194,7 +194,7 @@ public class ChallengeRoomService {
 
     @Transactional
     public void registNoti(final Integer roomId, final ChallengeNotiCreateRequest challengeNotiRequest, final User user) {
-        UserEntity entity = userService.userToUserEntity(user);
+        UserEntity entity = userService.getCachedUserEntity(user);
         ChallengeRoomEntity roomEntity = challengeRoomEntityRepository.findById(roomId).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM));
         ChallengeUserEntity challengeUserEntity = challengeUserEntityRepository.findByUserIdAndChallengeRoomEntity(entity.getId(), roomEntity).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM_USER));
         if (challengeUserEntity.getRoomRole() != RoomRole.HOST) {
@@ -243,7 +243,7 @@ public class ChallengeRoomService {
 
     @Transactional
     public ChallengeRoomDetailResponse updateChallengeRoom(final Integer roomId, final ChallengeRoomUpdateRequest challengeRoomUpdateRequest, final User user) {
-        final UserEntity entity = userService.userToUserEntity(user);
+        final UserEntity entity = userService.getCachedUserEntity(user);
         ChallengeRoomEntity challengeRoomEntity = challengeRoomEntityRepository.findById(roomId).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM));
         TagEntity tagEntity = tagEntityRepository.findByTagValue(challengeRoomUpdateRequest.getTagValue()).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_TAG));
 
@@ -285,7 +285,7 @@ public class ChallengeRoomService {
 
 
     private void validNotiEntity(final Integer roomId, final User user) {
-        UserEntity entity = userService.userToUserEntity(user);
+        UserEntity entity = userService.getCachedUserEntity(user);
         ChallengeRoomEntity roomEntity = challengeRoomEntityRepository.findById(roomId).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM));
         ChallengeUserEntity challengeUserEntity = challengeUserEntityRepository.findByUserIdAndChallengeRoomEntity(entity.getId(), roomEntity).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM_USER));
         if (challengeUserEntity.getRoomRole() != RoomRole.HOST) {
@@ -307,7 +307,7 @@ public class ChallengeRoomService {
     }
 
     private void updateBookmark(final Integer roomId, final User user, final String type) {
-        UserEntity userEntity = userService.userToUserEntity(user);
+        UserEntity userEntity = userService.getCachedUserEntity(user);
         ChallengeRoomEntity challengeRoomEntity = challengeRoomEntityRepository.findById(roomId).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM));
         ChallengeBookmarkEntity challengeBookmarkEntity = challengeBookmarkEntityRepository.findByChallengeRoomEntityAndUserEntity(challengeRoomEntity, userEntity).orElse(null);
         if (type.equals("CREATE")) {
@@ -344,7 +344,7 @@ public class ChallengeRoomService {
 
     @Transactional(readOnly = true)
     public List<ChallengeRoomRankResponse> getRank(Integer roomId, String code, User user) {
-        userService.userToUserEntity(user);
+        userService.getCachedUserEntity(user);
         challengeRoomEntityRepository.findById(roomId).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM));
 
         // 전체 조회

@@ -72,7 +72,7 @@ public class ImageService {
     
     @Transactional
     public String getPresignedUrl(final String fileName, final User user) {
-        userService.userToUserEntity(user);
+        userService.getCachedUserEntity(user);
 
         Date expiration = new Date();
         long expTimeMillis = expiration.getTime();

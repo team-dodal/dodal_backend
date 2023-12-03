@@ -40,6 +40,7 @@ public class UserService {
     private final TokenEntityRepository tokenEntityRepository;
     private final ImageService imageService;
     private final UserCacheRepository userCacheRepository;
+    private final UserEntityCacheRepository userEntityCacheRepository;
     @Value("${jwt.secret-key}")
     private String jwtKey;
     @Value("${spring.config.activate.on-profile}")
@@ -67,6 +68,7 @@ public class UserService {
 
             if (!profile.equals("test")){
                 userCacheRepository.setUser(loadUserBySocialIdAndSocialType(socialId, socialType));
+                userEntityCacheRepository.setUserEntity(userEntity);
             }
             return UserSignInResponse.newInstance(userEntity, accessToken, refreshToken, tagEntityList, categoryEntityList);
         }
@@ -139,7 +141,8 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public UserInfoResponse getUser(final User user) {
-        final UserEntity userEntity = userToUserEntity(user);
+        // TOKEN 정보를 가져오기 때문에 REDIS 캐시를 사용하지 않고 직접 가져온다.
+        final UserEntity userEntity = userEntityRepository.findBySocialIdAndSocialType(user.getSocialId(), user.getSocialType()).orElseThrow(() -> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
         return getUserInfo(userEntity);
     }
 
@@ -154,8 +157,8 @@ public class UserService {
 
     @Transactional
     public UserInfoResponse updateUser(final UserUpdateRequest userUpdateRequest, final User user) {
-        // TODO : REDIS CACHE EVICT
-        UserEntity userEntity = userToUserEntity(user);
+        // TOKEN 정보를 가져오기 때문에 REDIS 캐시를 사용하지 않고 직접 가져온다.
+        final UserEntity userEntity = userEntityRepository.findBySocialIdAndSocialType(user.getSocialId(), user.getSocialType()).orElseThrow(() -> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
         final String requestNickname = userUpdateRequest.getNickname();
         final String requestContent = userUpdateRequest.getContent();
         final List<String> requestTagValueList = userUpdateRequest.getTagList();
@@ -183,6 +186,10 @@ public class UserService {
         }
         saveUserTags(tagEntityList, userEntity);
 
+        if (!profile.equals("test")){
+            userEntityCacheRepository.setUserEntity(userEntity);
+        }
+
         return getUserInfo(userEntity);
     }
 
@@ -191,7 +198,8 @@ public class UserService {
         if (StringUtils.isEmpty(fcmToken)) {
             throw new DodalApplicationException(ErrorCode.INVALID_TOKEN);
         }
-        final UserEntity userEntity = userToUserEntity(user);
+        // TOKEN 정보를 가져오기 때문에 REDIS 캐시를 사용하지 않고 직접 가져온다.
+        final UserEntity userEntity = userEntityRepository.findBySocialIdAndSocialType(user.getSocialId(), user.getSocialType()).orElseThrow(() -> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
         TokenEntity tokenEntity = userEntity.getTokenEntity();
         tokenEntity.updateFcmToken(fcmToken);
         tokenEntityRepository.save(tokenEntity);
@@ -199,14 +207,15 @@ public class UserService {
 
     @Transactional
     public UserAccessTokenResponse postAccessToken(final User user) {
-        final UserEntity userEntity = userToUserEntity(user);
+        final UserEntity userEntity = getCachedUserEntity(user);
         final String accessToken = JwtTokenUtils.generateAccessToken(userEntity.getSocialId(), userEntity.getSocialType(), jwtKey);
         return UserAccessTokenResponse.newInstance(accessToken);
     }
 
     @Transactional
     public void deleteUser(final User user) {
-        final UserEntity userEntity = userToUserEntity(user);
+        // TokenEntity와 같이 DELETE 되어야 하기 때문에 REDIS 캐시를 사용하지 않고 직접 가져온다.
+        final UserEntity userEntity = userEntityRepository.findBySocialIdAndSocialType(user.getSocialId(), user.getSocialType()).orElseThrow(() -> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
 
         List<ChallengeRoomEntity> hostRoomList = challengeRoomEntityRepository.findAllByHostId(userEntity.getId());
         if (!CollectionUtils.isEmpty(hostRoomList)) {
@@ -218,12 +227,12 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public UserEntity userToUserEntity(User user) {
-        // TODO : REDIS CACHE
+    public UserEntity getCachedUserEntity(User user) {
         final String socialId = user.getSocialId();
         final SocialType socialType = user.getSocialType();
-        return userEntityRepository.findBySocialIdAndSocialType(socialId, socialType)
-                .orElseThrow(() -> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
+        return userEntityCacheRepository.getUserEntity(socialId, socialType).orElseGet(() ->
+                userEntityRepository.findBySocialIdAndSocialType(socialId, socialType)
+                        .orElseThrow(() -> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST)));
     }
 
     public User loadUserBySocialIdAndSocialType(String socialId, SocialType socialType) {
@@ -234,7 +243,7 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public MyPageResponse getMyPage(final User user) {
-        final UserEntity userEntity = userToUserEntity(user);
+        final UserEntity userEntity = getCachedUserEntity(user);
         final List<UserTagEntity> userTagEntityList = userTagEntityRepository.findAllByUserEntity(userEntity);
 
         final List<String> userTagValueList = userTagEntityList.stream().map(t -> t.getTagValue()).collect(Collectors.toList());
@@ -270,7 +279,7 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public MyPageCalenderResponse getMyPageCalendarInfo(final Integer roomId, final String dateYM, final User user) {
-        final UserEntity userEntity = userToUserEntity(user);
+        final UserEntity userEntity = getCachedUserEntity(user);
         challengeRoomEntityRepository.findById(roomId).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM));
         return challengeRoomEntityRepository.getMyPageCalendarInfo(roomId, dateYM, userEntity.getId());
     }
@@ -289,7 +298,7 @@ public class UserService {
             throw new DodalApplicationException(ErrorCode.NOT_FOUND_ACCUSE_CODE);
         }
 
-        final UserEntity userEntity = userToUserEntity(sourceUser);
+        final UserEntity userEntity = getCachedUserEntity(sourceUser);
         UserEntity targetUserEntity = userEntityRepository.findById(targetUserId).orElseThrow(() -> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
 
         // 과거에 신고한 이력이 있었는 지 확인
