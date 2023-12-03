@@ -309,7 +309,7 @@ public class ChallengeRoomController {
                                                                                         @Schema(description = "요청 페이지 번호", example = "0") @RequestParam(name = "page") Integer page,
                                                                                         @Schema(description = "요청 페이지 사이즈", example = "3") @RequestParam(name = "page_size") Integer pageSize,
                                                                                         Authentication authentication) {
-        if (!StringUtils.isEmpty(word)) {
+        if (StringUtils.isEmpty(word)) {
             throw new DodalApplicationException(ErrorCode.NOT_FOUND_WORD);
         }
         final User user = (User) authentication.getPrincipal();
