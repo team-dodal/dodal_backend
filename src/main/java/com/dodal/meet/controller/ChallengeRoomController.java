@@ -287,7 +287,7 @@ public class ChallengeRoomController {
     @GetMapping("/challenge/room/{room_id}/rank")
     public ResponseEntity<ResponseSuccess<List<ChallengeRoomRankResponse>>> getRank(@PathVariable(name = "room_id") Integer roomId, @RequestParam(name = "code") String code, Authentication authentication) {
 
-        if (StringUtils.equalsAny(code, "0", "1", "2")) {
+        if (!StringUtils.equalsAny(code, "0", "1", "2")) {
             throw new DodalApplicationException(ErrorCode.INVALID_RANK_CODE);
         }
         final User user = (User) authentication.getPrincipal();

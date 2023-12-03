@@ -344,7 +344,7 @@ public class ChallengeRoomService {
 
     @Transactional(readOnly = true)
     public List<ChallengeRoomRankResponse> getRank(Integer roomId, String code, User user) {
-        userEntityRepository.findBySocialIdAndSocialType(user.getSocialId(), user.getSocialType()).orElseThrow(() -> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
+        userService.userToUserEntity(user);
         challengeRoomEntityRepository.findById(roomId).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM));
 
         // 전체 조회
