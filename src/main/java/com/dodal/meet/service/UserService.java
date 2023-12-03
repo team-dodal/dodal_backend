@@ -188,7 +188,7 @@ public class UserService {
 
     @Transactional
     public void postFcmToken(final String fcmToken, final User user) {
-        if (!StringUtils.isEmpty(fcmToken)) {
+        if (StringUtils.isEmpty(fcmToken)) {
             throw new DodalApplicationException(ErrorCode.INVALID_TOKEN);
         }
         final UserEntity userEntity = userToUserEntity(user);
@@ -303,8 +303,8 @@ public class UserService {
         }
 
         // 신고 문항이 7번인 경우 주관식 응답 요청이 와야한다.
-        if ( (request.getAccuseCode().equals("007") && !StringUtils.isEmpty(request.getContent())) ||
-            !request.getAccuseCode().equals("007") && StringUtils.isEmpty(request.getContent())
+        if ( (request.getAccuseCode().equals("007") && StringUtils.isEmpty(request.getContent())) ||
+            !request.getAccuseCode().equals("007") && !StringUtils.isEmpty(request.getContent())
         ) {
             throw new DodalApplicationException(ErrorCode.INVALID_ACCUSE_REQUEST);
         }
