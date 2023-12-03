@@ -161,6 +161,9 @@ public class ChallengeRoomService {
         final UserEntity userEntity = userService.getCachedUserEntity(user);
         ChallengeUserEntity challengeUser = challengeUserEntityRepository.findByUserIdAndChallengeRoomEntity(userEntity.getId(), challengeRoom)
                 .orElseThrow(() -> new DodalApplicationException(ErrorCode.INVALID_ROOM_LEAVE));
+        if (challengeUser.getRoomRole().equals(RoomRole.HOST)) {
+            throw new DodalApplicationException(ErrorCode.ROOM_OWNER_CANNOT_LEAVE);
+        }
         challengeUserEntityRepository.delete(challengeUser);
         challengeRoom.updateUserCnt(-1);
         challengeRoomEntityRepository.save(challengeRoom);
@@ -214,8 +217,7 @@ public class ChallengeRoomService {
     }
 
     @Transactional
-    public List<ChallengeNotiResponse> getNotis(final Integer roomId, final User user) {
-        validNotiEntity(roomId, user);
+    public List<ChallengeNotiResponse> getNotis(final Integer roomId) {
         return challengeNotiEntityRepository.getChallengeRoomNoti(roomId);
     }
 

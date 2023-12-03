@@ -114,10 +114,10 @@ public class ChallengeRoomController {
     }
 
     @Operation(summary = "도전방 탈퇴 API"
-            , description = "도전방에 탈퇴한다.",
+            , description = "도전방에 탈퇴한다. 방장은 도전방 탈퇴 시도 시 ROOM_OWNER_CANNOT_LEAVE (400오류)를 반환한다.",
             responses = {
                     @ApiResponse(responseCode = "204", description = "성공", useReturnTypeSchema = true),
-                    @ApiResponse(responseCode = "400", description = "NOT_FOUND_ROOM", content = @Content(schema = @Schema(implementation = ResponseFail.class))),
+                    @ApiResponse(responseCode = "400", description = "ROOM_OWNER_CANNOT_LEAVE", content = @Content(schema = @Schema(implementation = ResponseFail.class))),
                     @ApiResponse(responseCode = "401", description = "INVALID_TOKEN", content = @Content(schema = @Schema(implementation = ResponseFail.class))),
                     @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = ResponseFail.class)))
             })
@@ -233,17 +233,16 @@ public class ChallengeRoomController {
     }
 
     @Operation(summary = "공지사항 조회 API"
-            , description = "도전방에 공지사항을 등록한다.",
+            , description = "도전방에 공지사항을 조회한다.",
             responses = {
                     @ApiResponse(responseCode = "200", description = "성공", useReturnTypeSchema = true),
                     @ApiResponse(responseCode = "400", description = "NOT_FOUND_ROOM", content = @Content(schema = @Schema(implementation = ResponseFail.class))),
-                    @ApiResponse(responseCode = "401", description = "INVALID_TOKEN, UNAUTHORIZED_ROOM_HOST", content = @Content(schema = @Schema(implementation = ResponseFail.class))),
+                    @ApiResponse(responseCode = "401", description = "INVALID_TOKEN", content = @Content(schema = @Schema(implementation = ResponseFail.class))),
                     @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = ResponseFail.class)))
             })
     @GetMapping("/challenge/room/{room_id}/noti")
-    public ResponseEntity<ResponseSuccess<List<ChallengeNotiResponse>>> getNotis(@PathVariable(name = "room_id") Integer roomId, Authentication authentication) {
-        final User user = (User) authentication.getPrincipal();
-        return ResponseEntity.ok().body(ResponseSuccess.success(challengeRoomService.getNotis(roomId, user)));
+    public ResponseEntity<ResponseSuccess<List<ChallengeNotiResponse>>> getNotis(@PathVariable(name = "room_id") Integer roomId) {
+        return ResponseEntity.ok().body(ResponseSuccess.success(challengeRoomService.getNotis(roomId)));
     }
 
     @Operation(summary = "공지사항 수정 API"

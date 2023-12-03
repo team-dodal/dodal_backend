@@ -44,7 +44,7 @@ public class ChallengeManageController {
                     @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = ResponseFail.class)))
             })
     @GetMapping("/user")
-    public ResponseEntity<ResponseSuccess<List<ChallengeUserRoleResponse>>> getUserRoleChallengeRooms(Authentication authentication) {
+    public ResponseEntity<ResponseSuccess<List<ChallengeUserRoleResponse>>> getUserRoleChallengeRooms(final Authentication authentication) {
         final User user = (User) authentication.getPrincipal();
         return ResponseEntity.ok().body(ResponseSuccess.success(challengeListService.getUserRoleChallengeRooms(user)));
     }
@@ -58,7 +58,7 @@ public class ChallengeManageController {
                     @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = ResponseFail.class)))
             })
     @GetMapping("/host")
-    public ResponseEntity<ResponseSuccess<List<ChallengeHostRoleResponse>>> getHostRoleChallengeRooms(Authentication authentication) {
+    public ResponseEntity<ResponseSuccess<List<ChallengeHostRoleResponse>>> getHostRoleChallengeRooms(final Authentication authentication) {
         final User user = (User) authentication.getPrincipal();
         return ResponseEntity.ok().body(ResponseSuccess.success(challengeListService.getHostRoleChallengeRooms(user)));
     }
@@ -72,7 +72,7 @@ public class ChallengeManageController {
                     @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = ResponseFail.class)))
             })
     @GetMapping("/manage/{room_id}/certifications")
-    public ResponseEntity<ResponseSuccess<Map<String, List<ChallengeCertImgManage>>>> getCertImgList(@PathVariable(name = "room_id") Integer roomId, @RequestParam(name = "date_ym") String dateYM, Authentication authentication) {
+    public ResponseEntity<ResponseSuccess<Map<String, List<ChallengeCertImgManage>>>> getCertImgList(@PathVariable(name = "room_id") Integer roomId, @RequestParam(name = "date_ym") final String dateYM, final Authentication authentication) {
         final User user = (User) authentication.getPrincipal();
         return ResponseEntity.ok().body(ResponseSuccess.success(challengeListService.getCertImgList(roomId, dateYM, user)));
     }
@@ -86,7 +86,7 @@ public class ChallengeManageController {
                     @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = ResponseFail.class)))
             })
     @PatchMapping("/manage/{room_id}/certifications/{feed_id}")
-    public ResponseEntity<ResponseSuccess<Void>> updateFeedStatus(@PathVariable(name = "room_id") Integer roomId, @PathVariable(name = "feed_id") Long feedId, @RequestParam(name = "confirm_yn") String confirmYN, Authentication authentication) {
+    public ResponseEntity<ResponseSuccess<Void>> updateFeedStatus(@PathVariable(name = "room_id") final Integer roomId, @PathVariable(name = "feed_id") Long feedId, @RequestParam(name = "confirm_yn") final String confirmYN, final Authentication authentication) {
         final User user = (User) authentication.getPrincipal();
         challengeListService.updateFeedStatus(roomId, feedId, confirmYN, user);
         return ResponseEntity.ok().body(ResponseSuccess.success());
@@ -101,7 +101,7 @@ public class ChallengeManageController {
                     @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = ResponseFail.class)))
             })
     @GetMapping("/manage/{room_id}/users")
-    public ResponseEntity<ResponseSuccess<List<ChallengeUserInfoResponse>>> getUserList(@PathVariable(name = "room_id") Integer roomId, Authentication authentication) {
+    public ResponseEntity<ResponseSuccess<List<ChallengeUserInfoResponse>>> getUserList(@PathVariable(name = "room_id") final Integer roomId, final Authentication authentication) {
         final User user = (User) authentication.getPrincipal();
         return ResponseEntity.ok().body(ResponseSuccess.success(challengeListService.getUserList(roomId, user)));
     }
@@ -116,7 +116,7 @@ public class ChallengeManageController {
                     @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = ResponseFail.class)))
             })
     @DeleteMapping("/manage/{room_id}/users/{user_id}")
-    public ResponseEntity<ResponseSuccess<Void>> deleteChallengeUser(@PathVariable(name = "room_id") Integer roomId, @PathVariable(name = "user_id") Long userId, Authentication authentication) {
+    public ResponseEntity<ResponseSuccess<Void>> deleteChallengeUser(@PathVariable(name = "room_id") final Integer roomId, @PathVariable(name = "user_id") final Long userId, final Authentication authentication) {
         final User user = (User) authentication.getPrincipal();
         challengeListService.deleteChallengeUser(user, roomId, userId);
         return ResponseEntity.noContent().build();
@@ -135,5 +135,20 @@ public class ChallengeManageController {
         final User user = (User) authentication.getPrincipal();
         challengeListService.changeHost(user, roomId, request.getUserId());
         return ResponseEntity.ok().body(ResponseSuccess.success());
+    }
+
+    @Operation(summary = "도전방 삭제 API"
+            , description = "유저가 방장으로 관리중인 도전방을 삭제한다. 관련된 도전방 유저 정보들도 모두 삭제된다.",
+            responses = {
+                    @ApiResponse(responseCode = "204", description = "성공", useReturnTypeSchema = true),
+                    @ApiResponse(responseCode = "400", description = "NOT_FOUND_ROOM", content = @Content(schema = @Schema(implementation = ResponseFail.class))),
+                    @ApiResponse(responseCode = "401", description = "INVALID_TOKEN, UNAUTHORIZED_ROOM_HOST", content = @Content(schema = @Schema(implementation = ResponseFail.class))),
+                    @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = ResponseFail.class)))
+            })
+    @DeleteMapping("/manage/{room_id}")
+    public ResponseEntity<ResponseSuccess<Void>> deleteChallengeRoom(@PathVariable(name = "room_id") final Integer roomId, final Authentication authentication) {
+        final User user = (User) authentication.getPrincipal();
+        challengeListService.deleteChallengeRoom(user, roomId);
+        return ResponseEntity.noContent().build();
     }
 }
