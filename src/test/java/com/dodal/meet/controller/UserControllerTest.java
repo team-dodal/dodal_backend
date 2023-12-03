@@ -6,6 +6,7 @@ import com.dodal.meet.controller.request.user.UserUpdateRequest;
 import com.dodal.meet.controller.response.user.UserInfoResponse;
 import com.dodal.meet.controller.response.user.UserSignInResponse;
 import com.dodal.meet.controller.response.user.UserSignUpResponse;
+import com.dodal.meet.custom.WithMockCustomUser;
 import com.dodal.meet.exception.DodalApplicationException;
 import com.dodal.meet.exception.ErrorCode;
 import com.dodal.meet.model.SocialType;
@@ -36,7 +37,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
-@WithMockUser
+@WithMockCustomUser
 class UserControllerTest {
 
  /*
@@ -52,8 +53,6 @@ class UserControllerTest {
 
     @MockBean
     private UserService userService;
-
-
 
     @Test
     void 회원가입() throws Exception {
@@ -105,8 +104,6 @@ class UserControllerTest {
         String profileUrl = "https://aws-s3.com";
         String content = "안녕하세요";
         List<String> tagList = Arrays.asList("001001", "001002");
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User user = (User) authentication.getPrincipal();
         UserUpdateRequest request = UserUpdateRequest
                 .builder()
                 .nickname("updateNickname")
@@ -114,8 +111,6 @@ class UserControllerTest {
                 .tagList(tagList)
                 .profileUrl(profileUrl)
                 .build();
-
-        when(userService.updateUser(request, user)).thenReturn(mock(UserInfoResponse.class));
 
         mockMvc.perform(patch("/api/v1/users/me")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -129,8 +124,6 @@ class UserControllerTest {
         String profileUrl = "https://aws-s3.com";
         String content = "안녕하세요";
         List<String> tagList = Arrays.asList("001001", "001002");
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User user = (User) authentication.getPrincipal();
         UserUpdateRequest request = UserUpdateRequest
                 .builder()
                 .nickname("updateNickname")
@@ -138,8 +131,6 @@ class UserControllerTest {
                 .tagList(tagList)
                 .profileUrl(profileUrl)
                 .build();
-
-        when(userService.updateUser(request, user)).thenThrow(new DodalApplicationException(ErrorCode.INVALID_TOKEN));
 
         mockMvc.perform(patch("/api/v1/users/me")
                 .contentType(MediaType.APPLICATION_JSON)

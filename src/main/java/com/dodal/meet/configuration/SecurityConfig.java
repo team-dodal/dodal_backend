@@ -47,10 +47,10 @@ public class SecurityConfig {
     }
 
     /*
-        csrf().disable() : CSRF 공격 방지 기능을 비활성화
+        csrf().disable() : CSRF 공격 방지 기능을 비활성화 csrf 서버에서 세션을 유지하고 있을 때 외부 사이트를 통해 세션 정보를 탈취해 악의적인 전송을 하는 것이나 JWT는 세션을 사용하지 않기 때문에 비활성화
         authorizeHttpRequests() : HTTP 요청에 대한 인가 설정
         antMatchers("/api/**").authenticated() : "/api/"로 시작하는 URL에 대한 요청은 인증을 필요
-        sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS) : 세션을 사용하지 않고, 각 요청마다 인증 정보를 전달
+        sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS) : 세션을 사용하지 않고, 각 요청마다 인증 정보를 전달 (JWT 인증 방식)
         addFilterBefore(new JwtTokenFilter(key, userService), UsernamePasswordAuthenticationFilter.class) : JwtTokenFilter를 UsernamePasswordAuthenticationFilter 앞에 추가하여 JWT 토큰 인증을 수행
         exceptionHandling().authenticationEntryPoint(new CustomAuthenticationEntryPoint()) : 인증에 실패한 요청에 대해 처리할 핸들러 등록
     */
