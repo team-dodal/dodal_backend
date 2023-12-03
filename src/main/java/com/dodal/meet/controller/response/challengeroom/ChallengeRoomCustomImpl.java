@@ -275,7 +275,7 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
                 .leftJoin(bookmark)
                 .on(room.eq(bookmark.challengeRoomEntity).and(bookmark.userEntity.id.eq(userEntity.getId())))
                 .leftJoin(challengeUser)
-                .on(challengeUser.userEntity.id.eq(userEntity.getId()))
+                .on(challengeUser.userEntity.id.eq(userEntity.getId()).and(challengeUser.challengeRoomEntity.id.eq(room.id)))
                 .where(roomTag.tagValue.in(userTagValues))
                 .orderBy(room.bookmarkCnt.desc(), room.registeredAt.desc())
                 .offset(pageable.getOffset())
@@ -303,7 +303,7 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
                 .leftJoin(bookmark)
                 .on(room.eq(bookmark.challengeRoomEntity).and(bookmark.userEntity.id.eq(userEntity.getId())))
                 .leftJoin(challengeUser)
-                .on(challengeUser.userEntity.id.eq(userEntity.getId()))
+                .on(challengeUser.userEntity.id.eq(userEntity.getId()).and(challengeUser.challengeRoomEntity.id.eq(room.id)))
                 ;
 
         // 인기 있는 도전의 경우 북마크 많은 순으로 추가 정렬
