@@ -10,6 +10,8 @@ import com.dodal.meet.controller.response.challengemanage.ChallengeUserInfoRespo
 import com.dodal.meet.controller.response.challengemanage.ChallengeUserRoleResponse;
 import com.dodal.meet.model.User;
 import com.dodal.meet.service.ChallengeListService;
+import com.dodal.meet.auth.PermissionHostCheckSupport;
+import com.dodal.meet.auth.RoleChecker;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -72,6 +74,7 @@ public class ChallengeManageController {
                     @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = ResponseFail.class)))
             })
     @GetMapping("/manage/{room_id}/certifications")
+    @RoleChecker(clazz = PermissionHostCheckSupport.class, condition = {"roomId"})
     public ResponseEntity<ResponseSuccess<Map<String, List<ChallengeCertImgManage>>>> getCertImgList(@PathVariable(name = "room_id") Integer roomId, @RequestParam(name = "date_ym") final String dateYM, final Authentication authentication) {
         final User user = (User) authentication.getPrincipal();
         return ResponseEntity.ok().body(ResponseSuccess.success(challengeListService.getCertImgList(roomId, dateYM, user)));
@@ -86,6 +89,7 @@ public class ChallengeManageController {
                     @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = ResponseFail.class)))
             })
     @PatchMapping("/manage/{room_id}/certifications/{feed_id}")
+    @RoleChecker(clazz = PermissionHostCheckSupport.class, condition = {"roomId"})
     public ResponseEntity<ResponseSuccess<Void>> updateFeedStatus(@PathVariable(name = "room_id") final Integer roomId, @PathVariable(name = "feed_id") Long feedId, @RequestParam(name = "confirm_yn") final String confirmYN, final Authentication authentication) {
         final User user = (User) authentication.getPrincipal();
         challengeListService.updateFeedStatus(roomId, feedId, confirmYN, user);
@@ -101,6 +105,7 @@ public class ChallengeManageController {
                     @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = ResponseFail.class)))
             })
     @GetMapping("/manage/{room_id}/users")
+    @RoleChecker(clazz = PermissionHostCheckSupport.class, condition = {"roomId"})
     public ResponseEntity<ResponseSuccess<List<ChallengeUserInfoResponse>>> getUserList(@PathVariable(name = "room_id") final Integer roomId, final Authentication authentication) {
         final User user = (User) authentication.getPrincipal();
         return ResponseEntity.ok().body(ResponseSuccess.success(challengeListService.getUserList(roomId, user)));
@@ -116,6 +121,7 @@ public class ChallengeManageController {
                     @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = ResponseFail.class)))
             })
     @DeleteMapping("/manage/{room_id}/users/{user_id}")
+    @RoleChecker(clazz = PermissionHostCheckSupport.class, condition = {"roomId"})
     public ResponseEntity<ResponseSuccess<Void>> deleteChallengeUser(@PathVariable(name = "room_id") final Integer roomId, @PathVariable(name = "user_id") final Long userId, final Authentication authentication) {
         final User user = (User) authentication.getPrincipal();
         challengeListService.deleteChallengeUser(user, roomId, userId);
@@ -131,6 +137,7 @@ public class ChallengeManageController {
                     @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = ResponseFail.class)))
             })
     @PatchMapping("/manage/{room_id}/mandate")
+    @RoleChecker(clazz = PermissionHostCheckSupport.class, condition = {"roomId"})
     public ResponseEntity<ResponseSuccess<Void>> changeHost(@PathVariable(name = "room_id") Integer roomId, @Valid  @RequestBody ChallengeMandateRequest request, Authentication authentication) {
         final User user = (User) authentication.getPrincipal();
         challengeListService.changeHost(user, roomId, request.getUserId());
@@ -146,6 +153,7 @@ public class ChallengeManageController {
                     @ApiResponse(responseCode = "500", description = "실패 - INTERNAL_SERVER_ERROR", content = @Content(schema = @Schema(implementation = ResponseFail.class)))
             })
     @DeleteMapping("/manage/{room_id}")
+    @RoleChecker(clazz = PermissionHostCheckSupport.class, condition = {"roomId"})
     public ResponseEntity<ResponseSuccess<Void>> deleteChallengeRoom(@PathVariable(name = "room_id") final Integer roomId, final Authentication authentication) {
         final User user = (User) authentication.getPrincipal();
         challengeListService.deleteChallengeRoom(user, roomId);

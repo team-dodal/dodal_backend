@@ -72,7 +72,8 @@ public enum ErrorCode {
     REDIS_VALUE_NOT_FOUND(HttpStatus.INTERNAL_SERVER_ERROR, "레디스 VALUE 값이 비어 있습니다."),
     FCM_PUSH_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "FCM PUSH 알림 발송 중 오류가 발생했습니다."),
 
-    COMMON_CODE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버에 등록된 공통코드 정보를 찾을 수 없습니다.")
+    COMMON_CODE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버에 등록된 공통코드 정보를 찾을 수 없습니다."),
+    PERMISSION_CHECK_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "권한 체크 클래스 타입 검증 중 오류가 발생했습니다." )
     ;
 
 
