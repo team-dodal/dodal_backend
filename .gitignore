@@ -603,7 +603,7 @@ FodyWeavers.xsd
 
 # ignore dev & prod
 **/application-dev.yml
-**/application-prod.yml
+**/application-prd.yml
 **/docker-compose-local.yml
 **/docker-compose-dev.yml
 **/application.yml
