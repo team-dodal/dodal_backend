@@ -77,8 +77,8 @@ jobs:
       # CodeDeploy
       - name: Deploy
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.DEPLOY_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.DEPLOY_SECRET_ACCESS_KEY }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_CODE_DEPLOY_ACCESS_KEY_DEV }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_CODE_DEPLOY_SECRET_KEY_DEV }}
         run: |
           aws deploy create-deployment \
           --application-name ${{ env.CODE_DEPLOY_APPLICATION_NAME }} \
