@@ -38,4 +38,4 @@ fi
 
 DEPLOY_JAR=$DEPLOY_PATH$JAR_NAME
 echo ">>> DEPLOY_JAR 배포"    >> $SERVICE_PATH/deploy.log
-nohup java -jar -Dspring.profiles.active=dev $DEPLOY_JAR >> /home/ec2-user/member-service.log 2> $SERVICE_PATH/member-service.log &
+nohup java -jar -Dspring.profiles.active=dev $DEPLOY_JAR >> /home/ec2-user/dodal-app.log 2> $SERVICE_PATH/dodal-app.log &
