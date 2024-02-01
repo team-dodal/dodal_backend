@@ -56,10 +56,10 @@ jobs:
           chmod +x ./build/libs/*.jar
           cp ./build/libs/*.jar ./deploy/
           cp ./appspec-dev.yml ./deploy/appspec.yml
-          cp ./scripts/deploy-dev.sh ./deploy/deploy-dev.sh
+          cp ./scripts/deploy-dev.sh ./deploy/scripts/deploy-dev.sh
 
       # 압축파일 형태로 전달
-      - name: Make zip file
+      - name: Make zip fileㅊ
         run: |
           cd ./deploy
           zip -r ./deploy-dev.zip .

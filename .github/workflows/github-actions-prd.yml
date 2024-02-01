@@ -56,7 +56,7 @@ jobs:
           chmod +x ./build/libs/*.jar
           cp ./build/libs/*.jar ./deploy/
           cp ./appspec-prd.yml ./deploy/appspec.yml
-          cp ./scripts/deploy-prd.sh ./deploy/deploy-prd.sh
+          cp ./scripts/deploy-prd.sh ./deploy/scripts/deploy-prd.sh
 
       # 압축파일 형태로 전달
       - name: Make zip file
