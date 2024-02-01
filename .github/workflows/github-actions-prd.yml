@@ -1,4 +1,4 @@
-name: Java CI with Gradle
+name: CI & CD for dodal-prd
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
 
 env:
   S3_BUCKET_NAME: ${{ secrets.AWS_S3_BUCKET_NAME_PRD }}
-  CODE_DEPLOY_APPLICATION_NAME: dodal-code-deploy
+  CODE_DEPLOY_APPLICATION_NAME: dodal-code-deploy-prd
   CODE_DEPLOY_DEPLOYMENT_GROUP: deploy
 
 permissions:

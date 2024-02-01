@@ -1,4 +1,4 @@
-name: Java CI with Gradle
+name: CI & CD for dodal-dev
 
 on:
   push:
