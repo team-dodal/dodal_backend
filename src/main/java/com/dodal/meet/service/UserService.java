@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class UserService {
+    private final CommentEntityRepository commentEntityRepository;
     private final CategoryEntityRepository categoryEntityRepository;
     private final FeedCustom challengeFeedEntityRepository;
     private final CommonCodeEntityRepository commonCodeEntityRepository;
@@ -146,15 +147,6 @@ public class UserService {
         return getUserInfo(userEntity);
     }
 
-    private UserInfoResponse getUserInfo(final UserEntity userEntity) {
-        final List<UserTagEntity> userTagEntityList = userTagEntityRepository.findAllByUserEntity(userEntity);
-        final List<String> userTagValueList = userTagEntityList.stream().map(t -> t.getTagValue()).collect(Collectors.toList());
-        final List<TagEntity> tagEntityList = tagEntityRepository.findAllByTagValueList(userTagValueList);
-        // FETCH JOIN
-        final List<CategoryEntity> categoryEntityList = categoryEntityRepository.findAllByTagEntity(tagEntityList);
-        return UserInfoResponse.newInstance(userEntity,userTagEntityList, categoryEntityList);
-    }
-
     @Transactional
     public UserInfoResponse updateUser(final UserUpdateRequest userUpdateRequest, final User user) {
         // TOKEN 정보를 가져오기 때문에 REDIS 캐시를 사용하지 않고 직접 가져온다.
@@ -190,7 +182,22 @@ public class UserService {
             userEntityCacheRepository.setUserEntity(userEntity);
         }
 
+        // 댓글 정보에 사용자 ID를 기반으로 닉네임, 프로필 이미지 정보 수정
+        commentEntityRepository.updateNicknameAndProfileUrlByUserId(userEntity.getId(), userEntity.getNickname(),
+            userEntity.getProfileUrl());
+
+        // 유저 캐시 정보 삭제
+        userEntityCacheRepository.deleteUserEntity(userEntity.getSocialId(), userEntity.getSocialType());
         return getUserInfo(userEntity);
+    }
+
+    private UserInfoResponse getUserInfo(final UserEntity userEntity) {
+        final List<UserTagEntity> userTagEntityList = userTagEntityRepository.findAllByUserEntity(userEntity);
+        final List<String> userTagValueList = userTagEntityList.stream().map(t -> t.getTagValue()).collect(Collectors.toList());
+        final List<TagEntity> tagEntityList = tagEntityRepository.findAllByTagValueList(userTagValueList);
+        // FETCH JOIN
+        final List<CategoryEntity> categoryEntityList = categoryEntityRepository.findAllByTagEntity(tagEntityList);
+        return UserInfoResponse.newInstance(userEntity,userTagEntityList, categoryEntityList);
     }
 
     @Transactional
