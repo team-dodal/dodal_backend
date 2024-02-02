@@ -61,7 +61,7 @@ jobs:
       # 압축파일 형태로 전달
       - name: Make zip file
         run: |
-          cd ./dev
+          cd ./prd
           zip -r ./deploy-prd.zip .
 
       # S3 Bucket으로 copy
