@@ -17,8 +17,8 @@ public interface CategoryEntityRepository extends JpaRepository<CategoryEntity, 
     Optional<CategoryEntity> findByCategoryValue(String categoryValue);
 
     @Query(
-            "SELECT c FROM CategoryEntity c JOIN FETCH c.hashTagEntities WHERE c IN " +
-            "(SELECT t.categoryEntity FROM TagEntity t WHERE t IN :tagEntityList)"
+            "SELECT distinct c FROM CategoryEntity c JOIN FETCH c.hashTagEntities WHERE c.categoryValue IN " +
+            "(SELECT distinct substring(t.tagValue, 1, 3) FROM TagEntity t WHERE t IN :tagEntityList)"
     )
     List<CategoryEntity> findAllByTagEntity(@Param("tagEntityList") List<TagEntity> tagEntityList);
 }
