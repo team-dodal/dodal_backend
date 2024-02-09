@@ -61,8 +61,8 @@ server:
 cloud:
   aws:
     credentials:
-      access-key: AKIAXYKJWO36P4ZGAXFV
-      secret-key: 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
+      access-key: ${AWS_ACCESS_KEY}
+      secret-key: ${AWS_SECRET_KEY}
     s3:
       bucket: dodal-bucket
     region:
