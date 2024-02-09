@@ -366,7 +366,8 @@ public class ChallengeRoomService {
 
     @Transactional
     public Page<ChallengeRoomSearchResponse> getChallengeRoomsByWord(User user, ChallengeRoomSearchRequest request) {
-        UserEntity userEntity = userEntityRepository.findBySocialIdAndSocialType(user.getSocialId(), user.getSocialType()).orElseThrow(()-> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
+
+        UserEntity userEntity = userService.getCachedUserEntity(user);
         ChallengeWordEntity wordEntity = ChallengeWordEntity.builder()
                 .word(request.getWord())
                 .userId(userEntity.getId())
@@ -377,7 +378,7 @@ public class ChallengeRoomService {
 
     @Transactional(readOnly = true)
     public List<String> getChallengeWordsByUserId(User user) {
-        UserEntity userEntity = userEntityRepository.findBySocialIdAndSocialType(user.getSocialId(), user.getSocialType()).orElseThrow(()-> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
+        UserEntity userEntity = userService.getCachedUserEntity(user);
         List<String> words = challengeWordEntityRepository.findWordsByUserIdAndOrderedDesc(userEntity.getId());
         return words.stream()
                 .limit(5)
@@ -386,7 +387,7 @@ public class ChallengeRoomService {
 
     @Transactional
     public void deleteChallengeWordsByUserId(User user) {
-        UserEntity userEntity = userEntityRepository.findBySocialIdAndSocialType(user.getSocialId(), user.getSocialType()).orElseThrow(()-> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
+        UserEntity userEntity = userService.getCachedUserEntity(user);
         challengeWordEntityRepository.deleteAllByUserId(userEntity.getId());
     }
 
@@ -397,7 +398,7 @@ public class ChallengeRoomService {
 
     @Transactional(readOnly = true)
     public List<ChallengeRoomBookmarkResponse> getBookmarksByUser(User user) {
-        UserEntity userEntity = userEntityRepository.findBySocialIdAndSocialType(user.getSocialId(), user.getSocialType()).orElseThrow(()-> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
+        UserEntity userEntity = userService.getCachedUserEntity(user);
         return challengeRoomEntityRepository.getBookmarksByUser(userEntity);
     }
 }
