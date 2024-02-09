@@ -30,6 +30,8 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     private final String key;
     private final UserService userService;
 
+    private final String serverIp;
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
@@ -38,7 +40,10 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         try {
             final String header = request.getHeader(HttpHeaders.AUTHORIZATION);
             if (header == null || !header.startsWith("Bearer ")) {
-                log.error("Request header is null or invalid {}", request.getRequestURL());
+                String requestURL = request.getRequestURL().toString();
+                if (requestURL.indexOf(serverIp) == -1 && requestURL.indexOf("localhost") == -1) {
+                    log.error("Request header is null or invalid {}", request.getRequestURL());
+                }
                 filterChain.doFilter(request, response);
                 return;
             }
