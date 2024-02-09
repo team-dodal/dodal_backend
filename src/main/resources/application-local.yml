@@ -53,10 +53,22 @@ spring:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
     topic:
-      push: fcm
+      push: fcm-local
 
 server:
   url: http://localhost:8080
+
+cloud:
+  aws:
+    credentials:
+      access-key: AKIAXYKJWO36P4ZGAXFV
+      secret-key: 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
+    s3:
+      bucket: dodal-bucket
+    region:
+      static: ap-northeast-2
+    stack:
+      auto: false
 
 logging:
   level:

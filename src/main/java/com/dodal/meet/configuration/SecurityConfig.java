@@ -32,6 +32,8 @@ public class SecurityConfig {
     @Value("${jwt.secret-key}")
     private String key;
 
+    @Value("${server.ip}")
+    private String serverIp;
     @Bean
     @Order(0)
     public SecurityFilterChain resources(HttpSecurity http) throws Exception {
@@ -61,7 +63,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests() // URL 별 권한 설정
                 .anyRequest().authenticated()
                 .and()
-                .addFilterBefore(new JwtTokenFilter(key, userService), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new JwtTokenFilter(key, userService, serverIp), UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling()
                 .authenticationEntryPoint(new CustomAuthenticationEntryPoint(new ObjectMapper()))
                 .and()
