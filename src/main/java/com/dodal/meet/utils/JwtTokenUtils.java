@@ -14,8 +14,8 @@ public class JwtTokenUtils {
     private static final long EXPIRED_ACCESS_TIME =  5 * 60 * 60 * 1000L;
     private static final long EXPIRED_REFRESH_TIME = 30 * 24 * 60 * 60 * 1000L;
 
-    public static String getUserSocialId(String token, String key) {
-        return extractClaims(token, key).get("socialId", String.class);
+    public static String getUserId(String token, String key) {
+        return extractClaims(token, key).get("userId", String.class);
     }
 
     public static String getUserSocialType(String token, String key) {
@@ -32,9 +32,9 @@ public class JwtTokenUtils {
         return expiredDate.before(new Date());
     }
 
-    public static String generateAccessToken(String socialId, SocialType socialType, String key) {
+    public static String generateAccessToken(Long userId, SocialType socialType, String key) {
         Claims claims = Jwts.claims();
-        claims.put("socialId", socialId);
+        claims.put("userId", String.valueOf(userId));
         claims.put("socialType", socialType.name());
         return Jwts.builder()
                 .setClaims(claims)
@@ -44,9 +44,9 @@ public class JwtTokenUtils {
                 .compact();
     }
 
-    public static String generateRefreshToken(String socialId, SocialType socialType, String key) {
+    public static String generateRefreshToken(Long userId, SocialType socialType, String key) {
         Claims claims = Jwts.claims();
-        claims.put("socialId", socialId);
+        claims.put("userId", String.valueOf(userId));
         claims.put("socialType", socialType.name());
         return Jwts.builder()
                 .setClaims(claims)

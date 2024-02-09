@@ -81,7 +81,7 @@ public class FeedService {
     @Transactional
     public void deleteFeedLike(final Long feedId, final User user) {
         ChallengeFeedEntity feedEntity = challengeFeedEntityRepository.findById(feedId).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_FEED));
-        final UserEntity userEntity = userEntityRepository.findBySocialIdAndSocialType(user.getSocialId(), user.getSocialType()).orElseThrow(() -> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST));
+        final UserEntity userEntity = userService.getCachedUserEntity(user);
         FeedLikeEntity findFeedLikeEntity = feedLikeEntityRepository.findByFeedInfo(feedId, userEntity.getId()).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_FEED_LIKE));
         feedLikeEntityRepository.deleteById(findFeedLikeEntity.getId());
         feedEntity.updateLikeCntByNum(DtoUtils.MINUS_ONE);

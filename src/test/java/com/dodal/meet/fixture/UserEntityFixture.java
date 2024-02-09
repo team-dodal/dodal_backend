@@ -6,7 +6,7 @@ import com.dodal.meet.model.entity.UserEntity;
 public class UserEntityFixture {
 
 
-    public static UserEntity getUserEntity(final String socialId, final SocialType socialType) {
+    public static UserEntity getUserEntity(String socialId, final SocialType socialType) {
         return UserEntity.builder()
                 .socialId(socialId)
                 .socialType(socialType)

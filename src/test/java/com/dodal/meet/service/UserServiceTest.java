@@ -5,6 +5,7 @@ import com.dodal.meet.controller.request.user.UserSignUpRequest;
 import com.dodal.meet.controller.response.user.UserSignInResponse;
 import com.dodal.meet.exception.DodalApplicationException;
 import com.dodal.meet.exception.ErrorCode;
+import com.dodal.meet.fixture.TokenEntityFixture;
 import com.dodal.meet.fixture.UserEntityFixture;
 import com.dodal.meet.model.SocialType;
 import com.dodal.meet.model.entity.TagEntity;
@@ -44,7 +45,9 @@ class UserServiceTest {
     @MockBean
     private TagEntityRepository tagEntityRepository;
 
-    private static final String SOCIAL_ID ="123456789";
+    private static final Long USER_ID = 1L;
+
+    private static final String SOCIAL_ID = "123456789";
     private static final SocialType SOCIAL_TYPE = SocialType.KAKAO;
 
     @Test
@@ -53,6 +56,8 @@ class UserServiceTest {
         when(userEntityRepository.findBySocialIdAndSocialType(SOCIAL_ID, SOCIAL_TYPE)).thenReturn(Optional.empty());
         UserEntity userEntity = UserEntityFixture.getUserEntity(SOCIAL_ID, SOCIAL_TYPE);
         when(userEntityRepository.save(any())).thenReturn(userEntity);
+        TokenEntity tokenEntity = TokenEntityFixture.getTokenEntity();
+        when(tokenEntityRepository.save(any())).thenReturn(tokenEntity);
         TagEntity tagEntity = TagEntity.builder().name("체중 관리").tagValue("001001").build();
         when(tagEntityRepository.findByTagValue(any())).thenReturn(Optional.of(tagEntity));
         UserSignUpRequest userSignUpRequest = UserSignUpRequest.builder()
@@ -73,7 +78,6 @@ class UserServiceTest {
         UserEntity fixture = UserEntityFixture.getUserEntity(SOCIAL_ID, SOCIAL_TYPE);
 
         when(userEntityRepository.findBySocialIdAndSocialType(SOCIAL_ID, SOCIAL_TYPE)).thenReturn(Optional.of(fixture));
-        when(userEntityRepository.save(any())).thenReturn(Optional.of(fixture));
         UserSignUpRequest userSignUpRequest = UserSignUpRequest.builder()
                 .socialId(SOCIAL_ID)
                 .socialType(SOCIAL_TYPE)
@@ -93,9 +97,12 @@ class UserServiceTest {
         UserSignUpRequest userSignUpRequest = UserSignUpRequest.builder().socialId(SOCIAL_ID).socialType(SOCIAL_TYPE).build();
         UserSignInRequest userSignInRequest = UserSignInRequest.builder().socialId(SOCIAL_ID).socialType(SOCIAL_TYPE).build();
 
-        TokenEntity tokenEntity = TokenEntity.builder().fcmToken("token").refreshToken("token").build();
+        TokenEntity tokenEntity = TokenEntityFixture.getTokenEntity();
 
-        UserEntity fixture = UserEntity.newInstance(userSignUpRequest, tokenEntity);
+        UserEntity fixture = UserEntity.newInstance(userSignUpRequest.getSocialId(), userSignUpRequest.getSocialType(),
+            userSignUpRequest.getEmail(), userSignUpRequest.getNickname(), userSignUpRequest.getProfileUrl(),
+            userSignUpRequest.getContent());
+        fixture.updateToken(tokenEntity);
 
         when(tokenEntityRepository.findById(any())).thenReturn(Optional.of(tokenEntity));
         when(userEntityRepository.findBySocialIdAndSocialType(SOCIAL_ID, SOCIAL_TYPE)).thenReturn(Optional.of(fixture));
@@ -108,7 +115,7 @@ class UserServiceTest {
 
     @Test
     void 로그인시_userName으로_회원가입한_유저가_없는_경우() {
-        when(userEntityRepository.findBySocialIdAndSocialType(SOCIAL_ID, SOCIAL_TYPE)).thenReturn(Optional.empty());
+        when(userEntityRepository.findByUserIdAndSocialType(USER_ID, SOCIAL_TYPE)).thenReturn(Optional.empty());
 
         UserSignInRequest userSignInRequest = UserSignInRequest.builder().socialId(SOCIAL_ID).socialType(SOCIAL_TYPE).build();
 

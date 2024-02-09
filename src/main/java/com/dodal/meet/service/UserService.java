@@ -54,8 +54,8 @@ public class UserService {
         final UserEntity userEntity = userEntityRepository.findBySocialIdAndSocialType(socialId, socialType).orElse(null);
 
         if (!ObjectUtils.isEmpty(userEntity)) {
-            final String accessToken = JwtTokenUtils.generateAccessToken(socialId, socialType, jwtKey);
-            final String refreshToken = JwtTokenUtils.generateRefreshToken(socialId, socialType, jwtKey);
+            final String accessToken = JwtTokenUtils.generateAccessToken(userEntity.getId(), socialType, jwtKey);
+            final String refreshToken = JwtTokenUtils.generateRefreshToken(userEntity.getId(), socialType, jwtKey);
             final List<UserTagEntity> userTagEntityList = userTagEntityRepository.findAllByUserEntity(userEntity);
 
             // 가입한 유저가 로그인한 경우 리프레시 토큰을 업데이트한다.
@@ -68,7 +68,7 @@ public class UserService {
             final List<CategoryEntity> categoryEntityList = categoryEntityRepository.findAllByTagEntity(tagEntityList);
 
             if (!profile.equals("test")){
-                userCacheRepository.setUser(loadUserBySocialIdAndSocialType(socialId, socialType));
+                userCacheRepository.setUser(loadUserByUserIdAndSocialType(userEntity.getId(), socialType));
                 userEntityCacheRepository.setUserEntity(userEntity);
             }
             return UserSignInResponse.newInstance(userEntity, accessToken, refreshToken, tagEntityList, categoryEntityList);
@@ -92,10 +92,12 @@ public class UserService {
         checkIfAlreadySignedUp(socialId, socialType);
 
         // JWT 토큰 발행 및 엔티티 저장
-        final String accessToken = JwtTokenUtils.generateAccessToken(socialId, socialType, jwtKey);
-        final String refreshToken = JwtTokenUtils.generateRefreshToken(socialId, socialType, jwtKey);
+        final UserEntity userEntity = saveUserEntity(request);
+
+        final String accessToken = JwtTokenUtils.generateAccessToken(userEntity.getId(), socialType, jwtKey);
+        final String refreshToken = JwtTokenUtils.generateRefreshToken(userEntity.getId(), socialType, jwtKey);
         final TokenEntity tokenEntity = saveRefreshToken(refreshToken);
-        final UserEntity userEntity = saveUserEntity(request, tokenEntity);
+        userEntity.updateToken(tokenEntity);
 
         final List<TagEntity> tagEntityList = tagEntityRepository.findAllByTagValueList(request.getTagList());
         final List<UserTagEntity> userTagEntityList = saveUserTags(tagEntityList, userEntity);
@@ -119,8 +121,9 @@ public class UserService {
         return tokenEntityRepository.save(tokenEntity);
     }
 
-    private UserEntity saveUserEntity(final UserSignUpRequest request, final TokenEntity tokenEntity) {
-        return userEntityRepository.save(UserEntity.newInstance(request, tokenEntity));
+    private UserEntity saveUserEntity(final UserSignUpRequest request) {
+        return userEntityRepository.save(UserEntity.newInstance(request.getSocialId(), request.getSocialType(),
+            request.getEmail(), request.getNickname(), request.getProfileUrl(), request.getContent()));
     }
 
     private List<UserTagEntity> saveUserTags(final List<TagEntity> tagEntityList, final UserEntity userEntity) {
@@ -187,7 +190,7 @@ public class UserService {
             userEntity.getProfileUrl());
 
         // 유저 캐시 정보 삭제
-        userEntityCacheRepository.deleteUserEntity(userEntity.getSocialId(), userEntity.getSocialType());
+        userEntityCacheRepository.deleteUserEntity(userEntity.getId(), userEntity.getSocialType());
         return getUserInfo(userEntity);
     }
 
@@ -215,7 +218,7 @@ public class UserService {
     @Transactional
     public UserAccessTokenResponse postAccessToken(final User user) {
         final UserEntity userEntity = getCachedUserEntity(user);
-        final String accessToken = JwtTokenUtils.generateAccessToken(userEntity.getSocialId(), userEntity.getSocialType(), jwtKey);
+        final String accessToken = JwtTokenUtils.generateAccessToken(userEntity.getId(), userEntity.getSocialType(), jwtKey);
         return UserAccessTokenResponse.newInstance(accessToken);
     }
 
@@ -237,14 +240,14 @@ public class UserService {
     public UserEntity getCachedUserEntity(User user) {
         final String socialId = user.getSocialId();
         final SocialType socialType = user.getSocialType();
-        return userEntityCacheRepository.getUserEntity(socialId, socialType).orElseGet(() ->
+        return userEntityCacheRepository.getUserEntity(user.getId(), socialType).orElseGet(() ->
                 userEntityRepository.findBySocialIdAndSocialType(socialId, socialType)
                         .orElseThrow(() -> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST)));
     }
 
-    public User loadUserBySocialIdAndSocialType(String socialId, SocialType socialType) {
-        return userCacheRepository.getUser(socialId, socialType).orElseGet(() ->
-                userEntityRepository.findBySocialIdAndSocialType(socialId, socialType).map(User::fromEntity)
+    public User loadUserByUserIdAndSocialType(Long userId, SocialType socialType) {
+        return userCacheRepository.getUser(userId, socialType).orElseGet(() ->
+                userEntityRepository.findByUserIdAndSocialType(userId, socialType).map(User::fromEntity)
                         .orElseThrow(() -> new DodalApplicationException(ErrorCode.INVALID_USER_REQUEST)));
     }
 

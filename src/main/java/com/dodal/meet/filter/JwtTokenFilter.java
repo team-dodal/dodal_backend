@@ -1,13 +1,11 @@
 package com.dodal.meet.filter;
 
-import com.dodal.meet.controller.response.Response;
-import com.dodal.meet.exception.DodalApplicationException;
 import com.dodal.meet.exception.ErrorCode;
 import com.dodal.meet.model.SocialType;
 import com.dodal.meet.model.User;
 import com.dodal.meet.service.UserService;
 import com.dodal.meet.utils.JwtTokenUtils;
-import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
 import lombok.RequiredArgsConstructor;
@@ -57,11 +55,11 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             }
 
             // get socialId, socialType from token
-            final String socialId = JwtTokenUtils.getUserSocialId(token, key);
+            final String userId = JwtTokenUtils.getUserId(token, key);
             final SocialType socialType = getSocialType(JwtTokenUtils.getUserSocialType(token, key));
 
             // check the user is valid
-            User user = userService.loadUserBySocialIdAndSocialType(socialId, socialType);
+            User user = userService.loadUserByUserIdAndSocialType(Long.valueOf(userId), socialType);
 
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                     user, null, null
