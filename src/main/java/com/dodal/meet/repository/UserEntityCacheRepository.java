@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.redis.core.RedisHash;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -57,5 +58,11 @@ public class UserEntityCacheRepository {
 
     private String getKey(String socialId, SocialType socialType) {
         return socialId + socialType +"ENTITY";
+    }
+
+    public void deleteUserEntity(String socialId, SocialType socialType) {
+        String key = getKey(socialId, socialType);
+        userEntityRedisTemplate.delete(key);
+        log.info("Deleted UserEntity from Redis: {}", key);
     }
 }

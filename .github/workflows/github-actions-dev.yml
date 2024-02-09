@@ -4,6 +4,7 @@ on:
   push:
     branches: [ "bug/#119" ]
 
+
 env:
   S3_BUCKET_NAME: ${{ secrets.AWS_S3_BUCKET_NAME_DEV }}
   CODE_DEPLOY_APPLICATION_NAME: dodal-code-deploy
