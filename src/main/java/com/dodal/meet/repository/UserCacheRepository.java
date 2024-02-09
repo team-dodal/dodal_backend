@@ -25,7 +25,7 @@ public class UserCacheRepository {
     private final static Duration USER_CACHE_TTL = Duration.ofDays(30);
 
     public void setUser(User user) {
-        String key = getKey(user.getSocialId(), user.getSocialType());
+        String key = getKey(user.getId(), user.getSocialType());
         String userValue;
         try {
             userValue = objectMapper.writeValueAsString(user);
@@ -37,8 +37,8 @@ public class UserCacheRepository {
         }
     }
 
-    public Optional<User> getUser(String socialId, SocialType socialType) {
-        String key = getKey(socialId, socialType);
+    public Optional<User> getUser(Long userId, SocialType socialType) {
+        String key = getKey(userId, socialType);
         String raw = String.valueOf(userRedisTemplate.opsForValue().get(key));
         try {
             if (!StringUtils.isEmpty(raw)) {
@@ -53,7 +53,7 @@ public class UserCacheRepository {
         throw new DodalApplicationException(ErrorCode.REDIS_VALUE_NOT_FOUND);
     }
 
-    private String getKey(String socialId, SocialType socialType) {
-        return socialId + socialType;
+    private String getKey(Long socialId, SocialType socialType) {
+        return String.valueOf(socialId) + socialType;
     }
 }

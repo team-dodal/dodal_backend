@@ -124,7 +124,6 @@ public class ChallengeListService {
             throw new DodalApplicationException(ErrorCode.INVALID_USER_KICK_OUT);
         }
         final ChallengeRoomEntity roomEntity = challengeRoomEntityRepository.findById(roomId).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM));
-        final ChallengeUserEntity challengeHostEntity = challengeUserEntityRepository.findByUserIdAndChallengeRoomEntity(userEntity.getId(), roomEntity).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM_USER));
 
         fcmPushService.sendFcmPushUser(userId, MessageUtils.makeFcmPushRequest(MessageType.KICK_OUT, roomEntity.getTitle()));
         roomEntity.updateUserCnt(DtoUtils.MINUS_ONE);

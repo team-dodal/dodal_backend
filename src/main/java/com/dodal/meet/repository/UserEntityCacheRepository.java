@@ -27,7 +27,7 @@ public class UserEntityCacheRepository {
     private final static Duration USER_CACHE_TTL = Duration.ofDays(30);
 
     public void setUserEntity(UserEntity userEntity) {
-        String key = getKey(userEntity.getSocialId(), userEntity.getSocialType());
+        String key = getKey(userEntity.getId(), userEntity.getSocialType());
 
         String userEntityValue;
         try {
@@ -40,8 +40,8 @@ public class UserEntityCacheRepository {
         }
     }
 
-    public Optional<UserEntity> getUserEntity(String socialId, SocialType socialType) {
-        String key = getKey(socialId, socialType);
+    public Optional<UserEntity> getUserEntity(Long userId, SocialType socialType) {
+        String key = getKey(userId, socialType);
         String raw = String.valueOf(userEntityRedisTemplate.opsForValue().get(key));
         try {
             if (!StringUtils.isEmpty(raw)) {
@@ -56,12 +56,12 @@ public class UserEntityCacheRepository {
         throw new DodalApplicationException(ErrorCode.REDIS_VALUE_NOT_FOUND);
     }
 
-    private String getKey(String socialId, SocialType socialType) {
-        return socialId + socialType +"ENTITY";
+    private String getKey(Long userId, SocialType socialType) {
+        return  String.valueOf(userId) + socialType +"ENTITY";
     }
 
-    public void deleteUserEntity(String socialId, SocialType socialType) {
-        String key = getKey(socialId, socialType);
+    public void deleteUserEntity(Long userId, SocialType socialType) {
+        String key = getKey(userId, socialType);
         userEntityRedisTemplate.delete(key);
         log.info("Deleted UserEntity from Redis: {}", key);
     }

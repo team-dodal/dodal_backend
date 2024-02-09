@@ -78,15 +78,19 @@ public class UserEntity extends BaseTime {
         this.accuseCnt += num;
     }
 
-    public static UserEntity newInstance(UserSignUpRequest userSignUpRequest, TokenEntity tokenEntity) {
+    public static UserEntity newInstance(String socialId, SocialType socialType, String email, String nickname,
+        String profileUrl, String content) {
         return UserEntity.builder()
-                .socialId(userSignUpRequest.getSocialId())
-                .socialType(userSignUpRequest.getSocialType())
-                .email(userSignUpRequest.getEmail())
-                .nickname(userSignUpRequest.getNickname())
-                .profileUrl(userSignUpRequest.getProfileUrl())
-                .content(userSignUpRequest.getContent())
-                .tokenEntity(tokenEntity)
-                .build();
+            .socialId(socialId)
+            .socialType(socialType)
+            .email(email)
+            .nickname(nickname)
+            .profileUrl(profileUrl)
+            .content(content)
+            .build();
+    }
+
+    public void updateToken(TokenEntity tokenEntity) {
+        this.tokenEntity = tokenEntity;
     }
 }
