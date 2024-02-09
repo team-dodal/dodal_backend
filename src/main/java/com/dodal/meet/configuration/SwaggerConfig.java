@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
 @Configuration
-@Profile({"local", "dev"})
+// @Profile({"local", "dev"})
 public class SwaggerConfig {
     @Bean
     public OpenAPI openAPI(@Value("${project.version}") String version,
