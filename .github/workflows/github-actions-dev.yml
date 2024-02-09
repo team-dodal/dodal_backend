@@ -2,7 +2,7 @@ name: CI & CD for dodal-dev
 
 on:
   push:
-    branches: [ "bug/#114" ]
+    branches: [ "bug/#119" ]
 
 env:
   S3_BUCKET_NAME: ${{ secrets.AWS_S3_BUCKET_NAME_DEV }}
