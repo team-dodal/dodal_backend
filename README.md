@@ -34,8 +34,9 @@
 - 1인 개발
 
 ## ⚙️ 애플리케이션 구성도
-<img width="1005" alt="image" src="https://github.com/team-dodal/dodal_backend/assets/81945553/44d5dcfc-c570-4b75-8931-539dda987f8b">
+<img width="1000" alt="image" src="https://github.com/team-dodal/dodal_backend/assets/81945553/44d5dcfc-c570-4b75-8931-539dda987f8b">
 
 ## ✌🏻 클라이언트 화면 
+<img width="1000" alt="image" src="https://github.com/team-dodal/dodal_backend/assets/81945553/fec2e168-4037-4836-8a8a-c90538beecbc">
 
 
