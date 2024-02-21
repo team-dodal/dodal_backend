@@ -65,7 +65,7 @@ cloud:
       access-key: ${AWS_ACCESS_KEY}
       secret-key: ${AWS_SECRET_KEY}
     s3:
-      bucket: dodal-bucket
+      bucket: dodal-s3-dev
     region:
       static: ap-northeast-2
     stack:
