@@ -447,6 +447,7 @@ public class ChallengeRoomCustomImpl implements ChallengeRoomCustom{
                 .innerJoin(bookmark.userEntity, user)
                 .innerJoin(bookmark.challengeRoomEntity, room)
                 .innerJoin(room.challengeTagEntity, roomTag)
+                .where(user.id.eq(userEntity.getId()))
                 .orderBy(bookmark.registeredAt.desc())
                 .fetch();
         return result;
