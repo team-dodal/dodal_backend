@@ -30,7 +30,7 @@ public class ChallengeFeedEntity extends BaseTime {
     @Column(nullable = false, length = 255)
     private String certImgUrl;
 
-    @Column(nullable = false, length = 100)
+    @Column(nullable = true, length = 100)
     private String certContent;
 
     @Column(nullable = false, length = 16)
