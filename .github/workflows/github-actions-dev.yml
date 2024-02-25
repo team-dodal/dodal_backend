@@ -2,7 +2,7 @@ name: CI & CD for dodal-dev
 
 on:
   push:
-    branches: [ "refactor/#121" ]
+    branches: [ "feat/#125" ]
 
 
 env:
