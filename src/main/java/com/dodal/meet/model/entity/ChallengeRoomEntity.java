@@ -31,7 +31,6 @@ public class ChallengeRoomEntity extends BaseTime {
     @Column(nullable = false, length = 16)
     private String hostNickname;
 
-    @Column(nullable = false, length = 255)
     private String hostProfileUrl;
 
     @Column(nullable = false, length = 255)
