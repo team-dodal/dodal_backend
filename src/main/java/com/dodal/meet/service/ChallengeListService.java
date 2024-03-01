@@ -55,16 +55,14 @@ public class ChallengeListService {
 
     @Transactional
     public void updateFeedStatus(final Integer roomId, final Long feedId, final String confirmYN, final User user) {
-        final UserEntity userEntity = userService.getCachedUserEntity(user);
         final ChallengeRoomEntity roomEntity = challengeRoomEntityRepository.findById(roomId).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM));
-        final ChallengeUserEntity challengeHostEntity = challengeUserEntityRepository.findByUserIdAndChallengeRoomEntity(userEntity.getId(), roomEntity).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM_USER));
         ChallengeFeedEntity feedEntity = challengeFeedEntityRepository.findById(feedId).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_FEED));
 
         StringUtils.equalsAny(confirmYN, DtoUtils.Y, DtoUtils.N);
         if(StringUtils.equals(confirmYN, DtoUtils.Y)){
             feedEntity.updateCertCode(FeedUtils.CONFIRM);
             final ChallengeUserEntity challengeUserEntity = challengeUserEntityRepository.findByUserIdAndChallengeRoomEntity(feedEntity.getUserId(), roomEntity).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM_USER));
-            final int curContinueCertCnt = challengeHostEntity.getContinueCertCnt();
+            final int curContinueCertCnt = challengeUserEntity.getContinueCertCnt();
             feedEntity.updateContinueCertCnt(curContinueCertCnt + DtoUtils.ONE);
 
             // 도전방 유저 정보 업데이트 - (전체 인증 횟수, 연속 인증 횟수, 최대 연속 인증 횟수)
@@ -88,7 +86,6 @@ public class ChallengeListService {
         DateUtils.validDateYM(dateYM);
         final UserEntity userEntity = userService.getCachedUserEntity(user);
         ChallengeRoomEntity roomEntity = challengeRoomEntityRepository.findById(roomId).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM));
-        ChallengeUserEntity challengeUserEntity = challengeUserEntityRepository.findByUserIdAndChallengeRoomEntity(userEntity.getId(), roomEntity).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM_USER));
 
         List<ChallengeCertImgManage> certImgList = challengeRoomEntityRepository.getCertImgList(roomId, dateYM);
 
@@ -109,10 +106,6 @@ public class ChallengeListService {
 
     @Transactional(readOnly = true)
     public List<ChallengeUserInfoResponse> getUserList(Integer roomId, User user) {
-        final UserEntity userEntity = userService.getCachedUserEntity(user);
-        final ChallengeRoomEntity roomEntity = challengeRoomEntityRepository.findById(roomId).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM));
-        final ChallengeUserEntity challengeHostEntity = challengeUserEntityRepository.findByUserIdAndChallengeRoomEntity(userEntity.getId(), roomEntity).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM_USER));
-
         Map<Integer, String> weekInfo = DateUtils.getWeekInfo();
         return challengeRoomEntityRepository.getUserList(roomId, weekInfo.get(DateUtils.MON), weekInfo.get(DateUtils.SUN));
     }
@@ -147,9 +140,7 @@ public class ChallengeListService {
 
     @Transactional
     public void deleteChallengeRoom(final User user, final Integer roomId) {
-        final UserEntity hostEntity = userService.getCachedUserEntity(user);
         ChallengeRoomEntity roomEntity = challengeRoomEntityRepository.findById(roomId).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM));
-        ChallengeUserEntity host = challengeUserEntityRepository.findByUserIdAndChallengeRoomEntity(hostEntity.getId(), roomEntity).orElseThrow(() -> new DodalApplicationException(ErrorCode.NOT_FOUND_ROOM_USER));
         challengeRoomEntityRepository.delete(roomEntity);
     }
 
