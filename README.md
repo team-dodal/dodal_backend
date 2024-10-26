@@ -18,25 +18,50 @@
 - 도전 기록 관리하기 (기간 / 도전 별 도전 달성한 기록 관리)
 
 ## 📌 사용 기술
-- Java11
-- SpringBoot 2.7
-- Gradle 7.6
-- JPA / QueryDSL 5.0
-- Junit5
-- Docker
-- AWS (EC2, CodeDeploy, S3, Rds)
-- Redis 
-- Kafka 2.6
-- Github Actions 
-- MySQL 8.0
+- Language : Java 11
+- FrameWork : Spring Boot 2.7 / JPA / QueryDSL
+- Database : MySQL, Redis
+- DevOps : Git, Github Actions, Docker, AWS(EC2, CodeDeploy, S3, Rds), Kafka
 
+## 📚 느낀점 및 배운점
+
+- 애자일 방법론 경험
+    - Github Project 내 칸반보드를 활용한 이슈 사항 및 진척률 관리
+    - Github 이슈번호를 활용한 브랜치 분기 관리
+- CI & CD 배포 경험
+    - Docker / DockerCompose 를 활용한 컨테이너 기반 인프라 구축
+    - 개발 시기 비용 절감을 위한 Mac Mini 홈서버 기반 CI & CD 구축
+    - 클라우드 서버 비용 절감을 위한 AWS 프리티어 / GCP 무료 크레딧 등 서버 구축 경험
+- 비동기 메시지 시스템 구축 경험
+    - Kafka를 활용한 비동기 메시지 기능 구현 (피드 좋아요 / 댓글, 도전방 가입 / 강퇴, 피드 요청 / 승인)
+- 토큰 인증 기반 로그인 구현
+    - 토큰 탈취 문제에 대응을 위한 수명 짧은 액세스 토큰 사용
+    - 매 요청마다 토큰이 변조되지 않았는지 검증
+- JPA 벌크 연산 경험
+    - 다 건 데이터 jdbcTemplate 활용 벌크 연산 처리 
+  
 ## 🙋🏻‍♂️ 팀원
-- 1인 개발
+- 백엔드 & 인프라 1인 개발  (2023.05 ~ 2024.01)
 
 ## ⚙️ 애플리케이션 구성도
 <img width="1000" alt="image" src="https://github.com/team-dodal/dodal_backend/assets/81945553/44d5dcfc-c570-4b75-8931-539dda987f8b">
 
+
+
 ## ✌🏻 클라이언트 화면 
-<img width="1000" alt="image" src="https://github.com/team-dodal/dodal_backend/assets/81945553/fec2e168-4037-4836-8a8a-c90538beecbc">
+### 로그인 화면 
+<img width="677" alt="image" src="https://github.com/user-attachments/assets/067dcb04-22e7-4a04-a4a7-470e6f8df82f">
+
+
+### 메인 화면 
+<img width="674" alt="image" src="https://github.com/user-attachments/assets/69227193-742f-4605-abcf-8c89a70d4ef9">
+
+### 도전방 관리 화면
+<img width="675" alt="image" src="https://github.com/user-attachments/assets/7e0bf07e-af78-4200-b3f2-0ba5d841125f">
+
+
+### 마이페이지 화면 
+<img width="675" alt="image" src="https://github.com/user-attachments/assets/38cac98d-a062-4cd0-b14f-1869d05baac4">
+
 
 
