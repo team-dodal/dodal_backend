@@ -45,6 +45,13 @@
 ## ⚙️ 애플리케이션 구성도
 <img width="1000" alt="image" src="https://github.com/team-dodal/dodal_backend/assets/81945553/44d5dcfc-c570-4b75-8931-539dda987f8b">
 
+## 🐼 ERD 구성도 
+<img width="673" alt="image" src="https://github.com/user-attachments/assets/0ba2a336-f5d4-4221-a6d3-a4be73b59608">
+
+
+## 🦊 이슈 관리
+<img width="689" alt="image" src="https://github.com/user-attachments/assets/b75b00bf-c013-4e53-8eff-38745d7136ac">
+
 
 
 ## ✌🏻 클라이언트 화면 
